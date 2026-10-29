@@ -7,6 +7,8 @@ $config = require __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../app/Core/Controller.php';
 require_once __DIR__ . '/../app/Core/Router.php';
 
+
+
 require_once __DIR__ . '/../app/Controllers/AuthController.php';
 require_once __DIR__ . '/../app/Middleware/AuthMiddleware.php';
 
