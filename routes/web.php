@@ -28,10 +28,45 @@ $router->post('/logout', [
 ], [
     AuthMiddleware::class,
 ]);
+$router->get('/reviews', [
+    ReviewController::class,
+    'index',
+]);
 
+$router->post('/reviews', [
+    ReviewController::class,
+    'store',
+]);
 
+$router->post('/reviews/delete', [
+    ReviewController::class,
+    'destroy',
+]);
 
+$router->get('/orders', [
+    OrderController::class,
+    'index',
+]);
 
+$router->get('/orders/show', [
+    OrderController::class,
+    'show',
+]);
+
+$router->post('/orders', [
+    OrderController::class,
+    'store',
+]);
+
+$router->post('/orders/update', [
+    OrderController::class,
+    'update',
+]);
+
+$router->post('/orders/delete', [
+    OrderController::class,
+    'destroy',
+]);
 // ? How to create a route here?
 // $router is already created in public/index.php before this file is loaded.
 // Format: $router->get('/path', [ControllerName::class, 'methodName']);
