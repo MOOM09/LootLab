@@ -298,10 +298,262 @@
 </div>
 
 <script>
-document.getElementById('chat-form').addEventListener('submit', function () {
-    const button = document.getElementById('send-button');
-    button.disabled = true;
-    button.textContent = 'جاري تجهيز الرد...';
+const chatForm = document.getElementById('chat-form');
+const sendButton = document.getElementById('send-button');
+const messageInput = document.getElementById('message');
+messageInput.addEventListener('keydown', function (event) {
+    if (
+        event.key === 'Enter' &&
+        !event.shiftKey &&
+        !event.isComposing
+    ) {
+        event.preventDefault();
+
+        if (!sending) {
+            chatForm.requestSubmit();
+        }
+    }
+});
+let sending = false;
+
+function addMessage(role, text) {
+    const article = document.createElement('article');
+
+    article.className = 'chat-message ' + (
+        role === 'user' ? 'user-message' : 'assistant-message'
+    );
+
+    const heading = document.createElement('strong');
+    heading.textContent = role === 'user' ? 'أنت' : 'LootLab AI';
+
+    const content = document.createElement('div');
+    content.className = 'message-text';
+    content.dir = 'auto';
+    content.textContent = text;
+
+    article.append(heading, content);
+    chatForm.before(article);
+
+    return { article, content };
+}
+
+chatForm.addEventListener('submit', async function (event) {
+    event.preventDefault();
+
+    if (sending || !chatForm.reportValidity()) {
+        return;
+    }
+
+    const message = messageInput.value.trim();
+
+    if (!message) {
+        return;
+    }
+
+    const formData = new FormData(chatForm);
+    formData.set('message', message);
+    formData.set('stream', '1');
+
+    document.querySelector('main > .error')?.remove();
+
+    const userMessage = addMessage('user', message);
+    const assistant = addMessage('assistant', 'بانتظار الرد...');
+
+    userMessage.article.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+    });
+
+    sending = true;
+    sendButton.disabled = true;
+    messageInput.readOnly = true;
+    sendButton.textContent = 'جاري الرد...';
+
+    let reply = '';
+    let completed = false;
+    let conversationId = null;
+    let displayedReply = '';
+let animationFrame = null;
+let lastPaint = 0;
+
+function animateReply(time) {
+    if (time - lastPaint >= 25) {
+        const remaining = Array.from(
+            reply.slice(displayedReply.length)
+        );
+
+        if (remaining.length > 0) {
+            displayedReply += remaining.slice(0, 2).join('');
+            assistant.content.textContent = displayedReply;
+        }
+
+        lastPaint = time;
+    }
+
+    if (displayedReply !== reply) {
+        animationFrame = requestAnimationFrame(animateReply);
+    } else {
+        animationFrame = null;
+    }
+}
+
+function startTyping() {
+    if (animationFrame === null) {
+        animationFrame = requestAnimationFrame(animateReply);
+    }
+}
+
+    try {
+        const response = await fetch(chatForm.getAttribute('action'), {
+            method: 'POST',
+            body: formData
+        });
+
+        if (
+            !response.ok ||
+            !response.headers.get('content-type')
+                ?.includes('application/x-ndjson') ||
+            !response.body
+        ) {
+            throw new Error('تعذّر بدء الرد. جرّب مرة ثانية.');
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        function handleLine(line) {
+            if (!line.trim()) {
+                return;
+            }
+
+            const item = JSON.parse(line);
+
+            if (item.type === 'delta') {
+                const followBottom =
+                    window.innerHeight + window.scrollY >=
+                    document.documentElement.scrollHeight - 160;
+
+                reply += item.text;
+
+             
+               startTyping();
+
+                if (followBottom) {
+                    window.scrollTo({
+                        top: document.documentElement.scrollHeight
+                    });
+                }
+            }
+
+            if (item.type === 'error') {
+                throw new Error(item.message);
+            }
+
+            if (item.type === 'done') {
+                completed = true;
+                conversationId = item.conversation_id;
+            }
+        }
+
+        try {
+            while (true) {
+                const { value, done } = await reader.read();
+
+                if (done) {
+                    buffer += decoder.decode();
+                    break;
+                }
+
+                buffer += decoder.decode(value, { stream: true });
+
+                let position;
+
+                while ((position = buffer.indexOf('\n')) !== -1) {
+                    const line = buffer.slice(0, position);
+                    buffer = buffer.slice(position + 1);
+                    handleLine(line);
+                }
+            }
+
+            if (buffer.trim()) {
+                handleLine(buffer);
+            }
+        } finally {
+            reader.releaseLock();
+        }
+
+        if (!completed) {
+            throw new Error(
+                'انقطع الاتصال قبل تأكيد الحفظ. حدّث الصفحة للتحقق.'
+            );
+        }
+
+        chatForm.elements.namedItem('conversation_id').value =
+            conversationId;
+
+        const url = new URL(window.location.href);
+        url.searchParams.set('conversation_id', conversationId);
+
+        window.history.replaceState(null, '', url);
+        messageInput.value = '';
+
+        // تحديث الـHistory بدون إعادة تحميل الصفحة.
+        try {
+            const historyResponse = await fetch(url, {
+                cache: 'no-store'
+            });
+
+            if (historyResponse.ok) {
+                const html = await historyResponse.text();
+                const page = new DOMParser().parseFromString(
+                    html,
+                    'text/html'
+                );
+
+                const newAside = page.querySelector('aside');
+
+                if (newAside) {
+                    document.querySelector('aside').replaceWith(
+                        document.importNode(newAside, true)
+                    );
+                }
+            }
+        } catch {
+            // الرد محفوظ، ويمكن تحديث القائمة لاحقًا.
+        }
+    } catch (error) {
+        if (!reply) {
+            assistant.article.remove();
+        }
+
+        const alert = document.createElement('div');
+        alert.className = 'error';
+        alert.setAttribute('role', 'alert');
+
+        alert.textContent = error instanceof Error
+            ? error.message
+            : 'تعذّر استقبال الرد.';
+
+        chatForm.before(alert);
+    } finally {
+        sending = false;
+        sendButton.disabled = false;
+        messageInput.readOnly = false;
+        sendButton.textContent = 'إرسال';
+    }
+});
+</script>
+<script>
+window.addEventListener('load', () => {
+    const messages = document.querySelectorAll('.chat-message');
+
+    if (messages.length > 0) {
+        messages[messages.length - 1].scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
 });
 </script>
 </body>

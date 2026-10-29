@@ -11,7 +11,8 @@ class AiService
    public function sendMessage(
     string $message,
     array $history = [],
-    array $products = []
+    array $products = [],
+    ?callable $onText = null
 ): array
 {
     
@@ -108,7 +109,156 @@ $contents[] = [
 
     'contents' => $contents
 ];
+if ($onText !== null) {
+    $url = str_replace(
+        ':generateContent',
+        ':streamGenerateContent?alt=sse',
+        $url
+    );
 
+    $buffer = '';
+    $parts = [];
+    $streamError = null;
+    $finished = false;
+
+    $processEvent = function (string $event) use (
+        &$parts,
+        &$finished,
+        $onText
+    ): void {
+        $dataLines = [];
+
+        foreach (explode("\n", $event) as $line) {
+            if (str_starts_with($line, 'data:')) {
+                $dataLines[] = ltrim(substr($line, 5));
+            }
+        }
+
+        if ($dataLines === []) {
+            return;
+        }
+
+        $json = implode("\n", $dataLines);
+
+        if ($json === '[DONE]') {
+            return;
+        }
+
+        $chunk = json_decode(
+            $json,
+            true,
+            512,
+            JSON_THROW_ON_ERROR
+        );
+
+        if (isset($chunk['error'])) {
+            throw new RuntimeException(
+                'خدمة Gemini غير متاحة حاليًا.'
+            );
+        }
+
+        $candidate = $chunk['candidates'][0] ?? [];
+
+        foreach ($candidate['content']['parts'] ?? [] as $part) {
+            // نحتفظ بالأجزاء الأصلية، ومنها توقيعات النموذج.
+            $parts[] = $part;
+
+            if (isset($part['text']) && empty($part['thought'])) {
+                $onText($part['text']);
+            }
+        }
+
+        if (isset($candidate['finishReason'])) {
+            $finished = true;
+        }
+    };
+
+    $curl = curl_init($url);
+
+    curl_setopt_array($curl, [
+        CURLOPT_CONNECTTIMEOUT => 10,
+        CURLOPT_TIMEOUT => 60,
+        CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4,
+        CURLOPT_POST => true,
+        CURLOPT_HTTPHEADER => [
+            'Content-Type: application/json',
+            'Accept: text/event-stream',
+            'x-goog-api-key: ' . $this->apiKey,
+        ],
+        CURLOPT_POSTFIELDS => json_encode(
+            $data,
+            JSON_THROW_ON_ERROR
+        ),
+
+        CURLOPT_WRITEFUNCTION => function (
+            $handle,
+            string $chunk
+        ) use (&$buffer, &$streamError, $processEvent): int {
+            try {
+                $buffer .= $chunk;
+
+                // نوحّد نهايات الأسطر، حتى لو انقسمت بين دفعتين.
+                $buffer = str_replace("\r\n", "\n", $buffer);
+
+                while (($position = strpos($buffer, "\n\n")) !== false) {
+                    $event = substr($buffer, 0, $position);
+                    $buffer = substr($buffer, $position + 2);
+
+                    $processEvent($event);
+                }
+
+                return strlen($chunk);
+            } catch (Throwable $exception) {
+                $streamError = $exception;
+                return 0;
+            }
+        },
+    ]);
+
+    try {
+        $success = curl_exec($curl);
+        $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+
+        if ($streamError !== null) {
+            throw $streamError;
+        }
+
+        if ($success === false) {
+            throw new RuntimeException(
+                'تعذّر الاتصال بـGemini: ' . curl_error($curl)
+            );
+        }
+
+        if ($status < 200 || $status >= 300) {
+            throw new RuntimeException(
+                'خدمة Gemini رجّعت خطأ HTTP ' . $status
+            );
+        }
+
+        if (trim($buffer) !== '') {
+            $processEvent($buffer);
+        }
+
+        if (!$finished) {
+            throw new RuntimeException(
+                'انقطع الرد قبل اكتماله. لم تُحفظ هذه الرسالة.'
+            );
+        }
+
+        return [
+            'candidates' => [
+                [
+                    'content' => [
+                        'role' => 'model',
+                        'parts' => $parts,
+                    ],
+                ],
+            ],
+        ];
+    } finally {
+        curl_close($curl);
+    }
+}
     $curl = curl_init($url);
 
     curl_setopt_array($curl, [
@@ -116,7 +266,7 @@ $contents[] = [
         CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4,
         CURLOPT_POST => true,
         CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT => 60,
+       CURLOPT_TIMEOUT => 20,
         CURLOPT_HTTPHEADER => [
             'Content-Type: application/json',
             'x-goog-api-key: ' . $this->apiKey
@@ -129,7 +279,7 @@ $contents[] = [
     if ($response === false) {
         $error = curl_error($curl);
         curl_close($curl);
-        throw new RuntimeException($error);
+        throw new RuntimeException('Gemini connection failed: ' . $error);
     }
 
     curl_close($curl);

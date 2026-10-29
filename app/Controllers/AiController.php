@@ -3,12 +3,42 @@
 require_once dirname(__DIR__) . '/Services/AiService.php';
 require_once dirname(__DIR__) . '/Services/AiDatabase.php';
 require_once dirname(__DIR__) . '/Models/AiConversation.php';
-
+require_once dirname(__DIR__) . '/Core/Controller.php';
 class AiController extends Controller
 {
     public function index(): void
     {
         $userId = 1;
+
+        $isStream =
+    $_SERVER['REQUEST_METHOD'] === 'POST'
+    && ($_POST['action'] ?? '') === 'send'
+    && ($_POST['stream'] ?? '') === '1';
+
+$emit = static function (array $event): void {
+    echo json_encode(
+        $event,
+        JSON_UNESCAPED_UNICODE
+        | JSON_INVALID_UTF8_SUBSTITUTE
+        | JSON_THROW_ON_ERROR
+    ) . "\n";
+
+    flush();
+};
+
+if ($isStream) {
+    ini_set('zlib.output_compression', '0');
+
+    while (ob_get_level() > 0) {
+        if (!ob_end_clean()) {
+            break;
+        }
+    }
+
+    header('Content-Type: application/x-ndjson; charset=utf-8');
+    header('Cache-Control: no-cache, no-transform');
+    header('X-Accel-Buffering: no');
+}
 
 $_SESSION['ai_csrf'] ??= bin2hex(random_bytes(32));
 $_SESSION['ai_raw_replies'] ??= [];
@@ -159,7 +189,21 @@ if ($action === 'delete') {
 $products = $catalog->getProducts();
 
 $ai = new AiService($_ENV['GEMINI_API_KEY']);
-$response = $ai->sendMessage($message, $history, $products);
+$onText = $isStream
+    ? static function (string $text) use ($emit): void {
+        $emit([
+            'type' => 'delta',
+            'text' => $text,
+        ]);
+    }
+    : null;
+
+$response = $ai->sendMessage(
+    $message,
+    $history,
+    $products,
+    $onText
+);
 
             if (isset($response['error'])) {
                 throw new RuntimeException(
@@ -212,6 +256,16 @@ $response = $ai->sendMessage($message, $history, $products);
                 );
             }
 
+            if ($isStream) {
+    $emit([
+        'type' => 'done',
+        'conversation_id' => $conversationId,
+    ]);
+
+    exit;
+}
+
+
             // Redirect حتى Refresh ما يعيد إرسال الرسالة.
             header(
                 'Location: ai.php?conversation_id='
@@ -219,20 +273,46 @@ $response = $ai->sendMessage($message, $history, $products);
             );
             exit;
         }
-    } catch (RuntimeException $exception) {
-        // لا نعرض تفاصيل أخطاء PDO أو الاتصال للمتصفح.
-        $error = $exception instanceof PDOException
-            ? 'تعذّر حفظ أو تحميل المحادثة.'
-            : $exception->getMessage();
-    } catch (Throwable $exception) {
-        $error = 'حدث خطأ أثناء معالجة الرسالة. جرّب مرة ثانية.';
     }
+   catch (RuntimeException $exception) {
+    $error = $exception instanceof PDOException
+        ? 'تعذّر حفظ المحادثة. الرد الظاهر لم يُحفظ.'
+        : $exception->getMessage();
+
+    if ($isStream) {
+        $emit([
+            'type' => 'error',
+            'message' => $error,
+        ]);
+
+        exit;
+    }
+} catch (Throwable $exception) {
+    $error = 'حدث خطأ أثناء معالجة الرسالة.';
+
+    if ($isStream) {
+        $emit([
+            'type' => 'error',
+            'message' => $error,
+        ]);
+
+        exit;
+    }
+}
 
     try {
         $conversations = $model->getAll($userId);
     } catch (Throwable $exception) {
         $error = 'تعذّر تحميل قائمة المحادثات.';
     }
+}
+if ($isStream) {
+    $emit([
+        'type' => 'error',
+        'message' => $error ?: 'تعذّرت معالجة الرسالة.',
+    ]);
+
+    exit;
 }
 
         require dirname(__DIR__) . '/Views/ai/chat.php';
