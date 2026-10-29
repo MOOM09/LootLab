@@ -2,7 +2,7 @@
 
 // INI => key/value
 //? Read settings from a file and returns them as an array.
-$env = parse_ini_file (__DIR__ . '.env', false, INI_SCANNER_RAW);
+$env = parse_ini_file (__DIR__ . '/../.env', false, INI_SCANNER_RAW);
 
 if ($env === false)
     throw new RuntimeException("Could not read the .env file.");
