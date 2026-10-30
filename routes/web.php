@@ -29,6 +29,56 @@ $router->post('/logout', [
     AuthMiddleware::class,
 ]);
 
+$router->get('/admin/categories', [
+    CategoryController::class,
+    'index',
+]);
+
+$router->get('/admin/categories/show', [
+    CategoryController::class,
+    'show',
+]);
+
+$router->post('/admin/categories', [
+    CategoryController::class,
+    'store',
+]);
+
+$router->post('/admin/categories/update', [
+    CategoryController::class,
+    'update',
+]);
+
+$router->post('/admin/categories/delete', [
+    CategoryController::class,
+    'destroy',
+]);
+
+$router->get('/products', [
+    ProductController::class,
+    'index',
+]);
+
+$router->get('/products/show', [
+    ProductController::class,
+    'show',
+]);
+
+$router->post('/products', [
+    ProductController::class,
+    'store',
+]);
+
+$router->post('/products/update', [
+    ProductController::class,
+    'update',
+]);
+
+$router->post('/products/delete', [
+    ProductController::class,
+    'destroy',
+]);
+
 
 
 

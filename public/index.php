@@ -6,8 +6,12 @@ $config = require __DIR__ . '/../config/config.php';
 
 require_once __DIR__ . '/../app/Core/Controller.php';
 require_once __DIR__ . '/../app/Core/Router.php';
+require_once __DIR__ . '/../app/Models/Category.php';
+require_once __DIR__ . '/../app/Models/Product.php';
 
 require_once __DIR__ . '/../app/Controllers/AuthController.php';
+require_once __DIR__ . '/../app/Controllers/Admin/CategoryController.php';
+require_once __DIR__ . '/../app/Controllers/ProductController.php';
 require_once __DIR__ . '/../app/Middleware/AuthMiddleware.php';
 
 $router = new Router();
