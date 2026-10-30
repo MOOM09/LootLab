@@ -10,7 +10,13 @@ require_once __DIR__ . '/../app/Core/Router.php';
 
 
 require_once __DIR__ . '/../app/Controllers/AuthController.php';
+require_once __DIR__ . '/../app/Controllers/ReviewController.php';
+require_once __DIR__ . '/../app/Models/Review.php';
+
+require_once __DIR__ . '/../app/Controllers/OrderController.php';
+require_once __DIR__ . '/../app/Models/Order.php';
 require_once __DIR__ . '/../app/Middleware/AuthMiddleware.php';
+
 
 $router = new Router();
 
