@@ -2,7 +2,13 @@
 
 class Router
 {
+    private array $config;
     private array $routes = [];
+
+    public function __construct(array $config)
+    {
+        $this->config = $config;
+    }
 
     public function get(
         string $path,
@@ -70,13 +76,13 @@ class Router
         }
 
         foreach ($route['middleware'] as $middlewareClass) {
-            $middleware = new $middlewareClass();
+            $middleware = new $middlewareClass($this->config);
             $middleware->handle();
         }
 
         [$controllerClass, $action] = $route['handler'];
 
-        $controller = new $controllerClass();
+        $controller = new $controllerClass($this->config);
         $controller->$action();
     }
 }
