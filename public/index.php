@@ -4,16 +4,24 @@ session_start();
 
 $config = require __DIR__ . '/../config/config.php';
 
-require_once __DIR__ . '/../app/Core/Controller.php';
-require_once __DIR__ . '/../app/Core/Router.php';
+require_once DIR . '/../app/Core/Database.php';
+require_once DIR . '/../app/Core/Controller.php';
+require_once DIR . '/../app/Core/Response.php';
+require_once DIR . '/../app/Core/Router.php';
 
-require_once __DIR__ . '/../app/Controllers/AuthController.php';
-require_once __DIR__ . '/../app/Controllers/ReviewController.php';
-require_once __DIR__ . '/../app/Models/Review.php';
+require_once DIR . '/../app/Controllers/AuthController.php';
+require_once DIR . '/../app/Controllers/OrderController.php';
+require_once DIR . '/../app/Controllers/ReviewController.php';
 
-require_once __DIR__ . '/../app/Controllers/OrderController.php';
-require_once __DIR__ . '/../app/Models/Order.php';
-require_once __DIR__ . '/../app/Middleware/AuthMiddleware.php';
+require_once DIR . '/../app/Models/User.php';
+require_once DIR . '/../app/Models/Review.php';
+require_once DIR . '/../app/Models/Order.php';
+
+require_once DIR . '/../app/Middleware/AuthMiddleware.php';
+
+$router = new Router($config);
+
+require DIR . '/../routes/web.php';
 
 
 $router = new Router();
