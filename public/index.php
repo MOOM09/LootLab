@@ -8,13 +8,20 @@ require_once __DIR__ . '/../app/Core/Database.php';
 require_once __DIR__ . '/../app/Core/Controller.php';
 require_once __DIR__ . '/../app/Core/Response.php';
 require_once __DIR__ . '/../app/Core/Router.php';
+require_once __DIR__ . '/../app/Interfaces/CartInterface.php';
+require_once __DIR__ . '/../app/Models/CartItem.php';
+require_once __DIR__ . '/../app/Models/Cart.php';
 require_once __DIR__ . '/../app/Models/Category.php';
 require_once __DIR__ . '/../app/Models/Product.php';
+require_once __DIR__ . '/../app/Models/CartItem.php';
+require_once __DIR__ . '/../app/Models/Cart.php';
+
+require_once __DIR__ . '/../app/Interfaces/CartInterface.php';
 
 require_once __DIR__ . '/../app/Controllers/Admin/UserController.php';
+require_once __DIR__ . '/../app/Controllers/Admin/CategoryController.php';
 
 require_once __DIR__ . '/../app/Controllers/AuthController.php';
-require_once __DIR__ . '/../app/Controllers/Admin/CategoryController.php';
 require_once __DIR__ . '/../app/Controllers/ProductController.php';
 require_once __DIR__ . '/../app/Controllers/ProfileController.php';
 require_once __DIR__ . '/../app/Controllers/FavoriteController.php';
@@ -52,8 +59,7 @@ if ($basePath !== '') {
     } elseif (str_starts_with($path, $basePath . '/')) {
         $path = substr($path, strlen($basePath));
     } else {
-        http_response_code(404);
-        exit('Page not found');
+        Response::error('Page not found', 404);
     }
 }
 

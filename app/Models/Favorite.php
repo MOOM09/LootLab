@@ -61,8 +61,7 @@ class Favorite
         );
 
         $stmt->execute([
-            '
-        :favoriteId' => $favoriteId,
+            ':favoriteId' => $favoriteId,
             ':product_id' => $productId
         ]);
 
@@ -135,26 +134,53 @@ class Favorite
     // Call during successful login/registration using the guest ID captured before session regeneration.
     public function mergeGuestIntoUser(string $sessionId, int $userId): void
     {
-        // 1. Start a database transaction.
+        // Start a database transaction.
+        //? Guest favorites → copy to user favorites → delete guest favorites
+        //* Two choices: 
+        // Everything worked → commit() saves the changes.
+        // Something failed → rollBack() undoes this operation’s database changes.
+        $this->connection->beginTransaction();
 
-        // 2. Find the guest collection using findBySession($sessionId).
-        // If none exists, commit and return.
+        // Merge steps
+        try {
+            // 2. Find the guest collection 
+            $guestFavorite = $this->findBySession($sessionId);
+            if (!$guestFavorite) {
+                $this->connection->commit();
+                return;
+            }
 
-        // 3. Find the user's collection using findByUser($userId).
-        // If none exists, create it using createForUser($userId).
+            $userFavorite = $this->findByUser($userId);
+            if ($userFavorite === null) {
+                $userFavoriteId = $this->createForUser($userId);
+            } else {
+                $userFavoriteId = (int) $userFavorite['fav_id'];
+            }
 
-        // 4. Get the guest's products using getItems($guestFavoriteId).
+            $guestFavoriteId = (int) $guestFavorite['fav_id'];
 
-        // 5. For each guest product:
-        // Check whether the user's collection already contains it.
-        // If it does not, add it to the user's collection.
-        // Keep the unique constraint as the final protection against duplicates.
+            $guestItems = $this->getItems($guestFavoriteId);
 
-        // 6. Delete the guest collection from the favorites table.
-        // Its favorite_items are automatically deleted by ON DELETE CASCADE.
+            foreach ($guestItems as $item) {
+                $productId = (int) $item['product_id'];
 
-        // 7. Commit the transaction.
+                if (!$this->contains($userFavoriteId, $productId))
+                    $this->addItem($userFavoriteId, $productId);
+            }
+            $stmt = $this->connection->prepare(
+                'DELETE FROM favorites
+                WHERE fav_id = :fav_id AND session_id = :session_id'
+            );
 
-        // 8. On an exception, roll back the transaction and rethrow the exception.
+            $stmt->execute([
+                ':fav_id' => $guestFavoriteId,
+                ':session_id' => $sessionId,
+            ]);
+
+            $this->connection->commit();
+        } catch (Throwable $e) {
+            $this->connection->rollBack();
+            throw $e;
+        }
     }
 }
