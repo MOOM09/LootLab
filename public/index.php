@@ -2,19 +2,32 @@
 
 session_start();
 
-$config = require __DIR__ . '/../config/config.php';
+$config = require_once __DIR__ . '/../config/config.php';
 
+require_once __DIR__ . '/../app/Core/Database.php';
 require_once __DIR__ . '/../app/Core/Controller.php';
+require_once __DIR__ . '/../app/Core/Response.php';
 require_once __DIR__ . '/../app/Core/Router.php';
 require_once __DIR__ . '/../app/Models/Category.php';
 require_once __DIR__ . '/../app/Models/Product.php';
 
+require_once __DIR__ . '/../app/Controllers/Admin/UserController.php';
+
 require_once __DIR__ . '/../app/Controllers/AuthController.php';
 require_once __DIR__ . '/../app/Controllers/Admin/CategoryController.php';
 require_once __DIR__ . '/../app/Controllers/ProductController.php';
-require_once __DIR__ . '/../app/Middleware/AuthMiddleware.php';
+require_once __DIR__ . '/../app/Controllers/ProfileController.php';
+require_once __DIR__ . '/../app/Controllers/OrderController.php';
+require_once __DIR__ . '/../app/Controllers/ReviewController.php';
 
-$router = new Router();
+require_once __DIR__ . '/../app/Models/User.php';
+require_once __DIR__ . '/../app/Models/Review.php';
+require_once __DIR__ . '/../app/Models/Order.php';
+
+require_once __DIR__ . '/../app/Middleware/AuthMiddleware.php';
+require_once __DIR__ . '/../app/Middleware/AdminMiddleware.php';
+
+$router = new Router($config);
 
 require __DIR__ . '/../routes/web.php';
 

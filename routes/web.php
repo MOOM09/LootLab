@@ -79,7 +79,90 @@ $router->post('/products/delete', [
     'destroy',
 ]);
 
+$router->get('/profile', [
+    ProfileController::class,
+    'index',
+], [
+    AuthMiddleware::class,
+]);
 
+$router->put('/profile', [
+    ProfileController::class,
+    'update',
+], [
+    AuthMiddleware::class,
+]);
+
+$router->delete('/profile', [
+    ProfileController::class,
+    'deleteAccount',
+], [
+    AuthMiddleware::class,
+]);
+
+$router->get('/admin/users', [
+    App\Controllers\Admin\UserController::class,
+    'index',
+], [
+    AuthMiddleware::class,
+    AdminMiddleware::class,
+]);
+
+$router->patch('/admin/users/ban', [
+    App\Controllers\Admin\UserController::class,
+    'ban',
+], [
+    AuthMiddleware::class,
+    AdminMiddleware::class,
+]);
+
+$router->patch('/admin/users/unban', [
+    App\Controllers\Admin\UserController::class,
+    'unban',
+], [
+    AuthMiddleware::class,
+    AdminMiddleware::class,
+]);
+
+$router->get('/reviews', [
+    ReviewController::class,
+    'index',
+]);
+
+$router->post('/reviews', [
+    ReviewController::class,
+    'store',
+]);
+
+$router->post('/reviews/delete', [
+    ReviewController::class,
+    'destroy',
+]);
+
+$router->get('/orders', [
+    OrderController::class,
+    'index',
+]);
+
+$router->get('/orders/show', [
+    OrderController::class,
+    'show',
+]);
+
+$router->post('/orders', [
+    OrderController::class,
+    'store',
+]);
+
+$router->post('/orders/update', [
+    OrderController::class,
+    'update',
+]);
+
+$router->post('/orders/delete', [
+    OrderController::class,
+    'destroy',
+]);
 
 
 // ? How to create a route here?

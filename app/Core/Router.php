@@ -2,7 +2,13 @@
 
 class Router
 {
+    private array $config;
     private array $routes = [];
+
+    public function __construct(array $config)
+    {
+        $this->config = $config;
+    }
 
     public function get(
         string $path,
@@ -26,6 +32,39 @@ class Router
         ];
     }
 
+    public function put(
+        string $path,
+        array $handler,
+        array $middleware = []
+    ): void {
+        $this->routes['PUT'][$path] = [
+            'handler' => $handler,
+            'middleware' => $middleware,
+        ];
+    }
+
+    public function patch(
+        string $path,
+        array $handler,
+        array $middleware = []
+    ): void {
+        $this->routes['PATCH'][$path] = [
+            'handler' => $handler,
+            'middleware' => $middleware,
+        ];
+    }
+
+    public function delete(
+        string $path,
+        array $handler,
+        array $middleware = []
+    ): void {
+        $this->routes['DELETE'][$path] = [
+            'handler' => $handler,
+            'middleware' => $middleware,
+        ];
+    }
+
     public function dispatch(string $method, string $path): void
     {
         $route = $this->routes[$method][$path] ?? null;
@@ -37,13 +76,13 @@ class Router
         }
 
         foreach ($route['middleware'] as $middlewareClass) {
-            $middleware = new $middlewareClass();
+            $middleware = new $middlewareClass($this->config);
             $middleware->handle();
         }
 
         [$controllerClass, $action] = $route['handler'];
 
-        $controller = new $controllerClass();
+        $controller = new $controllerClass($this->config);
         $controller->$action();
     }
 }
