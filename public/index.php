@@ -2,15 +2,20 @@
 
 session_start();
 
-$config = require __DIR__ . '/../config/config.php';
+$config = require_once __DIR__ . '/../config/config.php';
 
+require_once __DIR__ . '/../app/Core/Database.php';
 require_once __DIR__ . '/../app/Core/Controller.php';
+require_once __DIR__ . '/../app/Core/Response.php';
 require_once __DIR__ . '/../app/Core/Router.php';
 
 require_once __DIR__ . '/../app/Controllers/AuthController.php';
+
+require_once __DIR__ . '/../app/Models/User.php';
+
 require_once __DIR__ . '/../app/Middleware/AuthMiddleware.php';
 
-$router = new Router();
+$router = new Router($config);
 
 require __DIR__ . '/../routes/web.php';
 
