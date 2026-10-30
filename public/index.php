@@ -13,10 +13,12 @@ require_once __DIR__ . '/../app/Controllers/Admin/UserController.php';
 
 require_once __DIR__ . '/../app/Controllers/AuthController.php';
 require_once __DIR__ . '/../app/Controllers/ProfileController.php';
+require_once __DIR__ . '/../app/Controllers/FavoriteController.php';
 require_once __DIR__ . '/../app/Controllers/OrderController.php';
 require_once __DIR__ . '/../app/Controllers/ReviewController.php';
 
 require_once __DIR__ . '/../app/Models/User.php';
+require_once __DIR__ . '/../app/Models/Favorite.php';
 require_once __DIR__ . '/../app/Models/Review.php';
 require_once __DIR__ . '/../app/Models/Order.php';
 
