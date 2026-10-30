@@ -47,21 +47,25 @@ class ProductController extends Controller
         ]);
     }
 
-    public function store(): void
-    {
-        try {
-            $data = $this->validateProduct($_POST);
-            $this->product->create($data);
+   public function store(): void
+{
+    try {
+        $data = $this->validateProduct($this->requestData());
 
-            $this->redirect('/products');
-        } catch (InvalidArgumentException $e) {
-            http_response_code(422);
-            $this->view('products/create', [
-                'errors' => [$e->getMessage()],
-                'data' => $_POST,
-            ]);
-        }
+        $productId = $this->product->create($data);
+
+        $product = $this->product->getById($productId);
+
+        Response::success(
+            $product,
+            201,
+            'Product created successfully.'
+        );
+
+    } catch (InvalidArgumentException $e) {
+        Response::error($e->getMessage(), 422);
     }
+}
 
     public function update(): void
     {
