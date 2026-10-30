@@ -91,6 +91,10 @@ class AuthController extends Controller
 
             throw $exception;
         }
+    
+        session_regenerate_id(true);
+
+        $_SESSION['user_id'] = (int) $userId;
 
         Response::success(
             [

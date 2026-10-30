@@ -1,5 +1,6 @@
 <?php
 
+
 class GoogleAuthService
 {
     public function __construct(array $config)

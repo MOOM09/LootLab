@@ -100,6 +100,30 @@ $router->delete('/profile', [
     AuthMiddleware::class,
 ]);
 
+// ? Favorites support guests and logged-in users.
+// TODO: Controller actions must resolve ownership from the session and validate CSRF on writes.
+$router->get('/favorites', [
+    FavoriteController::class,
+    'index',
+]);
+
+$router->post('/favorites', [
+    FavoriteController::class,
+    'store',
+]);
+
+$router->delete('/favorites', [
+    FavoriteController::class,
+    'destroy',
+]);
+
+$router->post('/favorites/move-to-cart', [
+    FavoriteController::class,
+    'moveToCart',
+], [
+    AuthMiddleware::class,
+]);
+
 $router->get('/admin/users', [
     App\Controllers\Admin\UserController::class,
     'index',
