@@ -9,7 +9,10 @@ require_once __DIR__ . '/../app/Core/Controller.php';
 require_once __DIR__ . '/../app/Core/Response.php';
 require_once __DIR__ . '/../app/Core/Router.php';
 
+require_once __DIR__ . '/../app/Controllers/Admin/UserController.php';
+
 require_once __DIR__ . '/../app/Controllers/AuthController.php';
+require_once __DIR__ . '/../app/Controllers/ProfileController.php';
 require_once __DIR__ . '/../app/Controllers/OrderController.php';
 require_once __DIR__ . '/../app/Controllers/ReviewController.php';
 

@@ -36,6 +36,10 @@ class AuthController extends Controller
 
     public function register(): void
     {
+        if (isset($_SESSION['user_id'])) {
+            Response::error('Log out before using another account.', 409);
+        }
+
         $input = $this->requestData();
 
         $this->validateCsrf($input);
@@ -165,6 +169,10 @@ class AuthController extends Controller
 
     public function login(): void
     {
+        if (isset($_SESSION['user_id'])) {
+            Response::error('Log out before using another account.', 409);
+        }
+
         $input = $this->requestData();
 
         $this->validateCsrf($input);
@@ -187,9 +195,12 @@ class AuthController extends Controller
         $user = $this->user->findByEmail($email);
 
         //? Password check
-        if (!$user || !is_string($password) || !password_verify($password, $user["password"])) {
+        if (
+            !$user ||
+            !is_string($user['password']) ||
+            !password_verify($password, $user['password'])
+        ) {
             Response::error('Invalid email or password.', 401);
-            return;
         }
 
         //? Account status check

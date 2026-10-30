@@ -9,10 +9,21 @@ class User
         $this->connection = $connection;
     }
 
+    public function findAll(): array
+    {
+        $stmt = $this->connection->query(
+            'SELECT id, name, email, role, is_active, created_at
+         FROM users
+         ORDER BY created_at DESC, id DESC'
+        );
+
+        return $stmt->fetchAll();
+    }
+
     public function findById(int $id): ?array
     {
         $stmt = $this->connection->prepare(
-            'SELECT id, name, email, role, is_active
+            'SELECT id, name, email, phone, role, is_active
             FROM users WHERE id = :id'
         );
 
@@ -54,6 +65,24 @@ class User
         ]);
 
         return (int) $this->connection->lastInsertId();
+    }
+
+    public function updateProfile(
+        int $id,
+        string $name,
+        string $phone
+    ): bool {
+        $stmt = $this->connection->prepare(
+            'UPDATE users
+         SET name = :name, phone = :phone
+         WHERE id = :id'
+        );
+
+        return $stmt->execute([
+            ':name' => $name,
+            ':phone' => $phone,
+            ':id' => $id,
+        ]);
     }
 
     public function delete(int $id): bool

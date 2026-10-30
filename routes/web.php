@@ -28,6 +28,52 @@ $router->post('/logout', [
 ], [
     AuthMiddleware::class,
 ]);
+
+$router->get('/profile', [
+    ProfileController::class,
+    'index',
+], [
+    AuthMiddleware::class,
+]);
+
+$router->put('/profile', [
+    ProfileController::class,
+    'update',
+], [
+    AuthMiddleware::class,
+]);
+
+$router->delete('/profile', [
+    ProfileController::class,
+    'deleteAccount',
+], [
+    AuthMiddleware::class,
+]);
+
+$router->get('/admin/users', [
+    App\Controllers\Admin\UserController::class,
+    'index',
+], [
+    AuthMiddleware::class,
+    AdminMiddleware::class,
+]);
+
+$router->patch('/admin/users/ban', [
+    App\Controllers\Admin\UserController::class,
+    'ban',
+], [
+    AuthMiddleware::class,
+    AdminMiddleware::class,
+]);
+
+$router->patch('/admin/users/unban', [
+    App\Controllers\Admin\UserController::class,
+    'unban',
+], [
+    AuthMiddleware::class,
+    AdminMiddleware::class,
+]);
+
 $router->get('/reviews', [
     ReviewController::class,
     'index',
@@ -67,6 +113,8 @@ $router->post('/orders/delete', [
     OrderController::class,
     'destroy',
 ]);
+
+
 // ? How to create a route here?
 // $router is already created in public/index.php before this file is loaded.
 // Format: $router->get('/path', [ControllerName::class, 'methodName']);
