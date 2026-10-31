@@ -4,9 +4,8 @@ class ReviewController extends Controller
     private Review $review;
     private string $appUrl;
 
-    public function __construct()
+    public function __construct(array $config)
     {
-        $config = require __DIR__ . '/../../config/config.php';
 
         $database = new Database($config['database']);
 
@@ -41,18 +40,20 @@ class ReviewController extends Controller
     // ? Process the submitted review form
     public function store(): void
     {
-        $userId = $this->requireUser();
-        $this->checkCsrf();
+        $input = $this->requestData();
+        $this->validateCsrf($input);
 
-        $productId = $this->positiveId($_POST['product_id'] ?? null);
+        $userId = $this->requireUser();
+
+        $productId = $this->positiveId($input['product_id'] ?? null);
 
         $rating = filter_var(
-            $_POST['rating'] ?? null,
+            $input['rating'] ?? null,
             FILTER_VALIDATE_INT,
             ['options' => ['min_range' => 1, 'max_range' => 5]]
         );
 
-        $comment = $_POST['comment'] ?? '';
+        $comment = $input['comment'] ?? '';
 
         if (!is_string($comment)) {
             http_response_code(422);
@@ -82,11 +83,13 @@ class ReviewController extends Controller
     // ? Delete the logged-in user's review
     public function destroy(): void
     {
-        $userId = $this->requireUser();
-        $this->checkCsrf();
+        $input = $this->requestData();
+        $this->validateCsrf($input);
 
-        $reviewId = $this->positiveId($_POST['review_id'] ?? null);
-        $productId = $this->positiveId($_POST['product_id'] ?? null);
+        $userId = $this->requireUser();
+
+        $reviewId = $this->positiveId($input['review_id'] ?? null);
+        $productId = $this->positiveId($input['product_id'] ?? null);
 
         $deleted = $this->review->deleteOwned(
             $reviewId,
@@ -129,21 +132,5 @@ class ReviewController extends Controller
         }
 
         return $this->positiveId($_SESSION['user_id']);
-    }
-
-    // ? Check that the submitted form contains the session's token
-    private function checkCsrf(): void
-    {
-        $token = $_POST['csrf_token'] ?? null;
-        $savedToken = $_SESSION['csrf_token'] ?? null;
-
-        if (
-            !is_string($token) ||
-            !is_string($savedToken) ||
-            !hash_equals($savedToken, $token)
-        ) {
-            http_response_code(403);
-            exit('Invalid form token.');
-        }
     }
 }

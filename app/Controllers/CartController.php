@@ -1,20 +1,14 @@
 
 <?php
 
-require_once __DIR__ . '/../Core/Controller.php';
-require_once __DIR__ . '/../Core/Database.php';
-require_once __DIR__ . '/../Interfaces/cartInterface.php';
-require_once __DIR__ . '/../Models/CartItem.php';
-require_once __DIR__ . '/../Models/Cart.php';
 
 class CartController extends Controller
 {
     private CartInterface $cart;
 
-    public function __construct()
+    public function __construct(array $config)
     {
         // Connect to the database
-        $config = require __DIR__ . '/../../config/config.php';
         $database = new Database($config['database']);
 
         // Create the Cart object
@@ -29,14 +23,6 @@ class CartController extends Controller
         }
 
         return (int) $_SESSION['user_id'];
-    }
-
-    // Read the submitted data
-    private function getInput(): array
-    {
-        $input = json_decode(file_get_contents('php://input'), true);
-
-        return is_array($input) ? $input : $_POST;
     }
 
     // Get the user's cart
@@ -54,8 +40,10 @@ class CartController extends Controller
     // Add a product to the cart
     public function add(): void
     {
+        $input = $this->requestData();
+        $this->validateCsrf($input);
+
         $userId = $this->getUserId();
-        $input = $this->getInput();
 
         $productId = (int) ($input['product_id'] ?? 0);
         $quantity = (int) ($input['quantity'] ?? 1);
@@ -84,8 +72,10 @@ class CartController extends Controller
     // Update a cart item's quantity
     public function update(): void
     {
+        $input = $this->requestData();
+        $this->validateCsrf($input);
+
         $userId = $this->getUserId();
-        $input = $this->getInput();
 
         $itemId = (int) ($input['item_id'] ?? 0);
         $quantity = (int) ($input['quantity'] ?? 0);
@@ -108,8 +98,10 @@ class CartController extends Controller
     // Remove one item from the cart
     public function remove(): void
     {
+        $input = $this->requestData();
+        $this->validateCsrf($input);
+
         $userId = $this->getUserId();
-        $input = $this->getInput();
 
         $itemId = (int) ($input['item_id'] ?? 0);
 
@@ -126,6 +118,9 @@ class CartController extends Controller
     // Remove all items from the cart
     public function clear(): void
     {
+        $input = $this->requestData();
+        $this->validateCsrf($input);
+
         $userId = $this->getUserId();
         $cartId = $this->cart->getOrCreateCartId($userId);
 

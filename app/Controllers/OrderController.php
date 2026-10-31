@@ -1,16 +1,14 @@
 
 <?php
 
-require_once __DIR__ . '/../Models/Order.php';
 
 class OrderController extends Controller
 {
     private Order $order;
     private string $appUrl;
 
-    public function __construct()
+    public function __construct(array $config)
     {
-        $config = require __DIR__ . '/../../config/config.php';
 
         $database = new Database($config['database']);
         $this->order = new Order();
@@ -48,10 +46,12 @@ class OrderController extends Controller
     // Create an order
     public function store(): void
     {
-        $userId = $this->requireUser();
-        $this->checkCsrf();
+        $input = $this->requestData();
+        $this->validateCsrf($input);
 
-        $promoCodeId = $_POST['promo_code_id'] ?? null;
+        $userId = $this->requireUser();
+
+        $promoCodeId = $input['promo_code_id'] ?? null;
 
         if ($promoCodeId === '') {
             $promoCodeId = null;
@@ -60,18 +60,20 @@ class OrderController extends Controller
         }
 
         $promoDiscount = filter_var(
-            $_POST['promo_discount'] ?? null,
+            $input['promo_discount'] ?? null,
             FILTER_VALIDATE_FLOAT
         );
 
         $totalAmount = filter_var(
-            $_POST['total_amount'] ?? null,
+            $input['total_amount'] ?? null,
             FILTER_VALIDATE_FLOAT
         );
 
-        $status = $_POST['status'] ?? '';
-        $shippingAddress = trim($_POST['shipping_address'] ?? '');
-        $phone = trim($_POST['phone'] ?? '');
+        $status = $input['status'] ?? '';
+        $shippingAddress = $input['shipping_address'] ?? '';
+        $shippingAddress = is_string($shippingAddress) ? trim($shippingAddress) : $shippingAddress;
+        $phone = $input['phone'] ?? '';
+        $phone = is_string($phone) ? trim($phone) : $phone;
 
         if (
             $promoDiscount === false ||
@@ -105,24 +107,28 @@ class OrderController extends Controller
     // Update an order
     public function update(): void
     {
-        $this->requireUser();
-        $this->checkCsrf();
+        $input = $this->requestData();
+        $this->validateCsrf($input);
 
-        $id = $this->positiveId($_POST['id'] ?? null);
+        $this->requireUser();
+
+        $id = $this->positiveId($input['id'] ?? null);
 
         $promoDiscount = filter_var(
-            $_POST['promo_discount'] ?? null,
+            $input['promo_discount'] ?? null,
             FILTER_VALIDATE_FLOAT
         );
 
         $totalAmount = filter_var(
-            $_POST['total_amount'] ?? null,
+            $input['total_amount'] ?? null,
             FILTER_VALIDATE_FLOAT
         );
 
-        $status = $_POST['status'] ?? '';
-        $shippingAddress = trim($_POST['shipping_address'] ?? '');
-        $phone = trim($_POST['phone'] ?? '');
+        $status = $input['status'] ?? '';
+        $shippingAddress = $input['shipping_address'] ?? '';
+        $shippingAddress = is_string($shippingAddress) ? trim($shippingAddress) : $shippingAddress;
+        $phone = $input['phone'] ?? '';
+        $phone = is_string($phone) ? trim($phone) : $phone;
 
         if (
             $promoDiscount === false ||
@@ -160,10 +166,12 @@ class OrderController extends Controller
     // Delete an order
     public function destroy(): void
     {
-        $this->requireUser();
-        $this->checkCsrf();
+        $input = $this->requestData();
+        $this->validateCsrf($input);
 
-        $id = $this->positiveId($_POST['id'] ?? null);
+        $this->requireUser();
+
+        $id = $this->positiveId($input['id'] ?? null);
 
         if (!$this->order->getById($id)) {
             http_response_code(404);
@@ -198,20 +206,5 @@ class OrderController extends Controller
         }
 
         return $this->positiveId($_SESSION['user_id']);
-    }
-
-    private function checkCsrf(): void
-    {
-        $token = $_POST['csrf_token'] ?? null;
-        $savedToken = $_SESSION['csrf_token'] ?? null;
-
-        if (
-            !is_string($token) ||
-            !is_string($savedToken) ||
-            !hash_equals($savedToken, $token)
-        ) {
-            http_response_code(403);
-            exit('Invalid form token.');
-        }
     }
 }
