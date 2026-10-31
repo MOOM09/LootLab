@@ -1,191 +1,157 @@
-
 <?php
-
-require_once __DIR__ . '/../Models/Order.php';
 
 class OrderController extends Controller
 {
     private Order $order;
-    private string $appUrl;
 
-    public function __construct()
+    public function __construct(array $config)
     {
-        $config = require __DIR__ . '/../../config/config.php';
-
         $database = new Database($config['database']);
-        $this->order = new Order();
-        $this->appUrl = $config['app_url'];
+        $conn = $database->getConnection();
+        $this->order = new Order($conn);
     }
 
-    // Display all orders
     public function index(): void
     {
-        $orders = $this->order->getAll();
-
-        $this->view('orders/index', [
-            'orders' => $orders,
-            'appUrl' => $this->appUrl,
-        ]);
+        Response::success($this->order->getAll());
     }
 
-    // Display one order
     public function show(): void
     {
         $id = $this->positiveId($_GET['id'] ?? null);
         $order = $this->order->getById($id);
 
         if (!$order) {
-            http_response_code(404);
-            exit('Order not found.');
+            Response::error('Order not found.', 404);
         }
 
-        $this->view('orders/show', [
-            'order' => $order,
-            'appUrl' => $this->appUrl,
-        ]);
+        Response::success($order);
     }
 
-    // Create an order
     public function store(): void
     {
+        $input = $this->requestData();
+        $this->validateCsrf($input);
+
         $userId = $this->requireUser();
-        $this->checkCsrf();
-
-        $promoCodeId = $_POST['promo_code_id'] ?? null;
-
-        if ($promoCodeId === '') {
-            $promoCodeId = null;
-        } elseif ($promoCodeId !== null) {
-            $promoCodeId = $this->positiveId($promoCodeId);
-        }
-
-        $promoDiscount = filter_var(
-            $_POST['promo_discount'] ?? null,
-            FILTER_VALIDATE_FLOAT
-        );
-
-        $totalAmount = filter_var(
-            $_POST['total_amount'] ?? null,
-            FILTER_VALIDATE_FLOAT
-        );
-
-        $status = $_POST['status'] ?? '';
-        $shippingAddress = trim($_POST['shipping_address'] ?? '');
-        $phone = trim($_POST['phone'] ?? '');
-
-        if (
-            $promoDiscount === false ||
-            $totalAmount === false ||
-            $promoDiscount < 0 ||
-            $totalAmount < 0 ||
-            !is_string($status) ||
-            !is_string($shippingAddress) ||
-            !is_string($phone) ||
-            $status === '' ||
-            $shippingAddress === '' ||
-            $phone === ''
-        ) {
-            http_response_code(422);
-            exit('Invalid order data.');
-        }
+        $data = $this->validateOrderData($input, true);
 
         $this->order->create(
             $userId,
-            $promoCodeId,
-            $promoDiscount,
-            $totalAmount,
-            $status,
-            $shippingAddress,
-            $phone
+            $data['promo_code_id'],
+            $data['promo_discount'],
+            $data['total_amount'],
+            $data['status'],
+            $data['shipping_address'],
+            $data['phone']
         );
 
-        $this->redirect($this->appUrl . '/orders');
+        Response::success(null, 201, 'Order created successfully.');
     }
 
-    // Update an order
     public function update(): void
     {
+        $input = $this->requestData();
+        $this->validateCsrf($input);
+
         $this->requireUser();
-        $this->checkCsrf();
-
-        $id = $this->positiveId($_POST['id'] ?? null);
-
-        $promoDiscount = filter_var(
-            $_POST['promo_discount'] ?? null,
-            FILTER_VALIDATE_FLOAT
-        );
-
-        $totalAmount = filter_var(
-            $_POST['total_amount'] ?? null,
-            FILTER_VALIDATE_FLOAT
-        );
-
-        $status = $_POST['status'] ?? '';
-        $shippingAddress = trim($_POST['shipping_address'] ?? '');
-        $phone = trim($_POST['phone'] ?? '');
-
-        if (
-            $promoDiscount === false ||
-            $totalAmount === false ||
-            $promoDiscount < 0 ||
-            $totalAmount < 0 ||
-            !is_string($status) ||
-            !is_string($shippingAddress) ||
-            !is_string($phone) ||
-            $status === '' ||
-            $shippingAddress === '' ||
-            $phone === ''
-        ) {
-            http_response_code(422);
-            exit('Invalid order data.');
-        }
+        $id = $this->positiveId($input['id'] ?? null);
+        $data = $this->validateOrderData($input);
 
         if (!$this->order->getById($id)) {
-            http_response_code(404);
-            exit('Order not found.');
+            Response::error('Order not found.', 404);
         }
 
         $this->order->update(
             $id,
-            $promoDiscount,
-            $totalAmount,
-            $status,
-            $shippingAddress,
-            $phone
+            $data['promo_discount'],
+            $data['total_amount'],
+            $data['status'],
+            $data['shipping_address'],
+            $data['phone']
         );
 
-        $this->redirect($this->appUrl . '/orders');
+        Response::success(null, 200, 'Order updated successfully.');
     }
 
-    // Delete an order
     public function destroy(): void
     {
-        $this->requireUser();
-        $this->checkCsrf();
+        $input = $this->requestData();
+        $this->validateCsrf($input);
 
-        $id = $this->positiveId($_POST['id'] ?? null);
+        $this->requireUser();
+        $id = $this->positiveId($input['id'] ?? null);
 
         if (!$this->order->getById($id)) {
-            http_response_code(404);
-            exit('Order not found.');
+            Response::error('Order not found.', 404);
         }
 
         $this->order->delete($id);
 
-        $this->redirect($this->appUrl . '/orders');
+        Response::success(null, 200, 'Order deleted successfully.');
+    }
+
+    private function validateOrderData(array $input, bool $includePromoCodeId = false): array
+    {
+        $promoDiscountInput = $input['promo_discount'] ?? null;
+        $totalAmountInput = $input['total_amount'] ?? null;
+        $promoDiscount = is_scalar($promoDiscountInput)
+            ? filter_var($promoDiscountInput, FILTER_VALIDATE_FLOAT)
+            : false;
+        $totalAmount = is_scalar($totalAmountInput)
+            ? filter_var($totalAmountInput, FILTER_VALIDATE_FLOAT)
+            : false;
+
+        $status = $input['status'] ?? '';
+        $shippingAddress = $input['shipping_address'] ?? '';
+        $phone = $input['phone'] ?? '';
+
+        if (
+            $promoDiscount === false ||
+            $totalAmount === false ||
+            $promoDiscount < 0 ||
+            $totalAmount < 0 ||
+            !is_string($status) ||
+            !is_string($shippingAddress) ||
+            !is_string($phone) ||
+            trim($status) === '' ||
+            trim($shippingAddress) === '' ||
+            trim($phone) === ''
+        ) {
+            Response::error('Invalid order data.', 422);
+        }
+
+        $promoCodeId = null;
+        if ($includePromoCodeId) {
+            $promoCodeIdInput = $input['promo_code_id'] ?? null;
+
+            if ($promoCodeIdInput !== null && $promoCodeIdInput !== '') {
+                $promoCodeId = $this->positiveId($promoCodeIdInput);
+            }
+        }
+
+        return [
+            'promo_code_id' => $promoCodeId,
+            'promo_discount' => (float) $promoDiscount,
+            'total_amount' => (float) $totalAmount,
+            'status' => trim($status),
+            'shipping_address' => trim($shippingAddress),
+            'phone' => trim($phone),
+        ];
     }
 
     private function positiveId(mixed $value): int
     {
-        $id = filter_var(
-            $value,
-            FILTER_VALIDATE_INT,
-            ['options' => ['min_range' => 1]]
-        );
+        $id = (is_string($value) || is_int($value))
+            ? filter_var(
+                $value,
+                FILTER_VALIDATE_INT,
+                ['options' => ['min_range' => 1]]
+            )
+            : false;
 
         if ($id === false) {
-            http_response_code(422);
-            exit('Invalid ID.');
+            Response::error('Invalid ID.', 422);
         }
 
         return $id;
@@ -194,24 +160,9 @@ class OrderController extends Controller
     private function requireUser(): int
     {
         if (!isset($_SESSION['user_id'])) {
-            $this->redirect($this->appUrl . '/login');
+            Response::error('Authentication is required.', 401);
         }
 
         return $this->positiveId($_SESSION['user_id']);
-    }
-
-    private function checkCsrf(): void
-    {
-        $token = $_POST['csrf_token'] ?? null;
-        $savedToken = $_SESSION['csrf_token'] ?? null;
-
-        if (
-            !is_string($token) ||
-            !is_string($savedToken) ||
-            !hash_equals($savedToken, $token)
-        ) {
-            http_response_code(403);
-            exit('Invalid form token.');
-        }
     }
 }

@@ -1,17 +1,63 @@
 <?php
 
 require_once dirname(__DIR__) . '/Services/AiService.php';
-require_once dirname(__DIR__) . '/Services/AiDatabase.php';
+require_once dirname(__DIR__) . '/Core/Database.php';
 require_once dirname(__DIR__) . '/Models/AiConversation.php';
+require_once dirname(__DIR__) . '/Core/Controller.php';
+require_once dirname(__DIR__) . '/Helpers/view.php';
 
 class AiController extends Controller
 {
+    private array $databaseConfig;
+
+public function __construct(array $config)
+{
+    $this->databaseConfig = $config['database'];
+}
     public function index(): void
     {
-        $userId = 1;
+        $userId = (int) $_SESSION['user_id'];
+        $isPost = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST';
 
-$_SESSION['ai_csrf'] ??= bin2hex(random_bytes(32));
-$_SESSION['ai_raw_replies'] ??= [];
+        $_SESSION['ai_csrf'] = $this->csrfToken();
+
+        $request = [];
+
+        if ($isPost) {
+            $request = $this->requestData();
+            $this->validateCsrf($request);
+        }
+
+        $isStream = $isPost
+            && ($request['action'] ?? '') === 'send'
+            && ($request['stream'] ?? '') === '1';
+
+        $emit = static function (array $event): void {
+            echo json_encode(
+                $event,
+                JSON_UNESCAPED_UNICODE
+                | JSON_INVALID_UTF8_SUBSTITUTE
+                | JSON_THROW_ON_ERROR
+            ) . "\n";
+
+            flush();
+        };
+
+        if ($isStream) {
+            ini_set('zlib.output_compression', '0');
+
+            while (ob_get_level() > 0) {
+                if (!ob_end_clean()) {
+                    break;
+                }
+            }
+
+            header('Content-Type: application/x-ndjson; charset=utf-8');
+            header('Cache-Control: no-cache, no-transform');
+            header('X-Accel-Buffering: no');
+        }
+
+        $_SESSION['ai_raw_replies'] ??= [];
 
 $error = '';
 $message = '';
@@ -23,7 +69,7 @@ $model = null;
 
 
 try {
-    $database = new AiDatabase();
+    $database = new Database($this->databaseConfig);
     $model = new AiConversation($database->getConnection());
 } catch (Throwable $exception) {
     $error = 'تعذّر الاتصال بقاعدة البيانات.';
@@ -35,9 +81,8 @@ if ($model !== null) {
 
     // نأخذ رقم المحادثة من الفورم أو الرابط.
     $requestedId = $isPost
-        ? ($_POST['conversation_id'] ?? '')
+        ? ($request['conversation_id'] ?? '')
         : ($_GET['conversation_id'] ?? '');
-
     try {
         if ($requestedId !== '') {
             $validatedId = is_string($requestedId)
@@ -62,18 +107,7 @@ if ($model !== null) {
         }
 
         if ($isPost) {
-            $token = $_POST['csrf_token'] ?? '';
-
-            if (
-                !is_string($token)
-                || !hash_equals($_SESSION['ai_csrf'], $token)
-            ) {
-                throw new RuntimeException(
-                    'الطلب غير صالح. حدّث الصفحة.'
-                );
-            }
-
-            $action = $_POST['action'] ?? 'send';
+            $action = $request['action'] ?? 'send';
 
             if ($action === 'new_chat') {
                 // نفتح صفحة فارغة، بدون حذف المحادثة القديمة.
@@ -85,7 +119,7 @@ if ($action === 'rename') {
         throw new RuntimeException('اختار محادثة أولًا.');
     }
 
-    $title = $_POST['title'] ?? '';
+    $title = $request['title'] ?? '';
 
     if (!is_string($title)) {
         throw new RuntimeException('العنوان غير صالح.');
@@ -116,7 +150,7 @@ if ($action === 'delete') {
                 throw new RuntimeException('العملية غير صالحة.');
             }
 
-            $input = $_POST['message'] ?? '';
+            $input = $request['message'] ?? '';
 
             if (!is_string($input)) {
                 throw new RuntimeException('الرسالة غير صالحة.');
@@ -155,13 +189,32 @@ if ($action === 'delete') {
                 }
             }
 
-           $catalog = new AiProductCatalog();
+          $catalog = new AiProductCatalog($database->getConnection());
 $products = $catalog->getProducts();
 
 $ai = new AiService($_ENV['GEMINI_API_KEY']);
-$response = $ai->sendMessage($message, $history, $products);
+$onText = $isStream
+    ? static function (string $text) use ($emit): void {
+        $emit([
+            'type' => 'delta',
+            'text' => $text,
+        ]);
+    }
+    : null;
+if (!session_write_close()) {
+    throw new RuntimeException('تعذّر حفظ الجلسة قبل إرسال الطلب.');
+}
 
-            if (isset($response['error'])) {
+// نضبطها قبل بدء البث حتى نستطيع إعادة فتح الجلسة لاحقًا.
+ini_set('session.use_cookies', '0');
+session_cache_limiter('');
+
+$response = $ai->sendMessage(
+    $message,
+    $history,
+    $products,
+    $onText
+);          if (isset($response['error'])) {
                 throw new RuntimeException(
                     'خدمة الذكاء الاصطناعي غير متاحة حاليًا.'
                 );
@@ -183,34 +236,51 @@ $response = $ai->sendMessage($message, $history, $products);
                     'لم يصل جواب نصّي. جرّب سؤالًا آخر.'
                 );
             }
+// نعيد قراءة الجلسة الحالية بدون إرسال cookies أو headers أثناء البث.
+if (!session_start()) {
+    throw new RuntimeException('تعذّر إعادة فتح الجلسة.');
+}
 
-            // حفظ رسالة المستخدم والرد معًا.
-            $conversationId = $model->saveExchange(
-                $userId,
-                $conversationId,
-                $message,
-                $reply
-            );
+try {
+    // لا نستخدم نسخة الجلسة القديمة إذا خرج المستخدم أثناء الانتظار.
+    if ((int) ($_SESSION['user_id'] ?? 0) !== $userId) {
+        throw new RuntimeException(
+            'تغيّرت جلسة تسجيل الدخول. لم تُحفظ هذه الرسالة؛ حدّث الصفحة.'
+        );
+    }
+   $assistantMessageId = null;
 
-            $savedMessages = $model->getMessages(
-                $conversationId,
-                $userId
-            );
+$conversationId = $model->saveExchange(
+    $userId,
+    $conversationId,
+    $message,
+    $reply,
+    $assistantMessageId
+);
 
-            $lastMessage = end($savedMessages);
+if ($assistantMessageId !== null) {
+    $_SESSION['ai_raw_replies'] ??= [];
 
-            if ($lastMessage !== false) {
-                $_SESSION['ai_raw_replies']
-                    [$lastMessage['id']] = $modelContent;
+    $_SESSION['ai_raw_replies'][$assistantMessageId] = $modelContent;
 
-                // تحديد حجم الذاكرة المؤقتة.
-                $_SESSION['ai_raw_replies'] = array_slice(
-                    $_SESSION['ai_raw_replies'],
-                    -100,
-                    null,
-                    true
-                );
-            }
+    $_SESSION['ai_raw_replies'] = array_slice(
+        $_SESSION['ai_raw_replies'],
+        -100,
+        null,
+        true
+    );
+}
+} finally {
+    session_write_close();
+} if ($isStream) {
+    $emit([
+        'type' => 'done',
+        'conversation_id' => $conversationId,
+    ]);
+
+    exit;
+}
+
 
             // Redirect حتى Refresh ما يعيد إرسال الرسالة.
             header(
@@ -219,14 +289,32 @@ $response = $ai->sendMessage($message, $history, $products);
             );
             exit;
         }
-    } catch (RuntimeException $exception) {
-        // لا نعرض تفاصيل أخطاء PDO أو الاتصال للمتصفح.
-        $error = $exception instanceof PDOException
-            ? 'تعذّر حفظ أو تحميل المحادثة.'
-            : $exception->getMessage();
-    } catch (Throwable $exception) {
-        $error = 'حدث خطأ أثناء معالجة الرسالة. جرّب مرة ثانية.';
     }
+   catch (RuntimeException $exception) {
+    $error = $exception instanceof PDOException
+        ? 'تعذّر حفظ المحادثة. الرد الظاهر لم يُحفظ.'
+        : $exception->getMessage();
+
+    if ($isStream) {
+        $emit([
+            'type' => 'error',
+            'message' => $error,
+        ]);
+
+        exit;
+    }
+} catch (Throwable $exception) {
+    $error = 'حدث خطأ أثناء معالجة الرسالة.';
+
+    if ($isStream) {
+        $emit([
+            'type' => 'error',
+            'message' => $error,
+        ]);
+
+        exit;
+    }
+}
 
     try {
         $conversations = $model->getAll($userId);
@@ -234,17 +322,15 @@ $response = $ai->sendMessage($message, $history, $products);
         $error = 'تعذّر تحميل قائمة المحادثات.';
     }
 }
+if ($isStream) {
+    $emit([
+        'type' => 'error',
+        'message' => $error ?: 'تعذّرت معالجة الرسالة.',
+    ]);
+
+    exit;
+}
 
         require dirname(__DIR__) . '/Views/ai/chat.php';
     }
 }
-
-function escapeHtml(string $value): string
-{
-    return htmlspecialchars(
-        $value,
-        ENT_QUOTES | ENT_SUBSTITUTE,
-        'UTF-8'
-    );
-}
-require_once dirname(__DIR__) . '/Services/AiProductCatalog.php';

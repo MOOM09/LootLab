@@ -44,10 +44,27 @@
         <button type="submit">Login</button>
     </form>
 
+    <a href="<?= htmlspecialchars(
+                    $appUrl . '/auth/google',
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) ?>">
+        Continue with Google
+    </a>
+
     <div id="messages" role="alert" aria-live="polite"></div>
 
     <a href="<?= htmlspecialchars($appUrl . '/register', ENT_QUOTES, 'UTF-8') ?>">
         Create an account
+    </a>
+
+    <br>
+    <a href="<?= htmlspecialchars(
+                    $appUrl . '/forgot-password',
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) ?>">
+        Forgot password?
     </a>
 
     <script>
@@ -78,8 +95,7 @@
                 }
 
                 const errors = result.errors ?
-                    Object.values(result.errors).flat() :
-                    [result.message || 'Login failed.'];
+                    Object.values(result.errors).flat() : [result.message || 'Login failed.'];
 
                 for (const error of errors) {
                     const paragraph = document.createElement('p');

@@ -70,8 +70,7 @@ class Router
         $route = $this->routes[$method][$path] ?? null;
 
         if ($route === null) {
-            http_response_code(404);
-            echo 'Page not found';
+            Response::error('Page not found', 404);
             return;
         }
 

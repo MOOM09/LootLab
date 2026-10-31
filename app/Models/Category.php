@@ -17,7 +17,6 @@ class Category
             throw new RuntimeException('Database configuration is not available.');
         }
 
-        require_once __DIR__ . '/../Core/Database.php';
 
         $database = new Database($config['database']);
         $this->db = $database->getConnection();

@@ -7,24 +7,24 @@
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register — LootLab</title>
 </head>
+
 <body>
     <h1>Create an account</h1>
 
     <form
         id="register-form"
         method="post"
-        action="<?= htmlspecialchars($appUrl . '/register', ENT_QUOTES, 'UTF-8') ?>"
-    >
+        action="<?= htmlspecialchars($appUrl . '/register', ENT_QUOTES, 'UTF-8') ?>">
         <input
             type="hidden"
             name="csrf_token"
-            value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>"
-        >
+            value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
 
         <label for="name">Name</label>
         <input
@@ -33,8 +33,7 @@
             name="name"
             autocomplete="name"
             maxlength="100"
-            required
-        >
+            required>
 
         <label for="email">Email</label>
         <input
@@ -43,8 +42,7 @@
             name="email"
             autocomplete="email"
             maxlength="255"
-            required
-        >
+            required>
 
         <label for="password">Password</label>
         <input
@@ -53,8 +51,7 @@
             name="password"
             autocomplete="new-password"
             minlength="8"
-            required
-        >
+            required>
 
         <label for="password-confirmation">Confirm password</label>
         <input
@@ -62,14 +59,20 @@
             type="password"
             name="password_confirmation"
             autocomplete="new-password"
-            required
-        >
+            required>
 
         <button type="submit">Register</button>
     </form>
 
-    <div id="messages" role="alert" aria-live="polite"></div>
+    <a href="<?= htmlspecialchars(
+                    $appUrl . '/auth/google',
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) ?>">
+        Continue with Google
+    </a>
 
+    <div id="messages" role="alert" aria-live="polite"></div>
     <a href="<?= htmlspecialchars($appUrl . '/login', ENT_QUOTES, 'UTF-8') ?>">
         Already have an account? Login
     </a>
@@ -101,9 +104,9 @@
                     return;
                 }
 
-                const errors = result.errors
-                    ? Object.values(result.errors).flat()
-                    : [result.message || 'Registration failed.'];
+                const errors = result.errors ?
+                    Object.values(result.errors).flat() :
+                    [result.message || 'Registration failed.'];
 
                 for (const error of errors) {
                     const paragraph = document.createElement('p');
@@ -119,4 +122,5 @@
         });
     </script>
 </body>
+
 </html>

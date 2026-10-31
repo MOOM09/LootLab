@@ -1,0 +1,146 @@
+{
+  "url": "https://checkout.stripe.com/c/pay/cs_test_a1ojstnY6TQkr1s2UD",
+  "mainFrameInputs": [
+    {
+      "depth": 0,
+      "url": "https://checkout.stripe.com/c/pay/cs_test_a1ojstnY6TQkr1s2UDAff9F2vfbX",
+      "els": [
+        "iframe|link-login",
+        "iframe|stripe-origin-frame",
+        "iframe|__privateStripeFrame8244",
+        "input|email",
+        "button|Pay with card",
+        "button|Pay with Cash App",
+        "button|Pay with Bank",
+        "button|Pay with Klarna",
+        "input|enableStripePass",
+        "iframe|__privateStripeFrame8246",
+        "button|submit",
+        "input|link_pay_token",
+        "iframe|__privateStripeController8241",
+        "iframe|hcaptcha-invisible",
+        "iframe|__privateStripeMetricsController8240"
+      ]
+    },
+    {
+      "depth": 1,
+      "url": "https://js.stripe.com/v3/link-login-inner-806ef5db8318e54dbf7dd080bddf",
+      "els": []
+    },
+    {
+      "depth": 1,
+      "url": "https://js.stripe.com/v3/checkout-inner-origin-frame-e2ee7bd6d7b4b714a",
+      "els": []
+    },
+    {
+      "depth": 1,
+      "url": "https://js.stripe.com/v3/controller-7bdfa9a977c05cadba48e34d6f3cee9e.h",
+      "els": []
+    },
+    {
+      "depth": 1,
+      "url": "https://js.stripe.com/v3/elements-inner-express-checkout-39f849e188e8e",
+      "els": [
+        "iframe|",
+        "button|pay_with_link_arrow",
+        "iframe|"
+      ]
+    },
+    {
+      "depth": 2,
+      "url": "https://b.stripecdn.com/stripethirdparty-srv/assets/v37.1/ApplePay.htm",
+      "els": []
+    },
+    {
+      "depth": 2,
+      "url": "https://b.stripecdn.com/stripethirdparty-srv/assets/v37.1/AmazonPayBut",
+      "els": []
+    },
+    {
+      "depth": 1,
+      "url": "https://js.stripe.com/v3/hcaptcha-invisible-2f67f170e6504f89f6ab19fe1a",
+      "els": [
+        "iframe|"
+      ]
+    },
+    {
+      "depth": 2,
+      "url": "https://b.stripecdn.com/stripethirdparty-srv/assets/v37.1/HCaptchaInvi",
+      "els": [
+        "iframe|",
+        "iframe|",
+        "iframe|",
+        "iframe|"
+      ]
+    },
+    {
+      "depth": 3,
+      "url": "https://newassets.hcaptcha.com/captcha/v1/b1c4f881f907b3e342c934423e51",
+      "els": [
+        "button|About hCaptcha & Accessibility Options"
+      ]
+    },
+    {
+      "depth": 3,
+      "url": "https://newassets.hcaptcha.com/captcha/v1/b1c4f881f907b3e342c934423e51",
+      "els": []
+    },
+    {
+      "depth": 3,
+      "url": "https://newassets.hcaptcha.com/captcha/v1/b1c4f881f907b3e342c934423e51",
+      "els": [
+        "button|About hCaptcha & Accessibility Options"
+      ]
+    },
+    {
+      "depth": 3,
+      "url": "https://newassets.hcaptcha.com/captcha/v1/b1c4f881f907b3e342c934423e51",
+      "els": []
+    },
+    {
+      "depth": 1,
+      "url": "https://js.stripe.com/v3/elements-inner-express-checkout-39f849e188e8e",
+      "els": []
+    },
+    {
+      "depth": 1,
+      "url": "https://js.stripe.com/v3/m-outer-3437aaddcdf6922d623e172c2d6f9278.html",
+      "els": [
+        "iframe|"
+      ]
+    },
+    {
+      "depth": 2,
+      "url": "https://m.stripe.network/inner-preview.html#url=https%3A%2F%2Fcheckout",
+      "els": []
+    }
+  ],
+  "flatFrames": [
+    "https://checkout.stripe.com/c/pay/cs_test_a1ojstnY6TQkr1s2UDAff9F2vfbXeb0WEiJuvs",
+    "https://js.stripe.com/v3/link-login-inner-806ef5db8318e54dbf7dd080bddfba1c.html#",
+    "https://js.stripe.com/v3/checkout-inner-origin-frame-e2ee7bd6d7b4b714ab0452a0ac4",
+    "https://js.stripe.com/v3/controller-7bdfa9a977c05cadba48e34d6f3cee9e.html#__shar",
+    "https://js.stripe.com/v3/elements-inner-express-checkout-39f849e188e8ef135b43ab3",
+    "https://js.stripe.com/v3/hcaptcha-invisible-2f67f170e6504f89f6ab19fe1a5345de.htm",
+    "https://b.stripecdn.com/stripethirdparty-srv/assets/v37.1/HCaptchaInvisible.html",
+    "https://js.stripe.com/v3/elements-inner-express-checkout-39f849e188e8ef135b43ab3",
+    "https://newassets.hcaptcha.com/captcha/v1/b1c4f881f907b3e342c934423e51c70d282dc1",
+    "https://newassets.hcaptcha.com/captcha/v1/b1c4f881f907b3e342c934423e51c70d282dc1",
+    "https://newassets.hcaptcha.com/captcha/v1/b1c4f881f907b3e342c934423e51c70d282dc1",
+    "https://newassets.hcaptcha.com/captcha/v1/b1c4f881f907b3e342c934423e51c70d282dc1",
+    "https://b.stripecdn.com/stripethirdparty-srv/assets/v37.1/ApplePay.html?id=a1073",
+    "https://b.stripecdn.com/stripethirdparty-srv/assets/v37.1/AmazonPayButton.html?i",
+    "https://js.stripe.com/v3/m-outer-3437aaddcdf6922d623e172c2d6f9278.html#url=https",
+    "https://m.stripe.network/inner-preview.html#url=https%3A%2F%2Fcheckout.stripe.co"
+  ],
+  "childFramesMain": [
+    "https://js.stripe.com/v3/link-login-inner-806ef5db8318e54dbf7dd080bddfba1c.html#",
+    "https://js.stripe.com/v3/checkout-inner-origin-frame-e2ee7bd6d7b4b714ab0452a0ac4",
+    "https://js.stripe.com/v3/controller-7bdfa9a977c05cadba48e34d6f3cee9e.html#__shar",
+    "https://js.stripe.com/v3/elements-inner-express-checkout-39f849e188e8ef135b43ab3",
+    "https://js.stripe.com/v3/hcaptcha-invisible-2f67f170e6504f89f6ab19fe1a5345de.htm",
+    "https://js.stripe.com/v3/elements-inner-express-checkout-39f849e188e8ef135b43ab3",
+    "https://js.stripe.com/v3/m-outer-3437aaddcdf6922d623e172c2d6f9278.html#url=https"
+  ],
+  "probes": []
+}

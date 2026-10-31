@@ -1,13 +1,12 @@
-
 <?php
-require_once __DIR__ . "/../Core/Database.php";
 
 class OrderItem {
     private PDO $conn;
 
-    function __construct() {
-        $db = new Database();
-        $this->conn = $db->getconnect();
+    public function __construct(PDO|Database $connection) {
+        $this->conn = $connection instanceof Database
+            ? $connection->getConnection()
+            : $connection;
     }
 
     function getAll() {
@@ -45,4 +44,3 @@ class OrderItem {
         $stmt->execute([$id]);
     }
 }
-?>

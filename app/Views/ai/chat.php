@@ -242,10 +242,6 @@
     <main>
         <h1>مساعد LootLab 🧪</h1>
         <p>احكيلي شو بتحب أو لمين بدك هدية.</p>
-        <p class="note">
-            تجربة محلية بالمستخدم رقم 1 ومنتجات وأسعار وهمية.
-        </p>
-
         <?php if ($error !== ''): ?>
             <div class="error" role="alert">
                 <?= escapeHtml($error) ?>
@@ -296,13 +292,333 @@
         </form>
     </main>
 </div>
-
 <script>
-document.getElementById('chat-form').addEventListener('submit', function () {
-    const button = document.getElementById('send-button');
-    button.disabled = true;
-    button.textContent = 'جاري تجهيز الرد...';
-});
+(() => {
+    'use strict';
+
+    const chatForm = document.getElementById('chat-form');
+    const sendButton = document.getElementById('send-button');
+    const messageInput = document.getElementById('message');
+
+    if (!chatForm || !sendButton || !messageInput) {
+        return;
+    }
+
+    let sending = false;
+
+    function setSending(value) {
+        sending = value;
+        sendButton.disabled = value;
+        messageInput.readOnly = value;
+        sendButton.textContent = value ? 'جاري الرد...' : 'إرسال';
+        chatForm.setAttribute('aria-busy', String(value));
+    }
+
+    function addMessage(role, text) {
+        const article = document.createElement('article');
+        article.className = 'chat-message ' + (
+            role === 'user' ? 'user-message' : 'assistant-message'
+        );
+
+        const heading = document.createElement('strong');
+        heading.textContent = role === 'user' ? 'أنت' : 'Loot Hub AI';
+
+        const content = document.createElement('div');
+        content.className = 'message-text';
+        content.dir = 'auto';
+        content.textContent = text;
+
+        article.append(heading, content);
+        chatForm.before(article);
+
+        return { article, content };
+    }
+
+    function showError(message) {
+        const alert = document.createElement('div');
+        alert.className = 'error';
+        alert.setAttribute('role', 'alert');
+        alert.textContent = message;
+        chatForm.before(alert);
+    }
+
+    async function refreshHistory(url) {
+        try {
+            const response = await fetch(url, {
+                cache: 'no-store'
+            });
+
+            if (!response.ok) {
+                return;
+            }
+
+            const html = await response.text();
+            const page = new DOMParser().parseFromString(html, 'text/html');
+            const newAside = page.querySelector('aside');
+            const currentAside = document.querySelector('aside');
+
+            if (newAside && currentAside) {
+                currentAside.replaceWith(
+                    document.importNode(newAside, true)
+                );
+            }
+        } catch {
+            // فشل تحديث القائمة لا يعني فشل حفظ الرد.
+        }
+    }
+
+    messageInput.addEventListener('keydown', (event) => {
+        if (
+            event.key !== 'Enter' ||
+            event.shiftKey ||
+            event.isComposing
+        ) {
+            return;
+        }
+
+        event.preventDefault();
+
+        if (!sending) {
+            chatForm.requestSubmit();
+        }
+    });
+
+    chatForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        if (sending || !chatForm.reportValidity()) {
+            return;
+        }
+
+        const message = messageInput.value.trim();
+
+        if (!message) {
+            return;
+        }
+
+        const formData = new FormData(chatForm);
+        formData.set('message', message);
+        formData.set('stream', '1');
+
+        setSending(true);
+        document.querySelectorAll('main > .error').forEach(
+            (element) => element.remove()
+        );
+
+        const userMessage = addMessage('user', message);
+        const assistant = addMessage('assistant', 'بانتظار الرد...');
+
+        userMessage.article.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+
+        let reply = '';
+        let completed = false;
+        let conversationId = null;
+        let displayedReply = '';
+        let animationFrame = null;
+        let lastPaint = 0;
+        let resolveTyping = null;
+
+        function animateReply(time) {
+            const followBottom =
+                window.innerHeight + window.scrollY >=
+                document.documentElement.scrollHeight - 160;
+
+            if (time - lastPaint >= 25) {
+                const remaining = Array.from(
+                    reply.slice(displayedReply.length)
+                );
+
+                if (remaining.length > 0) {
+                    displayedReply += remaining.slice(0, 2).join('');
+                    assistant.content.textContent = displayedReply;
+
+                    if (followBottom) {
+                        window.scrollTo({
+                            top: document.documentElement.scrollHeight
+                        });
+                    }
+                }
+
+                lastPaint = time;
+            }
+
+            if (displayedReply !== reply) {
+                animationFrame = requestAnimationFrame(animateReply);
+            } else {
+                animationFrame = null;
+
+                if (resolveTyping !== null) {
+                    const resolve = resolveTyping;
+                    resolveTyping = null;
+                    resolve();
+                }
+            }
+        }
+
+        function startTyping() {
+            if (animationFrame === null && displayedReply !== reply) {
+                animationFrame = requestAnimationFrame(animateReply);
+            }
+        }
+
+        function waitForTyping() {
+            if (displayedReply === reply) {
+                return Promise.resolve();
+            }
+
+            return new Promise((resolve) => {
+                resolveTyping = resolve;
+                startTyping();
+            });
+        }
+
+        function stopTyping() {
+            if (animationFrame !== null) {
+                cancelAnimationFrame(animationFrame);
+                animationFrame = null;
+            }
+        }
+
+        function handleLine(line) {
+            if (!line.trim()) {
+                return;
+            }
+
+            const item = JSON.parse(line);
+
+            if (item.type === 'delta') {
+                if (typeof item.text !== 'string') {
+                    throw new Error('وصل جزء غير صالح من الرد.');
+                }
+
+                reply += item.text;
+                startTyping();
+            } else if (item.type === 'error') {
+                throw new Error(item.message || 'تعذّر إكمال الرد.');
+            } else if (item.type === 'done') {
+                const id = Number(item.conversation_id);
+
+                if (!Number.isSafeInteger(id) || id < 1) {
+                    throw new Error('وصل رقم محادثة غير صالح.');
+                }
+
+                completed = true;
+                conversationId = id;
+            }
+        }
+
+        try {
+           const response = await fetch(chatForm.getAttribute('action'), {
+                method: 'POST',
+                body: formData
+            });
+
+            if (
+                !response.ok ||
+                !response.headers.get('content-type')
+                    ?.includes('application/x-ndjson') ||
+                !response.body
+            ) {
+                throw new Error(
+                    'تعذّر بدء الرد. تأكد من تسجيل الدخول وحدّث الصفحة.'
+                );
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+            let reachedEnd = false;
+
+            try {
+                while (true) {
+                    const { value, done } = await reader.read();
+
+                    if (done) {
+                        reachedEnd = true;
+                        buffer += decoder.decode();
+                        break;
+                    }
+
+                    buffer += decoder.decode(value, { stream: true });
+
+                    let position;
+
+                    while ((position = buffer.indexOf('\n')) !== -1) {
+                        const line = buffer.slice(0, position);
+                        buffer = buffer.slice(position + 1);
+                        handleLine(line);
+                    }
+                }
+
+                if (buffer.trim()) {
+                    handleLine(buffer);
+                }
+            } finally {
+                if (!reachedEnd) {
+                    try {
+                        await reader.cancel();
+                    } catch {
+                        // الاتصال قد يكون مغلقًا بالفعل.
+                    }
+                }
+
+                reader.releaseLock();
+            }
+
+            if (!completed) {
+                throw new Error(
+                    'انقطع الاتصال قبل تأكيد الحفظ. حدّث الصفحة للتحقق.'
+                );
+            }
+
+            chatForm.elements.namedItem('conversation_id').value =
+                conversationId;
+
+            const url = new URL(window.location.href);
+            url.searchParams.set('conversation_id', conversationId);
+            window.history.replaceState(null, '', url);
+
+            messageInput.value = '';
+
+            // يظل الإرسال معطّلًا حتى تنتهي الكتابة المرئية.
+            await waitForTyping();
+
+            // تحديث القائمة مستقل عن إتاحة إرسال الرسالة التالية.
+            void refreshHistory(url);
+        } catch (error) {
+            stopTyping();
+
+            if (reply) {
+                assistant.content.textContent = reply;
+            } else {
+                assistant.article.remove();
+            }
+
+            showError(
+                error instanceof Error
+                    ? error.message
+                    : 'تعذّر استقبال الرد.'
+            );
+        } finally {
+            stopTyping();
+            setSending(false);
+        }
+    });
+
+    window.addEventListener('load', () => {
+        const messages = document.querySelectorAll('.chat-message');
+
+        if (messages.length > 0) {
+            messages[messages.length - 1].scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    });
+})();
 </script>
 </body>
 </html>
