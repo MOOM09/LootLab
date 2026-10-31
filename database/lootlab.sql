@@ -15,6 +15,7 @@ CREATE TABLE `users` (
   `google_id` varchar(255) DEFAULT NULL,
   `role` enum('user','admin') NOT NULL DEFAULT 'user',
   `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `session_version` int(10) UNSIGNED NOT NULL DEFAULT 1,
   `points` int(10) UNSIGNED NOT NULL DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
@@ -22,6 +23,27 @@ CREATE TABLE `users` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`),
   UNIQUE KEY `google_id` (`google_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Password reset tokens: one current token per user; store only its SHA-256 hash.
+CREATE TABLE `password_reset_tokens` (
+  `user_id` int(10) UNSIGNED NOT NULL,
+  `token_hash` char(64) NOT NULL,
+  `expires_at` datetime NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+
+  PRIMARY KEY (`user_id`),
+  UNIQUE KEY `uq_password_reset_token` (`token_hash`),
+  CONSTRAINT `fk_password_reset_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Password reset request limits: hashed email/IP keys and UTC window expiry.
+CREATE TABLE `password_reset_rate_limits` (
+  `rate_key` char(64) NOT NULL,
+  `attempts` int(10) UNSIGNED NOT NULL DEFAULT 1,
+  `expires_at` datetime NOT NULL,
+
+  PRIMARY KEY (`rate_key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 2. CATEGORIES
@@ -53,7 +75,7 @@ CREATE TABLE `subcategories` (
 -- 4. PRODUCTS
 CREATE TABLE `products` (
   `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `subcategory_id` int(10) UNSIGNED NOT NULL,
+  `subcategorys_id` int(10) UNSIGNED NOT NULL,
   `name` varchar(150) NOT NULL,
   `description` text NOT NULL,
   `price` decimal(10,2) NOT NULL,
@@ -65,8 +87,8 @@ CREATE TABLE `products` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
 
   PRIMARY KEY (`id`),
-  KEY `fk_products_subcategory` (`subcategory_id`),
-  CONSTRAINT `fk_products_subcategory` FOREIGN KEY (`subcategory_id`) REFERENCES `subcategories` (`id`),
+  KEY `fk_products_subcategory` (`subcategorys_id`),
+  CONSTRAINT `fk_products_subcategory` FOREIGN KEY (`subcategorys_id`) REFERENCES `subcategories` (`id`),
   CONSTRAINT chk_product_price CHECK (price >= 0),
   CONSTRAINT chk_product_stock CHECK (stock_quantity >= 0),
   CONSTRAINT chk_product_discount CHECK (discount_price IS NULL OR (discount_price >= 0 AND discount_price < price))
@@ -224,7 +246,8 @@ CREATE TABLE `favorites` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
 
   PRIMARY KEY (`fav_id`),
-  KEY `fk_favorites_user` (`user_id`),
+  UNIQUE KEY `uq_favorites_user` (`user_id`),
+  UNIQUE KEY `uq_favorites_session` (`session_id`),
   CONSTRAINT `fk_favorites_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT chk_favorites_owner CHECK ((user_id IS NOT NULL AND session_id IS NULL) OR (user_id IS NULL AND session_id IS NOT NULL))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

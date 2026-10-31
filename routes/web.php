@@ -3,17 +3,19 @@
 /** @var Router $router */
 
 // Preserve the existing AI page URL through the shared entry point.
-$router->get( '/ai.php',[
-        AiController::class,
-        'index'
-    ]
-);
+$router->get('/ai.php', [
+    AiController::class,
+    'index',
+], [
+    AuthMiddleware::class,
+]);
 
-$router->post('/ai.php',[
-        AiController::class,
-        'index'
-    ]
-);
+$router->post('/ai.php', [
+    AiController::class,
+    'index',
+], [
+    AuthMiddleware::class,
+]);
 
 $router->get('/auth/google', [
     AuthController::class,
@@ -28,6 +30,8 @@ $router->get('/auth/google/callback', [
 $router->get('/login', [
     AuthController::class,
     'showLogin',
+], [
+    GuestMiddleware::class,
 ]);
 
 $router->post('/login', [
@@ -38,11 +42,37 @@ $router->post('/login', [
 $router->get('/register', [
     AuthController::class,
     'showRegister',
+], [
+    GuestMiddleware::class,
 ]);
 
 $router->post('/register', [
     AuthController::class,
     'register',
+]);
+
+// Display the email form.
+$router->get('/forgot-password', [
+    PasswordResetController::class,
+    'showForgot',
+]);
+
+// Request a reset link.
+$router->post('/forgot-password', [
+    PasswordResetController::class,
+    'requestReset',
+]);
+
+// Display the new-password form.
+$router->get('/reset-password', [
+    PasswordResetController::class,
+    'showReset',
+]);
+
+// Submit the new password.
+$router->post('/reset-password', [
+    PasswordResetController::class,
+    'resetPassword',
 ]);
 
 $router->post('/logout', [
@@ -79,6 +109,9 @@ $router->post('/admin/categories', [
 $router->post('/admin/categories/update', [
     CategoryController::class,
     'update',
+], [
+    AuthMiddleware::class,
+    AdminMiddleware::class,
 ]);
 
 $router->post('/admin/categories/delete', [
@@ -214,6 +247,9 @@ $router->delete('/reviews/delete', [
 $router->get('/orders', [
     OrderController::class,
     'index',
+], [
+    AuthMiddleware::class,
+    AdminMiddleware::class,
 ]);
 
 $router->get('/orders/show', [
@@ -235,6 +271,7 @@ $router->post('/orders/update', [
     'update',
 ], [
     AuthMiddleware::class,
+    AdminMiddleware::class,
 ]);
 
 $router->post('/orders/delete', [
@@ -242,6 +279,69 @@ $router->post('/orders/delete', [
     'destroy',
 ], [
     AuthMiddleware::class,
+    AdminMiddleware::class,
+]);
+
+// Checkout
+$router->get('/checkout', [
+    CheckoutController::class,
+    'index',
+], [
+    AuthMiddleware::class,
+]);
+
+$router->post('/checkout', [
+    CheckoutController::class,
+    'placeOrder',
+], [
+    AuthMiddleware::class,
+]);
+
+$router->post('/checkout/stripe', [
+    CheckoutController::class,
+    'payWithStripe',
+], [
+    AuthMiddleware::class,
+]);
+
+$router->get('/checkout/success', [
+    CheckoutController::class,
+    'success',
+], [
+    AuthMiddleware::class,
+]);
+
+$router->get('/checkout/stripe-success', [
+    CheckoutController::class,
+    'stripeSuccess',
+], [
+    AuthMiddleware::class,
+]);
+
+// Cart (guests and logged-in users; ownership is resolved in the controller)
+$router->get('/cart', [
+    CartController::class,
+    'index',
+]);
+
+$router->post('/cart/add', [
+    CartController::class,
+    'add',
+]);
+
+$router->post('/cart/update', [
+    CartController::class,
+    'update',
+]);
+
+$router->post('/cart/remove', [
+    CartController::class,
+    'remove',
+]);
+
+$router->post('/cart/clear', [
+    CartController::class,
+    'clear',
 ]);
 
 // ? How to create a route here?

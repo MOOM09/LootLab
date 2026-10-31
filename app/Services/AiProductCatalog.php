@@ -1,46 +1,33 @@
 <?php
 
+require_once dirname(__DIR__) . '/Models/Product.php';
+
 class AiProductCatalog
 {
+    private Product $product;
+
+    public function __construct(PDO $connection)
+    {
+        $this->product = new Product($connection);
+    }
+
     public function getProducts(): array
     {
-        return [
-            [
-                'id' => 1,
-                'name' => 'مج ناروتو باللبس البرتقالي الأساسي',
-                'price' => 7,
-                'stock_quantity' => 5
-            ],
-            [
-                'id' => 2,
-                'name' => 'بوستر ناروتو وساسكي',
-                'price' => 4,
-                'stock_quantity' => 10
-            ],
-            [
-                'id' => 3,
-                'name' => 'بلوزة إيتاتشي سوداء',
-                'price' => 15,
-                'stock_quantity' => 0
-            ],
-            [
-                'id' => 4,
-                'name' => 'ميدالية Batman من عالم DC',
-                'price' => 3,
-                'stock_quantity' => 8
-            ],
-            [
-                'id' => 5,
-                'name' => 'مج Spider-Man من عالم Marvel',
-                'price' => 8,
-                'stock_quantity' => 6
-            ],
-            [
-                'id' => 6,
-                'name' => 'بوستر God of War لشخصية Kratos',
-                'price' => 5,
-                'stock_quantity' => 4
-            ]
-        ];
+        return array_map(
+            static function (array $product): array {
+                return [
+                    'id' => (int) $product['id'],
+                    'name' => $product['name'],
+                    'description' => $product['description'] ?? '',
+                    'category' => $product['category_name'],
+                    'subcategory' => $product['subcategory_name'],
+                    'price' => (float) (
+                        $product['discount_price'] ?? $product['price']
+                    ),
+                    'stock_quantity' => (int) $product['stock_quantity'],
+                ];
+            },
+            $this->product->getAll()
+        );
     }
 }
