@@ -96,4 +96,15 @@ class Cart implements CartInterface
             'cart_id'  => $cartId,
         ]);
     }
+
+    //? Adds a quantity to a product already in this cart (new row if it is not).
+    //? Used when merging a guest cart, where quantities must be added together.
+    public function mergeItem(int $cartId, int $productId, int $quantity, ?int $designId = null): bool
+    {
+        if ($quantity < 1) {
+            return false;
+        }
+
+        return $this->items->merge($cartId, $productId, $quantity, $designId);
+    }
 }

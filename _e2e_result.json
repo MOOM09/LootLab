@@ -1,0 +1,22 @@
+{
+  "log": [
+    {
+      "s": "stripe-page",
+      "amountShown": "991.98",
+      "url": "https://checkout.stripe.com/c/pay/cs_test_a1A8gpvkFWdnWBBwJd"
+    },
+    {
+      "s": "card-radio",
+      "count": 0
+    },
+    {
+      "s": "card-filled",
+      "number": null,
+      "exp": null,
+      "cvc": null,
+      "zip": null
+    }
+  ],
+  "paid": false,
+  "stage": "filled"
+}

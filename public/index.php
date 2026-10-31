@@ -45,6 +45,7 @@ require_once __DIR__ . '/../app/Controllers/ProductController.php';
 require_once __DIR__ . '/../app/Controllers/ProfileController.php';
 require_once __DIR__ . '/../app/Controllers/FavoriteController.php';
 require_once __DIR__ . '/../app/Controllers/CartController.php';
+require_once __DIR__ . '/../app/Controllers/CheckoutController.php';
 require_once __DIR__ . '/../app/Controllers/OrderController.php';
 require_once __DIR__ . '/../app/Controllers/ReviewController.php';
 require_once __DIR__ . '/../app/Controllers/AiController.php';
