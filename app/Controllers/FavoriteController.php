@@ -29,6 +29,13 @@ class FavoriteController extends Controller
             ? []
             : $this->favorite->getItems($favoriteId);
 
+        if (str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'text/html')) {
+            $this->view('favorites/index', [
+                'items' => $items,
+            ]);
+            return;
+        }
+
         Response::success([
             'items' => $items,
             'csrf_token' => $this->csrfToken(),

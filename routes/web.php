@@ -123,6 +123,34 @@ $router->post('/products/delete', [
     AdminMiddleware::class,
 ]);
 
+$router->get('/cart', [
+    CartController::class,
+    'index',
+], [
+    AuthMiddleware::class,
+]);
+
+$router->post('/cart/add', [
+    CartController::class,
+    'add',
+], [
+    AuthMiddleware::class,
+]);
+
+$router->put('/cart/update', [
+    CartController::class,
+    'update',
+], [
+    AuthMiddleware::class,
+]);
+
+$router->delete('/cart/remove', [
+    CartController::class,
+    'remove',
+], [
+    AuthMiddleware::class,
+]);
+
 $router->get('/profile', [
     ProfileController::class,
     'index',

@@ -42,7 +42,19 @@ class Favorite
     public function getItems(int $favoriteId): array
     {
         $stmt = $this->connection->prepare(
-            'SELECT * FROM favorite_items WHERE fav_id = :favorite_id'
+            'SELECT fi.favorite_item_id,
+                    fi.fav_id,
+                    fi.product_id,
+                    fi.created_at,
+                    p.name,
+                    p.price,
+                    p.discount_price,
+                    p.image,
+                    p.stock_quantity
+             FROM favorite_items fi
+             INNER JOIN products p ON p.id = fi.product_id
+             WHERE fi.fav_id = :favorite_id
+             ORDER BY fi.created_at DESC, fi.favorite_item_id DESC'
         );
 
         $stmt->execute([

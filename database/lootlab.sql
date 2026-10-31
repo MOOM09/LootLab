@@ -53,7 +53,7 @@ CREATE TABLE `subcategories` (
 -- 4. PRODUCTS
 CREATE TABLE `products` (
   `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `subcategory_id` int(10) UNSIGNED NOT NULL,
+  `subcategorys_id` int(10) UNSIGNED NOT NULL,
   `name` varchar(150) NOT NULL,
   `description` text NOT NULL,
   `price` decimal(10,2) NOT NULL,
@@ -65,8 +65,8 @@ CREATE TABLE `products` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
 
   PRIMARY KEY (`id`),
-  KEY `fk_products_subcategory` (`subcategory_id`),
-  CONSTRAINT `fk_products_subcategory` FOREIGN KEY (`subcategory_id`) REFERENCES `subcategories` (`id`),
+  KEY `fk_products_subcategory` (`subcategorys_id`),
+  CONSTRAINT `fk_products_subcategory` FOREIGN KEY (`subcategorys_id`) REFERENCES `subcategories` (`id`),
   CONSTRAINT chk_product_price CHECK (price >= 0),
   CONSTRAINT chk_product_stock CHECK (stock_quantity >= 0),
   CONSTRAINT chk_product_discount CHECK (discount_price IS NULL OR (discount_price >= 0 AND discount_price < price))
@@ -269,3 +269,19 @@ CREATE TABLE `ai_messages` (
   KEY `idx_messages_conversation_id` (`conversation_id`,`id`),
   CONSTRAINT `fk_ai_messages_conversation` FOREIGN KEY (`conversation_id`) REFERENCES `ai_conversations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE lootlab.password_reset_tokens (
+    user_id INT UNSIGNED NOT NULL,
+    token_hash CHAR(64) NOT NULL,
+    expires_at DATETIME NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (user_id),
+    UNIQUE KEY uq_password_reset_token (token_hash),
+
+    CONSTRAINT fk_password_reset_user
+        FOREIGN KEY (user_id)
+        REFERENCES lootlab.users (id)
+        ON DELETE CASCADE
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
