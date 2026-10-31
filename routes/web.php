@@ -2,6 +2,29 @@
 
 /** @var Router $router */
 
+// Preserve the existing AI page URL through the shared entry point.
+$router->get( '/ai.php',[
+        AiController::class,
+        'index'
+    ]
+);
+
+$router->post('/ai.php',[
+        AiController::class,
+        'index'
+    ]
+);
+
+$router->get('/auth/google', [
+    AuthController::class,
+    'redirectToGoogle',
+]);
+
+$router->get('/auth/google/callback', [
+    AuthController::class,
+    'googleCallback',
+]);
+
 $router->get('/login', [
     AuthController::class,
     'showLogin',
@@ -29,8 +52,197 @@ $router->post('/logout', [
     AuthMiddleware::class,
 ]);
 
+$router->get('/admin/categories', [
+    CategoryController::class,
+    'index',
+], [
+    AuthMiddleware::class,
+    AdminMiddleware::class,
+]);
 
+$router->get('/admin/categories/show', [
+    CategoryController::class,
+    'show',
+], [
+    AuthMiddleware::class,
+    AdminMiddleware::class,
+]);
 
+$router->post('/admin/categories', [
+    CategoryController::class,
+    'store',
+], [
+    AuthMiddleware::class,
+    AdminMiddleware::class,
+]);
+
+$router->post('/admin/categories/update', [
+    CategoryController::class,
+    'update',
+]);
+
+$router->post('/admin/categories/delete', [
+    CategoryController::class,
+    'destroy',
+], [
+    AuthMiddleware::class,
+    AdminMiddleware::class,
+]);
+
+$router->get('/products', [
+    ProductController::class,
+    'index',
+]);
+
+$router->get('/products/show', [
+    ProductController::class,
+    'show',
+]);
+
+$router->post('/products', [
+    ProductController::class,
+    'store',
+], [
+    AuthMiddleware::class,
+    AdminMiddleware::class,
+]);
+
+$router->post('/products/update', [
+    ProductController::class,
+    'update',
+], [
+    AuthMiddleware::class,
+    AdminMiddleware::class,
+]);
+
+$router->post('/products/delete', [
+    ProductController::class,
+    'destroy',
+], [
+    AuthMiddleware::class,
+    AdminMiddleware::class,
+]);
+
+$router->get('/profile', [
+    ProfileController::class,
+    'index',
+], [
+    AuthMiddleware::class,
+]);
+
+$router->put('/profile', [
+    ProfileController::class,
+    'update',
+], [
+    AuthMiddleware::class,
+]);
+
+$router->delete('/profile', [
+    ProfileController::class,
+    'deleteAccount',
+], [
+    AuthMiddleware::class,
+]);
+
+// ? Favorites support guests and logged-in users.
+// TODO: Controller actions must resolve ownership from the session and validate CSRF on writes.
+$router->get('/favorites', [
+    FavoriteController::class,
+    'index',
+]);
+
+$router->post('/favorites', [
+    FavoriteController::class,
+    'store',
+]);
+
+$router->delete('/favorites', [
+    FavoriteController::class,
+    'destroy',
+]);
+
+$router->post('/favorites/move-to-cart', [
+    FavoriteController::class,
+    'moveToCart',
+], [
+    AuthMiddleware::class,
+]);
+
+$router->get('/admin/users', [
+    App\Controllers\Admin\UserController::class,
+    'index',
+], [
+    AuthMiddleware::class,
+    AdminMiddleware::class,
+]);
+
+$router->patch('/admin/users/ban', [
+    App\Controllers\Admin\UserController::class,
+    'ban',
+], [
+    AuthMiddleware::class,
+    AdminMiddleware::class,
+]);
+
+$router->patch('/admin/users/unban', [
+    App\Controllers\Admin\UserController::class,
+    'unban',
+], [
+    AuthMiddleware::class,
+    AdminMiddleware::class,
+]);
+
+$router->get('/reviews', [
+    ReviewController::class,
+    'index',
+]);
+
+$router->post('/reviews', [
+    ReviewController::class,
+    'store',
+], [
+    AuthMiddleware::class,
+]);
+
+$router->delete('/reviews/delete', [
+    ReviewController::class,
+    'destroy',
+], [
+    AuthMiddleware::class,
+]);
+
+$router->get('/orders', [
+    OrderController::class,
+    'index',
+]);
+
+$router->get('/orders/show', [
+    OrderController::class,
+    'show',
+], [
+    AuthMiddleware::class,
+]);
+
+$router->post('/orders', [
+    OrderController::class,
+    'store',
+], [
+    AuthMiddleware::class,
+]);
+
+$router->post('/orders/update', [
+    OrderController::class,
+    'update',
+], [
+    AuthMiddleware::class,
+]);
+
+$router->post('/orders/delete', [
+    OrderController::class,
+    'destroy',
+], [
+    AuthMiddleware::class,
+]);
 
 // ? How to create a route here?
 // $router is already created in public/index.php before this file is loaded.

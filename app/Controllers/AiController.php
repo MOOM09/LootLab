@@ -4,44 +4,53 @@ require_once dirname(__DIR__) . '/Services/AiService.php';
 require_once dirname(__DIR__) . '/Services/AiDatabase.php';
 require_once dirname(__DIR__) . '/Models/AiConversation.php';
 require_once dirname(__DIR__) . '/Core/Controller.php';
+
 class AiController extends Controller
 {
     public function index(): void
     {
         $userId = 1;
+        $isPost = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST';
 
-        $isStream =
-    $_SERVER['REQUEST_METHOD'] === 'POST'
-    && ($_POST['action'] ?? '') === 'send'
-    && ($_POST['stream'] ?? '') === '1';
+        $_SESSION['ai_csrf'] = $this->csrfToken();
 
-$emit = static function (array $event): void {
-    echo json_encode(
-        $event,
-        JSON_UNESCAPED_UNICODE
-        | JSON_INVALID_UTF8_SUBSTITUTE
-        | JSON_THROW_ON_ERROR
-    ) . "\n";
+        $request = [];
 
-    flush();
-};
-
-if ($isStream) {
-    ini_set('zlib.output_compression', '0');
-
-    while (ob_get_level() > 0) {
-        if (!ob_end_clean()) {
-            break;
+        if ($isPost) {
+            $request = $this->requestData();
+            $this->validateCsrf($request);
         }
-    }
 
-    header('Content-Type: application/x-ndjson; charset=utf-8');
-    header('Cache-Control: no-cache, no-transform');
-    header('X-Accel-Buffering: no');
-}
+        $isStream = $isPost
+            && ($request['action'] ?? '') === 'send'
+            && ($request['stream'] ?? '') === '1';
 
-$_SESSION['ai_csrf'] ??= bin2hex(random_bytes(32));
-$_SESSION['ai_raw_replies'] ??= [];
+        $emit = static function (array $event): void {
+            echo json_encode(
+                $event,
+                JSON_UNESCAPED_UNICODE
+                | JSON_INVALID_UTF8_SUBSTITUTE
+                | JSON_THROW_ON_ERROR
+            ) . "\n";
+
+            flush();
+        };
+
+        if ($isStream) {
+            ini_set('zlib.output_compression', '0');
+
+            while (ob_get_level() > 0) {
+                if (!ob_end_clean()) {
+                    break;
+                }
+            }
+
+            header('Content-Type: application/x-ndjson; charset=utf-8');
+            header('Cache-Control: no-cache, no-transform');
+            header('X-Accel-Buffering: no');
+        }
+
+        $_SESSION['ai_raw_replies'] ??= [];
 
 $error = '';
 $message = '';
@@ -65,7 +74,7 @@ if ($model !== null) {
 
     // نأخذ رقم المحادثة من الفورم أو الرابط.
     $requestedId = $isPost
-        ? ($_POST['conversation_id'] ?? '')
+        ? ($request['conversation_id'] ?? '')
         : ($_GET['conversation_id'] ?? '');
 
     try {
@@ -92,18 +101,7 @@ if ($model !== null) {
         }
 
         if ($isPost) {
-            $token = $_POST['csrf_token'] ?? '';
-
-            if (
-                !is_string($token)
-                || !hash_equals($_SESSION['ai_csrf'], $token)
-            ) {
-                throw new RuntimeException(
-                    'الطلب غير صالح. حدّث الصفحة.'
-                );
-            }
-
-            $action = $_POST['action'] ?? 'send';
+            $action = $request['action'] ?? 'send';
 
             if ($action === 'new_chat') {
                 // نفتح صفحة فارغة، بدون حذف المحادثة القديمة.
@@ -115,7 +113,7 @@ if ($action === 'rename') {
         throw new RuntimeException('اختار محادثة أولًا.');
     }
 
-    $title = $_POST['title'] ?? '';
+    $title = $request['title'] ?? '';
 
     if (!is_string($title)) {
         throw new RuntimeException('العنوان غير صالح.');
@@ -146,7 +144,7 @@ if ($action === 'delete') {
                 throw new RuntimeException('العملية غير صالحة.');
             }
 
-            $input = $_POST['message'] ?? '';
+            $input = $request['message'] ?? '';
 
             if (!is_string($input)) {
                 throw new RuntimeException('الرسالة غير صالحة.');
@@ -327,4 +325,3 @@ function escapeHtml(string $value): string
         'UTF-8'
     );
 }
-require_once dirname(__DIR__) . '/Services/AiProductCatalog.php';
