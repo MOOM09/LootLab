@@ -58,7 +58,15 @@ class ReviewController extends Controller
             Response::error('Product not found.', 404);
         }
 
-        $this->review->create($userId, $productId, $rating, $comment);
+        try {
+            $this->review->create($userId, $productId, $rating, $comment);
+        } catch (PDOException $exception) {
+            if ((int) ($exception->errorInfo[1] ?? 0) === 1062) {
+                Response::error('You have already reviewed this product.', 409);
+            }
+
+            throw $exception;
+        }
 
         Response::success(
             null,

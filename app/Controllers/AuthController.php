@@ -95,9 +95,25 @@ class AuthController extends Controller
             throw $exception;
         }
 
+        $favorite = new Favorite($this->database->getConnection());
+
+        $favorite->mergeGuestIntoUser(
+            session_id(),
+            (int) $userId
+        );
+
+        // Load the new account's current session version.
+        $user = $this->user->findById($userId);
+
+        if ($user === null) {
+            Response::error('Unable to load your account.', 500);
+        }
+
         session_regenerate_id(true);
 
         $_SESSION['user_id'] = (int) $userId;
+        // Remember the account's session version at registration.
+        $_SESSION['session_version'] = (int) $user['session_version'];
 
         Response::success(
             [
@@ -215,8 +231,18 @@ class AuthController extends Controller
             Response::error('Your account is inactive.', 403);
         }
 
+        $favorite = new Favorite($this->database->getConnection());
+
+        $favorite->mergeGuestIntoUser(
+            session_id(),
+            (int) $user['id']
+        );
+
         session_regenerate_id(true);
         $_SESSION['user_id'] = (int) $user['id'];
+        // Remember the account's session version at login to know if 
+        // the session is before or after changing the password.
+        $_SESSION['session_version'] = (int) $user['session_version'];
 
         //? Calling view() directly would display the page
         // while the browser remains on the POST /login request,
@@ -426,6 +452,8 @@ class AuthController extends Controller
         session_regenerate_id(true);
 
         $_SESSION['user_id'] = (int) $user['id'];
+        // Remember the account's session version at Google login.
+        $_SESSION['session_version'] = (int) $user['session_version'];
 
         $this->redirect($this->appUrl . '/products');
     }

@@ -34,5 +34,21 @@ class AuthMiddleware
             unset($_SESSION['user_id']);
             Response::error('Your account is inactive.', 403);
         }
+
+        // Reject sessions created before the account's session version changed.
+        if (
+            (int) ($_SESSION['session_version'] ?? 0)
+            !== (int) $user['session_version']
+        ) {
+            unset(
+                $_SESSION['user_id'],
+                $_SESSION['session_version']
+            );
+
+            Response::error(
+                'Your session has expired. Please log in again.',
+                401
+            );
+        }
     }
 }

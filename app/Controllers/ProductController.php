@@ -3,9 +3,11 @@
 class ProductController extends Controller
 {
     private Product $product;
+    private string $appUrl;
 
-    public function __construct()
+    public function __construct(array $config)
     {
+        $this->appUrl = rtrim($config['app_url'], '/');
         $this->product = new Product();
     }
 
@@ -22,6 +24,9 @@ class ProductController extends Controller
 
         $this->view('products/index', [
             'products' => $products,
+            'appUrl' => $this->appUrl,
+            'isLoggedIn' => isset($_SESSION['user_id']),
+            'csrfToken' => $this->csrfToken(),
         ]);
     }
 
@@ -178,7 +183,7 @@ class ProductController extends Controller
         }
 
         $subcategoryId = filter_var(
-            $data['subcategory_id'] ?? null,
+            $data['subcategorys_id'] ?? null,
             FILTER_VALIDATE_INT,
             ['options' => ['min_range' => 1]]
         );
@@ -202,7 +207,7 @@ class ProductController extends Controller
             'description' => $description,
             'price' => (float) $price,
             'stock_quantity' => (int) $stockQuantity,
-            'subcategory_id' => $subcategoryId,
+            'subcategorys_id' => $subcategoryId,
             'discount_price' => $discountPrice,
             'image' => trim((string) ($data['image'] ?? '')),
         ];

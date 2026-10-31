@@ -75,4 +75,3 @@ class Order {
         $stmt->execute([$id]);
     }
 }
-?>     

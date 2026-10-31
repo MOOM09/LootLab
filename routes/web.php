@@ -28,6 +28,8 @@ $router->get('/auth/google/callback', [
 $router->get('/login', [
     AuthController::class,
     'showLogin',
+], [
+    GuestMiddleware::class,
 ]);
 
 $router->post('/login', [
@@ -38,11 +40,37 @@ $router->post('/login', [
 $router->get('/register', [
     AuthController::class,
     'showRegister',
+], [
+    GuestMiddleware::class,
 ]);
 
 $router->post('/register', [
     AuthController::class,
     'register',
+]);
+
+// Display the email form.
+$router->get('/forgot-password', [
+    PasswordResetController::class,
+    'showForgot',
+]);
+
+// Request a reset link.
+$router->post('/forgot-password', [
+    PasswordResetController::class,
+    'requestReset',
+]);
+
+// Display the new-password form.
+$router->get('/reset-password', [
+    PasswordResetController::class,
+    'showReset',
+]);
+
+// Submit the new password.
+$router->post('/reset-password', [
+    PasswordResetController::class,
+    'resetPassword',
 ]);
 
 $router->post('/logout', [
@@ -79,6 +107,9 @@ $router->post('/admin/categories', [
 $router->post('/admin/categories/update', [
     CategoryController::class,
     'update',
+], [
+    AuthMiddleware::class,
+    AdminMiddleware::class,
 ]);
 
 $router->post('/admin/categories/delete', [
@@ -214,6 +245,9 @@ $router->delete('/reviews/delete', [
 $router->get('/orders', [
     OrderController::class,
     'index',
+], [
+    AuthMiddleware::class,
+    AdminMiddleware::class,
 ]);
 
 $router->get('/orders/show', [
@@ -235,6 +269,7 @@ $router->post('/orders/update', [
     'update',
 ], [
     AuthMiddleware::class,
+    AdminMiddleware::class,
 ]);
 
 $router->post('/orders/delete', [
@@ -242,6 +277,7 @@ $router->post('/orders/delete', [
     'destroy',
 ], [
     AuthMiddleware::class,
+    AdminMiddleware::class,
 ]);
 
 // ? How to create a route here?

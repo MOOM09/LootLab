@@ -26,20 +26,26 @@ require_once __DIR__ . '/../app/Models/Review.php';
 require_once __DIR__ . '/../app/Models/OrderItem.php';
 require_once __DIR__ . '/../app/Models/Order.php';
 require_once __DIR__ . '/../app/Models/AiConversation.php';
+require_once __DIR__ . '/../app/Models/PasswordResetToken.php';
+require_once __DIR__ . '/../app/Models/PasswordResetRateLimit.php';
 
 // Services.
+require_once __DIR__ . '/../app/Services/MailService.php';
 require_once __DIR__ . '/../app/Services/GoogleAuthService.php';
 require_once __DIR__ . '/../app/Services/AiService.php';
 require_once __DIR__ . '/../app/Services/AiDatabase.php';
 require_once __DIR__ . '/../app/Services/AiProductCatalog.php';
+require_once __DIR__ . '/../app/Services/PasswordResetService.php';
 
 // Middleware.
 require_once __DIR__ . '/../app/Middleware/AuthMiddleware.php';
+require_once __DIR__ . '/../app/Middleware/GuestMiddleware.php';
 require_once __DIR__ . '/../app/Middleware/AdminMiddleware.php';
 
 // Controllers.
 require_once __DIR__ . '/../app/Controllers/Admin/UserController.php';
 require_once __DIR__ . '/../app/Controllers/Admin/CategoryController.php';
+require_once __DIR__ . '/../app/Controllers/PasswordResetController.php';
 require_once __DIR__ . '/../app/Controllers/AuthController.php';
 require_once __DIR__ . '/../app/Controllers/ProductController.php';
 require_once __DIR__ . '/../app/Controllers/ProfileController.php';
