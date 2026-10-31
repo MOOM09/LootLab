@@ -20,5 +20,5 @@ require_once $root . '/app/Controllers/AiImageController.php';
 
 header('Content-Type: text/html; charset=utf-8');
 
-$controller = new AiImageController();
+$controller = new AiImageController($config);
 $controller->index();

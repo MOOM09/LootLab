@@ -344,6 +344,13 @@ $router->post('/cart/clear', [
     'clear',
 ]);
 
+$router->get('/profile/design-image', [
+    ProfileController::class,
+    'designImage',
+], [
+    AuthMiddleware::class,
+]);
+
 // ? How to create a route here?
 // $router is already created in public/index.php before this file is loaded.
 // Format: $router->get('/path', [ControllerName::class, 'methodName']);

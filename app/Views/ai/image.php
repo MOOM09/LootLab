@@ -172,6 +172,7 @@ $escape = static fn (string $value): string => htmlspecialchars(
             }
         }
     </style>
+    <link rel="stylesheet" href="css/ai-products.css">
 </head>
 
 <body>
@@ -338,6 +339,7 @@ $escape = static fn (string $value): string => htmlspecialchars(
             <?php if ($generatedImage !== ''): ?>
                 <img
                     src="data:image/png;base64,<?= $escape($generatedImage) ?>"
+                    id="generated-design"
                     alt="التصميم الناتج بالذكاء الاصطناعي"
                 >
 
@@ -356,6 +358,36 @@ $escape = static fn (string $value): string => htmlspecialchars(
             <?php endif; ?>
         </section>
     </div>
+
+<?php if ($generatedImage !== ''): ?>
+<section class="ai-products" id="ai-products" aria-labelledby="ai-products-title">
+    <h2 id="ai-products-title">جرّب تصميمك على منتج</h2>
+    <p class="note">الطباعة من الأمام فقط ومجانية. اسحب المجسّم لتدويره.</p>
+    <?php if (!empty($savedDesignId)): ?>
+        <p class="note">تم حفظ تصميم #<?= (int) $savedDesignId ?> في حسابك.
+        <a href="profile">تصاميمي</a></p>
+    <?php endif; ?>
+    <div class="ai-options" role="group" aria-label="اختيار المنتج">
+        <button type="button" data-model="hoodie-black" aria-pressed="true">هودي أسود</button>
+        <button type="button" data-model="hoodie-white" aria-pressed="false">هودي أبيض</button>
+        <button type="button" data-model="tshirt-black" aria-pressed="false">تيشيرت أسود</button>
+        <button type="button" data-model="tshirt-white" aria-pressed="false">تيشيرت أبيض</button>
+        <button type="button" data-model="mug-white" aria-pressed="false">مج أبيض</button>
+    </div>
+    <p id="ai-model-status" class="note" role="status">جاري تحميل المعاينة…</p>
+    <div class="ai-stage" id="ai-stage" aria-label="معاينة المنتج ثلاثية الأبعاد"></div>
+    <div class="ai-controls">
+        <label>حجم الطباعة<input id="ai-print-size" type="range" min="40" max="100" value="75"></label>
+        <label>يمين / يسار<input id="ai-print-x" type="range" min="-100" max="100" value="0"></label>
+        <label>أعلى / أسفل<input id="ai-print-y" type="range" min="-100" max="100" value="0"></label>
+    </div>
+    <button type="button" id="ai-front" class="button-secondary">عرض من الأمام</button>
+    <p class="note">هذه معاينة للطباعة. ربط المنتج والمقاس والسعر بالسلة هو الخطوة التالية.</p>
+    <p class="ai-credit" id="ai-model-credit"></p>
+</section>
+<script type="module" src="js/ai-products.js"></script>
+<?php endif; ?>
+
 </main>
 
 <script>

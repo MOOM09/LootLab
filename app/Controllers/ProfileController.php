@@ -1,9 +1,11 @@
 <?php
-
+require_once dirname(__DIR__) . '/Models/CustomDesign.php';
+require_once dirname(__DIR__) . '/Services/DesignImageStorage.php';
 class ProfileController extends Controller
 {
     private User $user;
     private string $appUrl;
+    private CustomDesign $designs;
 
     public function __construct(array $config)
     {
@@ -11,7 +13,13 @@ class ProfileController extends Controller
         $database = new Database($config['database']);
 
         $this->user = new User($database->getConnection());
-    }
+    
+    $this->designs = new CustomDesign(
+    $database->getConnection()
+);
+    
+        }
+    
 
     public function index(): void
     {
@@ -24,10 +32,13 @@ class ProfileController extends Controller
         }
 
         $this->view('profile/index', [
-            'user' => $user,
-            'appUrl' => $this->appUrl,
-            'csrfToken' => $this->csrfToken(),
-        ]);
+    'user' => $user,
+    'appUrl' => $this->appUrl,
+    'csrfToken' => $this->csrfToken(),
+    'designs' => $this->designs->findByUser(
+        (int) $_SESSION['user_id']
+    ),
+]);
     }
 
     private function validateProfile(string $name, string $phone): array
@@ -152,4 +163,63 @@ class ProfileController extends Controller
 
         Response::success(null, 200, 'Account deleted successfully.');
     }
+    public function designImage(): void
+{
+    $designId = filter_var(
+        $_GET['id'] ?? null,
+        FILTER_VALIDATE_INT,
+        ['options' => ['min_range' => 1]]
+    );
+
+    if ($designId === false) {
+        Response::error('Invalid design ID.', 422);
+        return;
+    }
+
+    $design = $this->designs->findForUser(
+        $designId,
+        (int) $_SESSION['user_id']
+    );
+
+    if (
+        $design === null ||
+        !is_string($design['result_image'])
+    ) {
+        Response::error('Design not found.', 404);
+        return;
+    }
+
+    try {
+        $storage = new DesignImageStorage();
+        $path = $storage->pathFor($design['result_image']);
+    } catch (RuntimeException $exception) {
+        Response::error('Design image not found.', 404);
+        return;
+    }
+
+    if (!is_file($path) || !is_readable($path)) {
+        Response::error('Design image not found.', 404);
+        return;
+    }
+// إزالة أي نص أو مسافات خرجت قبل بيانات الصورة.
+while (ob_get_level() > 0) {
+    if (!ob_end_clean()) {
+        break;
+    }
+}
+    header('Content-Type: image/png');
+    header('Cache-Control: private, no-store');
+    header('X-Content-Type-Options: nosniff');
+    header(
+        'Content-Disposition: inline; filename="design-'
+        . $designId . '.png"'
+    );
+
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        session_write_close();
+    }
+
+    readfile($path);
+    exit;
+}
 }

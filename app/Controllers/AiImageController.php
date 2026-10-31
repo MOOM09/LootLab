@@ -2,10 +2,20 @@
 
 require_once dirname(__DIR__) . '/Services/AiImageService.php';
 require_once dirname(__DIR__) . '/Services/AiService.php';
-
+require_once dirname(__DIR__) . '/Models/CustomDesign.php';
+require_once dirname(__DIR__) . '/Services/DesignImageStorage.php';
 class AiImageController
 {
-    public function index(): void
+ 
+private array $config;
+
+public function __construct(array $config)
+{
+    $this->config = $config;
+}
+
+
+public function index(): void
     {
         $_SESSION['ai_image_csrf'] ??= bin2hex(random_bytes(32));
         $csrfToken = $_SESSION['ai_image_csrf'];
@@ -14,6 +24,68 @@ class AiImageController
         $description = '';
         $subject = 'person';
         $mode = 'text';
+        $userId = (int) ($_SESSION['user_id'] ?? 0);
+        $savedDesignId = null;
+
+        // فتح تصميم محفوظ، مع التحقق من ملكيته.
+if (
+    ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET'
+    && isset($_GET['design_id'])
+) {
+    try {
+        $inputId = $_GET['design_id'];
+
+        $designId = is_string($inputId)
+            ? filter_var(
+                $inputId,
+                FILTER_VALIDATE_INT,
+                ['options' => ['min_range' => 1]]
+            )
+            : false;
+
+        if ($designId === false) {
+            http_response_code(422);
+            throw new RuntimeException('رقم التصميم غير صالح.');
+        }
+
+        $database = new Database($this->config['database']);
+        $designModel = new CustomDesign($database->getConnection());
+        $design = $designModel->findForUser($designId, $userId);
+
+        if (
+            $design === null
+            || !is_string($design['result_image'])
+        ) {
+            http_response_code(404);
+            throw new RuntimeException(
+                'التصميم غير موجود أو لا يخص هذا المستخدم.'
+            );
+        }
+
+        $storage = new DesignImageStorage();
+        $imagePath = $storage->pathFor($design['result_image']);
+
+        if (!is_file($imagePath) || !is_readable($imagePath)) {
+            http_response_code(404);
+            throw new RuntimeException('ملف التصميم غير موجود.');
+        }
+
+        $binary = file_get_contents($imagePath);
+
+        if ($binary === false) {
+            throw new RuntimeException('تعذّر قراءة صورة التصميم.');
+        }
+
+        $generatedImage = base64_encode($binary);
+        $savedDesignId = $designId;
+    } catch (RuntimeException $exception) {
+        $error = $exception->getMessage();
+    } catch (Throwable $exception) {
+        error_log((string) $exception);
+        http_response_code(500);
+        $error = 'تعذّر تحميل التصميم المحفوظ.';
+    }
+}
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
@@ -67,6 +139,83 @@ class AiImageController
                     $prepared['negative_prompt'],
                     $referencePath
                 );
+                // إعادة فتح الجلسة بعد انتهاء التوليد.
+if (
+    session_status() !== PHP_SESSION_ACTIVE &&
+    !session_start()
+) {
+    throw new RuntimeException(
+        'تولّدت الصورة، لكن تعذّر فتح الجلسة لحفظها.'
+    );
+}
+
+try {
+    if (
+        $userId < 1 ||
+        (int) ($_SESSION['user_id'] ?? 0) !== $userId
+    ) {
+        throw new RuntimeException(
+            'تغيّرت جلسة الدخول أثناء التوليد. لم تُحفظ الصورة؛ سجّل الدخول مجددًا.'
+        );
+    }
+
+    $storage = new DesignImageStorage();
+    $filename = null;
+
+    try {
+        $database = new Database($this->config['database']);
+        $connection = $database->getConnection();
+
+        $owner = (new User($connection))->findById($userId);
+
+        if ($owner === null || (int) $owner['is_active'] !== 1) {
+            throw new RuntimeException(
+                'Account is unavailable or inactive.'
+            );
+        }
+
+        $filename = $storage->save($generatedImage);
+
+        $designModel = new CustomDesign($connection);
+
+        $savedDesignId = $designModel->createCompleted(
+            $userId,
+            $filename
+        );
+    } catch (Throwable $exception) {
+        if ($filename !== null) {
+            $storage->delete($filename);
+        }
+
+        error_log((string) $exception);
+
+        throw new RuntimeException(
+            'تولّدت الصورة، لكن تعذّر حفظها بحسابك. يمكنك تنزيلها من النتيجة الظاهرة.'
+        );
+    }
+} finally {
+    session_write_close();
+}
+
+if ($savedDesignId !== null) {
+    // الانتقال إلى GET حتى التحديث لا يعيد التوليد.
+    while (ob_get_level() > 0) {
+        if (!ob_end_clean()) {
+            break;
+        }
+    }
+
+    header(
+        'Location: '
+        . rtrim($this->config['app_url'], '/')
+        . '/aiImage.php?design_id='
+        . $savedDesignId,
+        true,
+        303
+    );
+    exit;
+}
+
             } catch (RuntimeException $exception) {
                 $error = $exception->getMessage();
             } catch (Throwable $exception) {
