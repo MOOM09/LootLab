@@ -3,17 +3,19 @@
 /** @var Router $router */
 
 // Preserve the existing AI page URL through the shared entry point.
-$router->get( '/ai.php',[
-        AiController::class,
-        'index'
-    ]
-);
+$router->get('/ai.php', [
+    AiController::class,
+    'index',
+], [
+    AuthMiddleware::class,
+]);
 
-$router->post('/ai.php',[
-        AiController::class,
-        'index'
-    ]
-);
+$router->post('/ai.php', [
+    AiController::class,
+    'index',
+], [
+    AuthMiddleware::class,
+]);
 
 $router->get('/auth/google', [
     AuthController::class,

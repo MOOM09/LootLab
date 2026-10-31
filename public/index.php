@@ -33,7 +33,6 @@ require_once __DIR__ . '/../app/Models/PasswordResetRateLimit.php';
 require_once __DIR__ . '/../app/Services/MailService.php';
 require_once __DIR__ . '/../app/Services/GoogleAuthService.php';
 require_once __DIR__ . '/../app/Services/AiService.php';
-require_once __DIR__ . '/../app/Services/AiDatabase.php';
 require_once __DIR__ . '/../app/Services/AiProductCatalog.php';
 require_once __DIR__ . '/../app/Services/PasswordResetService.php';
 
