@@ -1,5 +1,6 @@
 {
     "require": {
-        "vlucas/phpdotenv": "^5.8"
+        "vlucas/phpdotenv": "^5.8",
+        "google/apiclient": "^2.20"
     }
 }
