@@ -244,6 +244,68 @@ $router->post('/orders/delete', [
     AuthMiddleware::class,
 ]);
 
+// Checkout
+$router->get('/checkout', [
+    CheckoutController::class,
+    'index',
+], [
+    AuthMiddleware::class,
+]);
+
+$router->post('/checkout', [
+    CheckoutController::class,
+    'placeOrder',
+], [
+    AuthMiddleware::class,
+]);
+
+$router->post('/checkout/stripe', [
+    CheckoutController::class,
+    'payWithStripe',
+], [
+    AuthMiddleware::class,
+]);
+
+$router->get('/checkout/success', [
+    CheckoutController::class,
+    'success',
+], [
+    AuthMiddleware::class,
+]);
+
+$router->get('/checkout/stripe-success', [
+    CheckoutController::class,
+    'stripeSuccess',
+], [
+    AuthMiddleware::class,
+]);
+
+// Cart (guests and logged-in users; ownership is resolved in the controller)
+$router->get('/cart', [
+    CartController::class,
+    'index',
+]);
+
+$router->post('/cart/add', [
+    CartController::class,
+    'add',
+]);
+
+$router->post('/cart/update', [
+    CartController::class,
+    'update',
+]);
+
+$router->post('/cart/remove', [
+    CartController::class,
+    'remove',
+]);
+
+$router->post('/cart/clear', [
+    CartController::class,
+    'clear',
+]);
+
 // ? How to create a route here?
 // $router is already created in public/index.php before this file is loaded.
 // Format: $router->get('/path', [ControllerName::class, 'methodName']);
