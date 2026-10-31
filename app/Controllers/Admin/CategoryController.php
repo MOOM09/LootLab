@@ -30,7 +30,10 @@ class CategoryController extends Controller
 
     public function store(): void
     {
-        $data = $this->getCategoryData();
+        $input = $this->requestData();
+        $this->validateCsrf($input);
+
+        $data = $this->getCategoryData($input);
 
         try {
             $this->category->create($data);
@@ -54,6 +57,9 @@ class CategoryController extends Controller
 
     public function update(): void
     {
+        $input = $this->requestData();
+        $this->validateCsrf($input);
+
         $id = $this->getCategoryId();
         $category = $this->category->getById($id);
 
@@ -62,7 +68,7 @@ class CategoryController extends Controller
             return;
         }
 
-        $data = $this->getCategoryData();
+        $data = $this->getCategoryData($input);
 
         try {
             $this->category->update($id, $data);
@@ -88,6 +94,9 @@ class CategoryController extends Controller
 
     public function destroy(): void
     {
+        $input = $this->requestData();
+        $this->validateCsrf($input);
+
         $id = $this->getCategoryId();
 
         if ($this->category->getById($id) === null) {
@@ -158,11 +167,11 @@ class CategoryController extends Controller
         return $id;
     }
 
-    private function getCategoryData(): array
+    private function getCategoryData(array $input): array
     {
         return [
-            'name' => trim((string) ($_POST['name'] ?? '')),
-            'image' => trim((string) ($_POST['image'] ?? '')),
+            'name' => trim((string) ($input['name'] ?? '')),
+            'image' => trim((string) ($input['image'] ?? '')),
         ];
     }
 

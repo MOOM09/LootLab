@@ -7,14 +7,17 @@ class AuthController extends Controller
     private User $user;
     private string $appUrl;
     private Database $database;
+    private GoogleAuthService $googleAuth;
 
     public function __construct(array $config)
     {
+        $this->appUrl = $config['app_url'];
+
         $this->database = new Database($config['database']);
 
         $this->user = new User($this->database->getConnection());
 
-        $this->appUrl = $config['app_url'];
+        $this->googleAuth = new GoogleAuthService($config['google']);
     }
 
     public function showLogin(): void
@@ -91,7 +94,7 @@ class AuthController extends Controller
 
             throw $exception;
         }
-    
+
         session_regenerate_id(true);
 
         $_SESSION['user_id'] = (int) $userId;
@@ -256,8 +259,174 @@ class AuthController extends Controller
     }
 
     // ? Redirect the visitor to Google
-    public function redirectToGoogle(): void {}
+    public function redirectToGoogle(): void
+    {
+        // Guest check
+        if (isset($_SESSION['user_id'])) {
+            Response::error('Log out before using another account.', 409);
+        }
+
+        // Generate a security value and save it for the callback.
+        $state = bin2hex(random_bytes(32));
+
+        $_SESSION['google_oauth'] = [
+            'state' => $state,
+            'created_at' => time(),
+        ];
+
+        // Send the browser to Google's login page.
+        $url = $this->googleAuth->getAuthorizationUrl($state);
+
+        $this->redirect($url);
+    }
 
     // ? Handle Google's response and log the user in
-    public function googleCallback(): void {}
+    public function googleCallback(): void
+    {
+        $this->validateGoogleState();
+
+        if (isset($_SESSION['user_id'])) {
+            Response::error('You are already logged in.', 409);
+        }
+
+        $identity = $this->getGoogleIdentity();
+        $user = $this->findOrCreateGoogleUser($identity);
+
+        if ((int) $user['is_active'] !== 1) {
+            Response::error('Your account is inactive.', 403);
+        }
+
+        $this->completeGoogleLogin($user);
+    }
+
+    // ? Validate and consume the security value sent to Google.
+    private function validateGoogleState(): void
+    {
+        $state = $_GET['state'] ?? null;
+        $saved = $_SESSION['google_oauth'] ?? null;
+
+        if (
+            !is_string($state) ||
+            !is_array($saved) ||
+            !isset($saved['state'], $saved['created_at']) ||
+            !is_string($saved['state']) ||
+            !is_int($saved['created_at']) ||
+            !hash_equals($saved['state'], $state)
+        ) {
+            Response::error('Invalid Google login request.', 403);
+        }
+
+        unset($_SESSION['google_oauth']);
+
+        if (time() - $saved['created_at'] > 600) {
+            Response::error('Google login expired. Please try again.', 403);
+        }
+    }
+
+    // ? Exchange Google's authorization code and verify the identity.
+    private function getGoogleIdentity(): array
+    {
+        if (isset($_GET['error'])) {
+            Response::error('Google login was cancelled or denied.', 400);
+        }
+
+        // Authorization code
+        $code = $_GET['code'] ?? null;
+
+        if (!is_string($code) || $code === '') {
+            Response::error('Missing Google authorization code.', 400);
+        }
+
+        try {
+            $tokens = $this->googleAuth->exchangeCode($code);
+
+            return $this->googleAuth->verifyIdToken(
+                $tokens['id_token']
+            );
+        } catch (Throwable $exception) {
+            Response::error(
+                'Unable to verify Google login. Please try again.',
+                401
+            );
+
+            exit;
+        }
+    }
+
+    // ? Find the Google account or create a new LootLab account.
+    private function findOrCreateGoogleUser(array $identity): array
+    {
+        $googleId = $identity['sub'];
+        $email = $identity['email'];
+
+        if (
+            strlen($googleId) > 255 ||
+            strlen($email) > 255 ||
+            !filter_var($email, FILTER_VALIDATE_EMAIL)
+        ) {
+            Response::error('Invalid Google account information.', 422);
+        }
+
+        $user = $this->user->findByGoogleId($googleId);
+
+        if ($user === null) {
+            // Existing accounts must not be linked automatically by email.
+            if ($this->user->findByEmail($email) !== null) {
+                Response::error(
+                    'This email already has an account. Sign in using your existing method.',
+                    409
+                );
+            }
+
+            $name = $identity['name'] ?? 'Google user';
+
+            if (!is_string($name) || trim($name) === '') {
+                $name = 'Google user';
+            }
+
+            $name = mb_substr(trim($name), 0, 100);
+
+            try {
+                $userId = $this->user->createFromGoogle(
+                    $name,
+                    $email,
+                    $googleId
+                );
+            } catch (PDOException $exception) {
+                if ((int) ($exception->errorInfo[1] ?? 0) === 1062) {
+                    Response::error(
+                        'An account was registered already. Please try signing in again.',
+                        409
+                    );
+                }
+
+                throw $exception;
+            }
+
+            $user = $this->user->findById($userId);
+        }
+
+        if ($user === null) {
+            Response::error('Unable to load your account.', 500);
+        }
+
+        return $user;
+    }
+
+    // ? Preserve guest favorites and establish the login session.
+    private function completeGoogleLogin(array $user): void
+    {
+        $favorite = new Favorite($this->database->getConnection());
+
+        $favorite->mergeGuestIntoUser(
+            session_id(),
+            (int) $user['id']
+        );
+
+        session_regenerate_id(true);
+
+        $_SESSION['user_id'] = (int) $user['id'];
+
+        $this->redirect($this->appUrl . '/products');
+    }
 }

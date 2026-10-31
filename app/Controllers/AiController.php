@@ -1,8 +1,5 @@
 <?php
 
-require_once dirname(__DIR__) . '/Services/AiService.php';
-require_once dirname(__DIR__) . '/Services/AiDatabase.php';
-require_once dirname(__DIR__) . '/Models/AiConversation.php';
 
 class AiController extends Controller
 {
@@ -10,7 +7,14 @@ class AiController extends Controller
     {
         $userId = 1;
 
-$_SESSION['ai_csrf'] ??= bin2hex(random_bytes(32));
+// Keep existing AI forms compatible with the shared CSRF token.
+$_SESSION['ai_csrf'] = $this->csrfToken();
+$request = [];
+
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+    $request = $this->requestData();
+    $this->validateCsrf($request);
+}
 $_SESSION['ai_raw_replies'] ??= [];
 
 $error = '';
@@ -35,7 +39,7 @@ if ($model !== null) {
 
     // نأخذ رقم المحادثة من الفورم أو الرابط.
     $requestedId = $isPost
-        ? ($_POST['conversation_id'] ?? '')
+        ? ($request['conversation_id'] ?? '')
         : ($_GET['conversation_id'] ?? '');
 
     try {
@@ -62,18 +66,7 @@ if ($model !== null) {
         }
 
         if ($isPost) {
-            $token = $_POST['csrf_token'] ?? '';
-
-            if (
-                !is_string($token)
-                || !hash_equals($_SESSION['ai_csrf'], $token)
-            ) {
-                throw new RuntimeException(
-                    'الطلب غير صالح. حدّث الصفحة.'
-                );
-            }
-
-            $action = $_POST['action'] ?? 'send';
+            $action = $request['action'] ?? 'send';
 
             if ($action === 'new_chat') {
                 // نفتح صفحة فارغة، بدون حذف المحادثة القديمة.
@@ -85,7 +78,7 @@ if ($action === 'rename') {
         throw new RuntimeException('اختار محادثة أولًا.');
     }
 
-    $title = $_POST['title'] ?? '';
+    $title = $request['title'] ?? '';
 
     if (!is_string($title)) {
         throw new RuntimeException('العنوان غير صالح.');
@@ -116,7 +109,7 @@ if ($action === 'delete') {
                 throw new RuntimeException('العملية غير صالحة.');
             }
 
-            $input = $_POST['message'] ?? '';
+            $input = $request['message'] ?? '';
 
             if (!is_string($input)) {
                 throw new RuntimeException('الرسالة غير صالحة.');
@@ -247,4 +240,3 @@ function escapeHtml(string $value): string
         'UTF-8'
     );
 }
-require_once dirname(__DIR__) . '/Services/AiProductCatalog.php';

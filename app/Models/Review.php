@@ -1,5 +1,4 @@
 <?php
-    require_once __DIR__ . "/../Core/Database.php";
     class Review{
         private PDO $conn;
         function __construct(PDO $conn){

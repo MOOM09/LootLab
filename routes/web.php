@@ -2,6 +2,29 @@
 
 /** @var Router $router */
 
+// Preserve the existing AI page URL through the shared entry point.
+$router->get( '/ai.php',[
+        AiController::class,
+        'index'
+    ]
+);
+
+$router->post('/ai.php',[
+        AiController::class,
+        'index'
+    ]
+);
+
+$router->get('/auth/google', [
+    AuthController::class,
+    'redirectToGoogle',
+]);
+
+$router->get('/auth/google/callback', [
+    AuthController::class,
+    'googleCallback',
+]);
+
 $router->get('/login', [
     AuthController::class,
     'showLogin',
@@ -32,16 +55,25 @@ $router->post('/logout', [
 $router->get('/admin/categories', [
     CategoryController::class,
     'index',
+], [
+    AuthMiddleware::class,
+    AdminMiddleware::class,
 ]);
 
 $router->get('/admin/categories/show', [
     CategoryController::class,
     'show',
+], [
+    AuthMiddleware::class,
+    AdminMiddleware::class,
 ]);
 
 $router->post('/admin/categories', [
     CategoryController::class,
     'store',
+], [
+    AuthMiddleware::class,
+    AdminMiddleware::class,
 ]);
 
 $router->post('/admin/categories/update', [
@@ -52,6 +84,9 @@ $router->post('/admin/categories/update', [
 $router->post('/admin/categories/delete', [
     CategoryController::class,
     'destroy',
+], [
+    AuthMiddleware::class,
+    AdminMiddleware::class,
 ]);
 
 $router->get('/products', [
@@ -67,16 +102,25 @@ $router->get('/products/show', [
 $router->post('/products', [
     ProductController::class,
     'store',
+], [
+    AuthMiddleware::class,
+    AdminMiddleware::class,
 ]);
 
 $router->post('/products/update', [
     ProductController::class,
     'update',
+], [
+    AuthMiddleware::class,
+    AdminMiddleware::class,
 ]);
 
 $router->post('/products/delete', [
     ProductController::class,
     'destroy',
+], [
+    AuthMiddleware::class,
+    AdminMiddleware::class,
 ]);
 
 $router->get('/profile', [
@@ -156,11 +200,15 @@ $router->get('/reviews', [
 $router->post('/reviews', [
     ReviewController::class,
     'store',
+], [
+    AuthMiddleware::class,
 ]);
 
-$router->post('/reviews/delete', [
+$router->delete('/reviews/delete', [
     ReviewController::class,
     'destroy',
+], [
+    AuthMiddleware::class,
 ]);
 
 $router->get('/orders', [
@@ -171,23 +219,30 @@ $router->get('/orders', [
 $router->get('/orders/show', [
     OrderController::class,
     'show',
+], [
+    AuthMiddleware::class,
 ]);
 
 $router->post('/orders', [
     OrderController::class,
     'store',
+], [
+    AuthMiddleware::class,
 ]);
 
 $router->post('/orders/update', [
     OrderController::class,
     'update',
+], [
+    AuthMiddleware::class,
 ]);
 
 $router->post('/orders/delete', [
     OrderController::class,
     'destroy',
+], [
+    AuthMiddleware::class,
 ]);
-
 
 // ? How to create a route here?
 // $router is already created in public/index.php before this file is loaded.

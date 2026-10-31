@@ -1,6 +1,5 @@
 
 <?php
-require_once __DIR__ . "/../Core/Database.php";
 
 class OrderItem {
     private PDO $conn;

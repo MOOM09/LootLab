@@ -49,8 +49,11 @@ class ProductController extends Controller
 
    public function store(): void
 {
+        $input = $this->requestData();
+        $this->validateCsrf($input);
+
     try {
-        $data = $this->validateProduct($this->requestData());
+        $data = $this->validateProduct($input);
 
         $productId = $this->product->create($data);
 
@@ -69,6 +72,9 @@ class ProductController extends Controller
 
     public function update(): void
     {
+        $input = $this->requestData();
+        $this->validateCsrf($input);
+
         $id = $this->getProductId();
 
         if ($this->product->getById($id) === null) {
@@ -80,7 +86,7 @@ class ProductController extends Controller
         }
 
         try {
-            $data = $this->validateProduct($_POST);
+            $data = $this->validateProduct($input);
             $this->product->update($id, $data);
 
             $this->redirect('/products?id=' . $id);
@@ -88,7 +94,7 @@ class ProductController extends Controller
             http_response_code(422);
             $this->view('products/edit', [
                 'errors' => [$e->getMessage()],
-                'data' => $_POST,
+                'data' => $input,
                 'productId' => $id,
             ]);
         }
@@ -96,6 +102,9 @@ class ProductController extends Controller
 
     public function destroy(): void
     {
+        $input = $this->requestData();
+        $this->validateCsrf($input);
+
         $id = $this->getProductId();
 
         if ($this->product->getById($id) === null) {
