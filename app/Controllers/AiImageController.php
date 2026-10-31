@@ -58,7 +58,9 @@ class AiImageController
                 set_time_limit(720);
                 $ai = new AiService($apiKey);
                 $prepared = $ai->prepareImagePrompt($brief, $subject, $referencePath);
-                $service = new AiImageService();
+               $service = new AiImageService(
+    $_ENV['PHOTOMAKER_GENERATE_URL'] ?? ''
+);
                 $generatedImage = $service->generate(
                     $path,
                     $prepared['prompt'],

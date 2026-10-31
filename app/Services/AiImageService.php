@@ -2,6 +2,25 @@
 
 class AiImageService
 {
+    private string $generateUrl;
+
+public function __construct(string $generateUrl)
+{
+    $generateUrl = trim($generateUrl);
+
+    if (
+        filter_var($generateUrl, FILTER_VALIDATE_URL) === false
+        || !in_array(
+            strtolower((string) parse_url($generateUrl, PHP_URL_SCHEME)),
+            ['http', 'https'],
+            true
+        )
+    ) {
+        throw new RuntimeException('رابط PhotoMaker غير مضبوط.');
+    }
+
+    $this->generateUrl = $generateUrl;
+}
     public function generate(
         string $imagePath,
         string $prompt,
@@ -24,7 +43,7 @@ class AiImageService
         if ($referenceImagePath !== null) {
             $fields['reference_image'] = $this->imageFile($referenceImagePath, 'reference');
         }
-        $curl = curl_init('http://127.0.0.1:7861/generate');
+        $curl = curl_init($this->generateUrl);
         if ($curl === false) {
             throw new RuntimeException('تعذّر تجهيز الاتصال.');
         }

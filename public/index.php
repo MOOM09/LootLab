@@ -30,7 +30,6 @@ require_once __DIR__ . '/../app/Models/AiConversation.php';
 // Services.
 require_once __DIR__ . '/../app/Services/GoogleAuthService.php';
 require_once __DIR__ . '/../app/Services/AiService.php';
-require_once __DIR__ . '/../app/Services/AiDatabase.php';
 require_once __DIR__ . '/../app/Services/AiProductCatalog.php';
 
 // Middleware.
