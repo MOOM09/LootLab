@@ -3,9 +3,11 @@
 class ProfileController extends Controller
 {
     private User $user;
+    private string $appUrl;
 
     public function __construct(array $config)
     {
+        $this->appUrl = $config['app_url'];
         $database = new Database($config['database']);
 
         $this->user = new User($database->getConnection());
@@ -23,6 +25,8 @@ class ProfileController extends Controller
 
         $this->view('profile/index', [
             'user' => $user,
+            'appUrl' => $this->appUrl,
+            'csrfToken' => $this->csrfToken(),
         ]);
     }
 
