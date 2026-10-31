@@ -53,7 +53,7 @@ CREATE TABLE `subcategories` (
 -- 4. PRODUCTS
 CREATE TABLE `products` (
   `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `subcategory_id` int(10) UNSIGNED NOT NULL,
+  `subcategorys_id` int(10) UNSIGNED NOT NULL,
   `name` varchar(150) NOT NULL,
   `description` text NOT NULL,
   `price` decimal(10,2) NOT NULL,

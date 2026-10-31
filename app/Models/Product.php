@@ -28,7 +28,7 @@ class Product
         $statement = $this->db->query(
             'SELECT
                 p.id,
-                p.subcategory_id,
+                p.subcategorys_id,
                 p.name,
                 p.description,
                 p.price,
@@ -38,11 +38,11 @@ class Product
                 p.is_active,
                 p.created_at,
                 p.updated_at,
-                s.name AS subcategory_name,
+                s.name AS subcategorys_name,
                 c.id AS category_id,
                 c.name AS category_name
              FROM products p
-             INNER JOIN subcategories s ON s.id = p.subcategory_id
+             INNER JOIN subcategories s ON s.id = p.subcategorys_id
              INNER JOIN categories c ON c.id = s.category_id
              WHERE p.is_active = 1
              ORDER BY p.created_at DESC, p.id DESC'
@@ -56,7 +56,7 @@ class Product
         $statement = $this->db->prepare(
             'SELECT
                 p.id,
-                p.subcategory_id,
+                p.subcategorys_id,
                 p.name,
                 p.description,
                 p.price,
@@ -66,11 +66,11 @@ class Product
                 p.is_active,
                 p.created_at,
                 p.updated_at,
-                s.name AS subcategory_name,
+                s.name AS subcategorys_name,
                 c.id AS category_id,
                 c.name AS category_name
              FROM products p
-             INNER JOIN subcategories s ON s.id = p.subcategory_id
+             INNER JOIN subcategories s ON s.id = p.subcategorys_id
              INNER JOIN categories c ON c.id = s.category_id
              WHERE p.id = :id AND p.is_active = 1
              LIMIT 1'
@@ -86,7 +86,7 @@ class Product
     {
         $statement = $this->db->prepare(
             'INSERT INTO products (
-                subcategory_id,
+                subcategorys_id,
                 name,
                 description,
                 price,
@@ -94,7 +94,7 @@ class Product
                 image,
                 stock_quantity
              ) VALUES (
-                :subcategory_id,
+                :subcategorys_id,
                 :name,
                 :description,
                 :price,
@@ -117,7 +117,7 @@ class Product
         $statement = $this->db->prepare(
             'UPDATE products
              SET
-                subcategory_id = :subcategory_id,
+                subcategorys_id = :subcategorys_id,
                 name = :name,
                 description = :description,
                 price = :price,
@@ -147,7 +147,7 @@ class Product
     private function productParameters(array $data): array
     {
         return [
-            'subcategory_id' => (int) $data['subcategory_id'],
+            'subcategorys_id' => (int) $data['subcategorys_id'],
             'name' => $data['name'],
             'description' => $data['description'],
             'price' => $data['price'],

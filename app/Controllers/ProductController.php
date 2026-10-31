@@ -168,13 +168,13 @@ class ProductController extends Controller
             );
         }
 
-        $subcategoryId = filter_var(
-            $data['subcategory_id'] ?? null,
+        $subcategorysId = filter_var(
+            $data['subcategorys_id'] ?? null,
             FILTER_VALIDATE_INT,
             ['options' => ['min_range' => 1]]
         );
 
-        if ($subcategoryId === false) {
+        if ($subcategorysId === false) {
             throw new InvalidArgumentException('A valid subcategory is required.');
         }
 
@@ -193,7 +193,7 @@ class ProductController extends Controller
             'description' => $description,
             'price' => (float) $price,
             'stock_quantity' => (int) $stockQuantity,
-            'subcategory_id' => $subcategoryId,
+            'subcategorys_id' => $subcategorysId,
             'discount_price' => $discountPrice,
             'image' => trim((string) ($data['image'] ?? '')),
         ];
