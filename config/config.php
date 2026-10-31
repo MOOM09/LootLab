@@ -1,4 +1,3 @@
-
 <?php
 
 $projectRoot = dirname(__DIR__);
@@ -6,7 +5,7 @@ $projectRoot = dirname(__DIR__);
 require_once $projectRoot . '/vendor/autoload.php';
 
 $dotenv = Dotenv\Dotenv::createImmutable($projectRoot);
-$dotenv->safeLoad();
+$dotenv->load();
 
 return [
     'app_url' => rtrim($_ENV['APP_URL'] ?? '', '/'),
@@ -21,6 +20,7 @@ return [
     'google' => [
         'client_id' => $_ENV['GOOGLE_CLIENT_ID'] ?? '',
         'client_secret' => $_ENV['GOOGLE_CLIENT_SECRET'] ?? '',
-        'redirect_uri' => $_ENV['GOOGLE_REDIRECT_URI'] ?? '',
+        'redirect_uri' => $_ENV['GOOGLE_REDIRECT_URI']
+            ?? 'http://localhost/LootLab/public/auth/google/callback',
     ],
 ];
