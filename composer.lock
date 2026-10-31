@@ -4,7 +4,11 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
+<<<<<<< HEAD
+    "content-hash": "b7d860dd833c6efaf899b840e616a198",
+=======
     "content-hash": "2bd8488c8e68f6f189294d392814d768",
+>>>>>>> origin/main
     "packages": [
         {
             "name": "firebase/php-jwt",
@@ -845,6 +849,31 @@
             "time": "2026-08-24T00:54:40+00:00"
         },
         {
+<<<<<<< HEAD
+            "name": "stripe/stripe-php",
+            "version": "v22.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/stripe/stripe-php.git",
+                "reference": "24ffd4c5708bdd490362baedb1df8efe4bf76484"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/stripe/stripe-php/zipball/24ffd4c5708bdd490362baedb1df8efe4bf76484",
+                "reference": "24ffd4c5708bdd490362baedb1df8efe4bf76484",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "ext-json": "*",
+                "ext-mbstring": "*",
+                "php": ">=7.4.0"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "3.94.0",
+                "phpstan/phpstan": "^1.2",
+                "phpunit/phpunit": "^8.0 || ^9.0"
+=======
             "name": "psr/cache",
             "version": "3.0.0",
             "source": {
@@ -860,16 +889,29 @@
             },
             "require": {
                 "php": ">=8.0.0"
+>>>>>>> origin/main
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
+<<<<<<< HEAD
+                    "dev-master": "2.0-dev"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "lib/version_check.php"
+                ],
+                "psr-4": {
+                    "Stripe\\": "lib/"
+=======
                     "dev-master": "1.0.x-dev"
                 }
             },
             "autoload": {
                 "psr-4": {
                     "Psr\\Cache\\": "src/"
+>>>>>>> origin/main
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -878,6 +920,25 @@
             ],
             "authors": [
                 {
+<<<<<<< HEAD
+                    "name": "Stripe and contributors",
+                    "homepage": "https://github.com/stripe/stripe-php/contributors"
+                }
+            ],
+            "description": "Stripe PHP Library",
+            "homepage": "https://stripe.com/",
+            "keywords": [
+                "api",
+                "payment processing",
+                "stripe"
+            ],
+            "support": {
+                "issues": "https://github.com/stripe/stripe-php/issues",
+                "source": "https://github.com/stripe/stripe-php/tree/v22.1.0"
+            },
+            "time": "2026-10-29T19:51:41+00:00",
+            "published-time": "2026-10-29T19:52:11+00:00"
+=======
                     "name": "PHP-FIG",
                     "homepage": "https://www.php-fig.org/"
                 }
@@ -1179,6 +1240,7 @@
             ],
             "time": "2026-06-05T06:23:12+00:00",
             "published-time": "2026-06-27T21:46:34+00:00"
+>>>>>>> origin/main
         },
         {
             "name": "symfony/polyfill-ctype",
@@ -1595,7 +1657,8 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-10-25T16:26:19+00:00"
+            "time": "2026-10-25T16:26:19+00:00",
+            "published-time": "2026-10-25T16:26:50+00:00"
         }
     ],
     "packages-dev": [],

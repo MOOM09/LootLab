@@ -1,0 +1,28 @@
+{
+  "log": [
+    {
+      "s": "stripe-opened",
+      "sessionId": "cs_test_a1ojstnY6TQkr1s2UDAff9F2vfbXeb0WEiJuvsmfGLFLxXU6sFpaZoy5T3",
+      "url": "https://checkout.stripe.com/c/pay/cs_test_a1ojstnY6TQkr1s2UD"
+    },
+    {
+      "s": "card-click-warn",
+      "e": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting"
+    },
+    {
+      "s": "card-filled",
+      "number": null,
+      "expiry": null,
+      "cvc": null,
+      "zip": null
+    }
+  ],
+  "stage": "filled",
+  "sessionId": "cs_test_a1ojstnY6TQkr1s2UDAff9F2vfbXeb0WEiJuvsmfGLFLxXU6sFpaZoy5T3",
+  "filled": {
+    "number": null,
+    "expiry": null,
+    "cvc": null,
+    "zip": null
+  }
+}

@@ -45,6 +45,25 @@ class CartItem
         ]);
     }
 
+    //? Adds to an existing quantity instead of setting it (guest cart merge).
+    //? The stored column is written as cart_items.quantity + the incoming quantity.
+    public function merge(int $cartId, int $productId, int $quantity, ?int $designId): bool
+    {
+        $statement = $this->db->prepare(
+            'INSERT INTO cart_items (cart_id, product_id, quantity, custom_design_id)
+             VALUES (:cart_id, :product_id, :quantity, :design_id)
+             ON DUPLICATE KEY UPDATE quantity = cart_items.quantity + :add_quantity'
+        );
+
+        return $statement->execute([
+            'cart_id'       => $cartId,
+            'product_id'    => $productId,
+            'quantity'      => $quantity,
+            'design_id'     => $designId,
+            'add_quantity'  => $quantity,
+        ]);
+    }
+
     public function updateQuantity(int $cartId, int $itemId, int $quantity): bool
     {
         $statement = $this->db->prepare(
