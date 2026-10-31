@@ -1,0 +1,216 @@
+{
+  "steps": [],
+  "frames": [
+    {
+      "url": "https://checkout.stripe.com/c/pay/cs_test_a1zr0etfeE4fxUVuVh",
+      "count": 8,
+      "items": [
+        {
+          "tag": "input",
+          "type": "text",
+          "name": "email",
+          "placeholder": "email@example.com",
+          "aria": null,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "type": "button",
+          "name": null,
+          "placeholder": null,
+          "aria": "Pay with card",
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "type": "button",
+          "name": null,
+          "placeholder": null,
+          "aria": "Pay with Cash App",
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "type": "button",
+          "name": null,
+          "placeholder": null,
+          "aria": "Pay with Bank",
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "type": "button",
+          "name": null,
+          "placeholder": null,
+          "aria": "Pay with Klarna",
+          "text": ""
+        },
+        {
+          "tag": "input",
+          "type": "checkbox",
+          "name": "enableStripePass",
+          "placeholder": null,
+          "aria": null,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "type": "submit",
+          "name": null,
+          "placeholder": null,
+          "aria": null,
+          "text": "Pay\nProcessing"
+        },
+        {
+          "tag": "input",
+          "type": "text",
+          "name": "link_pay_token",
+          "placeholder": null,
+          "aria": "Link Pay Token",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "url": "https://js.stripe.com/v3/elements-inner-express-checkout-67d",
+      "count": 1,
+      "items": [
+        {
+          "tag": "button",
+          "type": "button",
+          "name": "pay_with_link_arrow",
+          "placeholder": null,
+          "aria": "Pay securely with Link",
+          "text": "Pay with"
+        }
+      ]
+    },
+    {
+      "url": "https://b.stripecdn.com/stripethirdparty-srv/assets/v37.1/Am",
+      "count": 1,
+      "items": [
+        {
+          "tag": "div",
+          "type": null,
+          "name": null,
+          "placeholder": null,
+          "aria": "Amazon Pay - Use your Amazon Pay Sandbox test account",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "url": "https://newassets.hcaptcha.com/captcha/v1/b1c4f881f907b3e342",
+      "count": 6,
+      "items": [
+        {
+          "tag": "div",
+          "type": null,
+          "name": null,
+          "placeholder": null,
+          "aria": "Verify Answers",
+          "text": "Verify"
+        },
+        {
+          "tag": "div",
+          "type": null,
+          "name": null,
+          "placeholder": null,
+          "aria": "EN - English, Select a language",
+          "text": "EN"
+        },
+        {
+          "tag": "button",
+          "type": "submit",
+          "name": null,
+          "placeholder": null,
+          "aria": "About hCaptcha & Accessibility Options",
+          "text": ""
+        },
+        {
+          "tag": "div",
+          "type": null,
+          "name": null,
+          "placeholder": null,
+          "aria": "Refresh Challenge.",
+          "text": ""
+        },
+        {
+          "tag": "a",
+          "type": null,
+          "name": null,
+          "placeholder": null,
+          "aria": null,
+          "text": ""
+        },
+        {
+          "tag": "div",
+          "type": null,
+          "name": null,
+          "placeholder": null,
+          "aria": "Close Modal",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "url": "https://newassets.hcaptcha.com/captcha/v1/b1c4f881f907b3e342",
+      "count": 6,
+      "items": [
+        {
+          "tag": "div",
+          "type": null,
+          "name": null,
+          "placeholder": null,
+          "aria": "Verify Answers",
+          "text": "Verify"
+        },
+        {
+          "tag": "div",
+          "type": null,
+          "name": null,
+          "placeholder": null,
+          "aria": "EN - English, Select a language",
+          "text": "EN"
+        },
+        {
+          "tag": "button",
+          "type": "submit",
+          "name": null,
+          "placeholder": null,
+          "aria": "About hCaptcha & Accessibility Options",
+          "text": ""
+        },
+        {
+          "tag": "div",
+          "type": null,
+          "name": null,
+          "placeholder": null,
+          "aria": "Refresh Challenge.",
+          "text": ""
+        },
+        {
+          "tag": "a",
+          "type": null,
+          "name": null,
+          "placeholder": null,
+          "aria": null,
+          "text": ""
+        },
+        {
+          "tag": "div",
+          "type": null,
+          "name": null,
+          "placeholder": null,
+          "aria": "Close Modal",
+          "text": ""
+        }
+      ]
+    }
+  ],
+  "bodyText": " !function(){function e(t){var n=u[t];if(void 0!==n)return n.exports;var r=u[t]={id:t,loaded:!1,exports:{}};return s[t].call(r.exports,r,r.exports,e),r.loaded=!0,r.exports}var t,n,r,i,a,o,s={29541:function(e,t,n){\"use strict\";var r;n.d(t,{A:function(){return r}}),function(e){e.Fatal=\"fatal\",e.Error=\"error\",e.Warning=\"warning\",e.Log=\"log\",e.Info=\"info\",e.Debug=\"debug\",e.Critical=\"critical\"}(r||(r={}))},72602:function(e,t,n){\"use strict\";function r(e){l.length||(o(),!0),l[l.length]=e}function i(){",
+  "amountHits": [
+    "$25.27"
+  ],
+  "jodMentions": 4
+}

@@ -3,8 +3,10 @@
 class OrderItem {
     private PDO $conn;
 
-    public function __construct(PDO $conn) {
-        $this->conn = $conn;
+    public function __construct(PDO|Database $connection) {
+        $this->conn = $connection instanceof Database
+            ? $connection->getConnection()
+            : $connection;
     }
 
     function getAll() {
