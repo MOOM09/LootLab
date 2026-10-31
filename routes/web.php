@@ -240,9 +240,9 @@ $router->post('/orders/update', [
 $router->post('/orders/delete', [
     OrderController::class,
     'destroy',
-<<<<<<< HEAD
-]
-);
+], [
+    AuthMiddleware::class,
+]);
 
 // Checkout
 $router->get('/checkout', [
@@ -273,77 +273,37 @@ $router->get('/checkout/success', [
     AuthMiddleware::class,
 ]);
 
-// Cart
+$router->get('/checkout/stripe-success', [
+    CheckoutController::class,
+    'stripeSuccess',
+], [
+    AuthMiddleware::class,
+]);
+
+// Cart (guests and logged-in users; ownership is resolved in the controller)
 $router->get('/cart', [
     CartController::class,
     'index',
-], [
-    AuthMiddleware::class,
 ]);
 
 $router->post('/cart/add', [
     CartController::class,
     'add',
-], [
-    AuthMiddleware::class,
 ]);
 
 $router->post('/cart/update', [
     CartController::class,
     'update',
-], [
-    AuthMiddleware::class,
 ]);
 
 $router->post('/cart/remove', [
     CartController::class,
     'remove',
-], [
-    AuthMiddleware::class,
 ]);
 
 $router->post('/cart/clear', [
     CartController::class,
     'clear',
-], [
-    AuthMiddleware::class,
-]);
-
-// Checkout
-$router->get('/checkout', [
-    CheckoutController::class,
-    'index',
-], [
-    AuthMiddleware::class,
-]);
-
-$router->post('/checkout', [
-    CheckoutController::class,
-    'placeOrder',
-], [
-    AuthMiddleware::class,
-]);
-
-$router->post('/checkout/stripe', [
-    CheckoutController::class,
-    'payWithStripe',
-], [
-    AuthMiddleware::class,
-]);
-
-$router->get('/checkout/success', [
-    CheckoutController::class,
-    'success',
-], [
-    AuthMiddleware::class,
-]);
-$router->get('/checkout/stripe-success', [
-    CheckoutController::class,
-    'stripeSuccess',
-=======
->>>>>>> origin/main
-], [
-    AuthMiddleware::class,
 ]);
 
 // ? How to create a route here?

@@ -23,15 +23,7 @@ require_once __DIR__ . '/../app/Models/Favorite.php';
 require_once __DIR__ . '/../app/Models/CartItem.php';
 require_once __DIR__ . '/../app/Models/Cart.php';
 require_once __DIR__ . '/../app/Models/Review.php';
-<<<<<<< HEAD
-
-require_once __DIR__ . '/../app/Controllers/OrderController.php';
-require_once __DIR__ . '/../app/Controllers/CartController.php';
-require_once __DIR__ . '/../app/Controllers/CheckoutController.php';
-
-=======
 require_once __DIR__ . '/../app/Models/OrderItem.php';
->>>>>>> origin/main
 require_once __DIR__ . '/../app/Models/Order.php';
 require_once __DIR__ . '/../app/Models/AiConversation.php';
 
@@ -53,6 +45,7 @@ require_once __DIR__ . '/../app/Controllers/ProductController.php';
 require_once __DIR__ . '/../app/Controllers/ProfileController.php';
 require_once __DIR__ . '/../app/Controllers/FavoriteController.php';
 require_once __DIR__ . '/../app/Controllers/CartController.php';
+require_once __DIR__ . '/../app/Controllers/CheckoutController.php';
 require_once __DIR__ . '/../app/Controllers/OrderController.php';
 require_once __DIR__ . '/../app/Controllers/ReviewController.php';
 require_once __DIR__ . '/../app/Controllers/AiController.php';

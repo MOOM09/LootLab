@@ -3,9 +3,8 @@
 class Order {
     private PDO $conn;
 
-    function __construct() {
-        $db = new Database();
-        $this->conn = $db->getconnect();
+    public function __construct(Database $database) {
+        $this->conn = $database->getConnection();
     }
 
     function getAll() {

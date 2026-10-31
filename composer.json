@@ -1,10 +1,7 @@
 {
     "require": {
         "vlucas/phpdotenv": "^5.8",
-<<<<<<< HEAD
-        "stripe/stripe-php": "^22.1"
-=======
+        "stripe/stripe-php": "^22.1",
         "google/apiclient": "^2.20"
->>>>>>> origin/main
     }
 }

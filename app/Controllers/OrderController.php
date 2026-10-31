@@ -11,7 +11,7 @@ class OrderController extends Controller
     {
 
         $database = new Database($config['database']);
-        $this->order = new Order();
+        $this->order = new Order($database);
         $this->appUrl = $config['app_url'];
     }
 

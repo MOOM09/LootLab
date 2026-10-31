@@ -1,5 +1,9 @@
 <?php
 
+require_once dirname(__DIR__) . '/Services/CartMergeService.php';
+require_once dirname(__DIR__) . '/Models/Cart.php';
+require_once dirname(__DIR__) . '/Models/CartItem.php';
+
 // TODO: In frontend JavaScript, redirect to result.data.redirect
 // after a successful login or registration response.
 class AuthController extends Controller
@@ -94,6 +98,8 @@ class AuthController extends Controller
 
             throw $exception;
         }
+
+        $this->mergeGuestCart((int) $userId);
 
         session_regenerate_id(true);
 
@@ -214,6 +220,8 @@ class AuthController extends Controller
         if ((int) $user['is_active'] !== 1) {
             Response::error('Your account is inactive.', 403);
         }
+
+        $this->mergeGuestCart((int) $user['id']);
 
         session_regenerate_id(true);
         $_SESSION['user_id'] = (int) $user['id'];
@@ -423,10 +431,36 @@ class AuthController extends Controller
             (int) $user['id']
         );
 
+        $this->mergeGuestCart((int) $user['id']);
+
         session_regenerate_id(true);
 
         $_SESSION['user_id'] = (int) $user['id'];
 
         $this->redirect($this->appUrl . '/products');
+    }
+
+    //? Move the session guest cart into the user's database cart.
+    //? Must run before session_regenerate_id(), while the guest cart is still in the session.
+    //? Failures are logged and the guest cart is kept, so the merge can be retried.
+    private function mergeGuestCart(int $userId): void
+    {
+        if (empty($_SESSION['guest_cart'])) {
+            return;
+        }
+
+        try {
+            $merge = new CartMergeService($this->database);
+
+            $merge->mergeGuestCart($userId);
+
+            //? Clear the guest cart only after a successful merge.
+            unset($_SESSION['guest_cart']);
+        } catch (Throwable $exception) {
+            error_log(
+                'Guest cart merge failed for user ' . $userId . ': '
+                . $exception->getMessage()
+            );
+        }
     }
 }

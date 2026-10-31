@@ -1,17 +1,12 @@
 
 <?php
 
-<<<<<<< HEAD
 $projectRoot = dirname(__DIR__);
 
 require_once $projectRoot . '/vendor/autoload.php';
 
 $dotenv = Dotenv\Dotenv::createImmutable($projectRoot);
 $dotenv->safeLoad();
-=======
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
-$dotenv->load();
->>>>>>> origin/main
 
 return [
     'app_url' => rtrim($_ENV['APP_URL'] ?? '', '/'),
@@ -22,13 +17,10 @@ return [
         'username' => $_ENV['DB_USER'] ?? 'root',
         'password' => $_ENV['DB_PASS'] ?? '',
     ],
-<<<<<<< HEAD
-=======
 
     'google' => [
-        'client_id' => $_ENV['GOOGLE_CLIENT_ID'],
-        'client_secret' => $_ENV['GOOGLE_CLIENT_SECRET'],
-        'redirect_uri' => $_ENV['GOOGLE_REDIRECT_URI'],
+        'client_id' => $_ENV['GOOGLE_CLIENT_ID'] ?? '',
+        'client_secret' => $_ENV['GOOGLE_CLIENT_SECRET'] ?? '',
+        'redirect_uri' => $_ENV['GOOGLE_REDIRECT_URI'] ?? '',
     ],
->>>>>>> origin/main
 ];

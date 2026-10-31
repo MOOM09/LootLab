@@ -31,7 +31,8 @@ class StripeService
     ): Session {
         return $this->stripe->checkout->sessions->create([
             'mode' => 'payment',
-            'payment_method_types' => ['card'],
+            //? payment_method_types is rejected by the SDK's pinned API version
+            //? (2026-10-28.endive). Card payments are configured in the Stripe Dashboard.
             'line_items' => $lineItems,
             'success_url' => $successUrl,
             'cancel_url' => $cancelUrl,

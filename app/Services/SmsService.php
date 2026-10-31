@@ -27,7 +27,7 @@ class SmsService
 
         $curl = curl_init($url);
 
-        curl_setopt_array($curl, [
+        $options = [
             CURLOPT_POST => true,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HTTPHEADER => [
@@ -36,10 +36,22 @@ class SmsService
             ],
             CURLOPT_POSTFIELDS => json_encode($data),
             CURLOPT_TIMEOUT => 15,
+            CURLOPT_CONNECTTIMEOUT => 10,
 
-            CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_SSL_VERIFYHOST => 0
-        ]);
+            // Verify the server certificate (never disable these in production).
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_SSL_VERIFYHOST => 2
+        ];
+
+        // Some PHP/cURL builds on Windows have no system CA store. Use a configured
+        // bundle when one is available; otherwise verification fails loudly below.
+        $caBundle = $this->caBundlePath();
+
+        if ($caBundle !== null) {
+            $options[CURLOPT_CAINFO] = $caBundle;
+        }
+
+        curl_setopt_array($curl, $options);
 
         $response = curl_exec($curl);
         $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
@@ -60,5 +72,23 @@ class SmsService
         }
 
         return $result;
+    }
+
+    //? First existing CA bundle: curl.cainfo, then openssl.cafile, then the Stripe SDK's copy.
+    private function caBundlePath(): ?string
+    {
+        $candidates = [
+            (string) ini_get('curl.cainfo'),
+            (string) ini_get('openssl.cafile'),
+            str_replace('\\', '/', dirname(__DIR__, 2) . '/vendor/stripe/stripe-php/data/ca-certificates.crt'),
+        ];
+
+        foreach ($candidates as $path) {
+            if ($path !== '' && is_file($path)) {
+                return $path;
+            }
+        }
+
+        return null;
     }
 }

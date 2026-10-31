@@ -2,8 +2,9 @@
 <?php
 
 require_once __DIR__ . '/../Core/Database.php';
-require_once __DIR__ . '/../Models/Cart.php';
+require_once __DIR__ . '/../Interfaces/cartInterface.php';
 require_once __DIR__ . '/../Models/CartItem.php';
+require_once __DIR__ . '/../Models/Cart.php';
 
 class CheckoutService
 {
