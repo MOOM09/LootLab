@@ -26,5 +26,4 @@ class AiDatabase
     {
         return $this->connection;
     }
-    
 }

@@ -1,5 +1,5 @@
 <?php
-
+require_once dirname(__DIR__) . '/vendor/autoload.php';
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();
 
@@ -13,9 +13,10 @@ return [
         'password' => $_ENV['DB_PASS'],
     ],
 
-    'google' => [
-        'client_id' => $_ENV['GOOGLE_CLIENT_ID'],
-        'client_secret' => $_ENV['GOOGLE_CLIENT_SECRET'],
-        'redirect_uri' => $_ENV['GOOGLE_REDIRECT_URI'],
-    ],
+   'google' => [
+    'client_id' => $_ENV['GOOGLE_CLIENT_ID'] ?? '',
+    'client_secret' => $_ENV['GOOGLE_CLIENT_SECRET'] ?? '',
+    'redirect_uri' => $_ENV['GOOGLE_REDIRECT_URI']
+        ?? 'http://localhost/LootLab/public/auth/google/callback',
+],
 ];
