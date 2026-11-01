@@ -54,6 +54,44 @@ class Product
         return $statement->fetchAll();
     }
 
+    /**
+     * Rank active products by quantities from fulfilled/processing orders.
+     * A separate, explicitly demo-only table can provide sample ranking data
+     * for local previews; no fake orders, payments or stock changes are made.
+     * Without that table, zero-sale products fill the remaining slots.
+     */
+    public function getTopSellingProducts(int $limit = 10): array
+    {
+        $limit = max(1, min(30, $limit));
+        $hasDemoTable = $this->db->query("SHOW TABLES LIKE 'product_demo_popularity'")
+            ->fetchColumn() !== false;
+        $demoJoin = $hasDemoTable
+            ? 'LEFT JOIN product_demo_popularity demo ON demo.product_id = p.id'
+            : '';
+        $demoSelect = $hasDemoTable
+            ? 'COALESCE(demo.demo_units, 0)'
+            : '0';
+
+        $sql = "SELECT p.id, p.name, p.description, p.image, p.price,
+                       p.discount_price, p.stock_quantity,
+                       COALESCE(sales.units_sold, 0) AS units_sold,
+                       {$demoSelect} AS demo_units
+                FROM products p
+                LEFT JOIN (
+                    SELECT oi.product_id, SUM(oi.quantity) AS units_sold
+                    FROM order_items oi
+                    INNER JOIN orders o ON o.id = oi.order_id
+                    WHERE o.status IN ('processing', 'shipped', 'completed')
+                    GROUP BY oi.product_id
+                ) sales ON sales.product_id = p.id
+                {$demoJoin}
+                WHERE p.is_active = 1
+                ORDER BY units_sold DESC, demo_units DESC, p.created_at DESC, p.id DESC
+                LIMIT {$limit}";
+
+        return $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function getById(int $id): ?array
     {
         $statement = $this->db->prepare(
