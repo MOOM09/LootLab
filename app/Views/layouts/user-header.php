@@ -4,6 +4,19 @@ $userPageTitle = isset($pageTitle) && is_string($pageTitle) ? $pageTitle . ' —
 $userIsSignedIn = isset($_SESSION['user_id']);
 $userIsAdmin = $userIsSignedIn && ($_SESSION['role'] ?? '') === 'admin';
 $_SESSION['csrf_token'] ??= bin2hex(random_bytes(32));
+$userRequestPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+$userBasePath = rtrim((string) (parse_url($userAppUrl, PHP_URL_PATH) ?? ''), '/');
+$userCurrentRoute = $userBasePath !== '' && (
+    $userRequestPath === $userBasePath || str_starts_with($userRequestPath, $userBasePath . '/')
+) ? substr($userRequestPath, strlen($userBasePath)) : $userRequestPath;
+$userCurrentRoute = $userCurrentRoute === '' ? '/' : $userCurrentRoute;
+$userActiveNav = match (true) {
+    $userCurrentRoute === '/' => 'home',
+    str_starts_with($userCurrentRoute, '/products') => 'products',
+    str_starts_with($userCurrentRoute, '/favorites') => 'favorites',
+    str_starts_with($userCurrentRoute, '/cart'), str_starts_with($userCurrentRoute, '/checkout') => 'cart',
+    default => '',
+};
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -13,7 +26,7 @@ $_SESSION['csrf_token'] ??= bin2hex(random_bytes(32));
 <title><?= htmlspecialchars($userPageTitle, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="<?= htmlspecialchars($userAppUrl . '/css/user.css?v=loote6', ENT_QUOTES, 'UTF-8') ?>">
+<link rel="stylesheet" href="<?= htmlspecialchars($userAppUrl . '/css/user.css?v=loote7', ENT_QUOTES, 'UTF-8') ?>">
 <script src="<?= htmlspecialchars($userAppUrl . '/js/user.js?v=loote4', ENT_QUOTES, 'UTF-8') ?>" defer></script>
 </head>
 <body class="user-body" data-user-app-url="<?= htmlspecialchars($userAppUrl, ENT_QUOTES, 'UTF-8') ?>" data-loote-landing="<?= ($pageTitle ?? '') === 'Home' ? 'true' : 'false' ?>">
@@ -23,13 +36,13 @@ $_SESSION['csrf_token'] ??= bin2hex(random_bytes(32));
 <button class="user-menu-toggle" type="button" aria-expanded="false" aria-controls="user-primary-nav" data-user-menu-toggle><span class="user-visually-hidden">Toggle navigation</span><span></span><span></span><span></span></button>
 <nav class="user-primary-nav" id="user-primary-nav" aria-label="Main navigation" data-user-nav>
     <div class="user-nav-main">
-        <a class="user-nav-link" href="<?= htmlspecialchars($userAppUrl . '/', ENT_QUOTES, 'UTF-8') ?>">Home</a>
-        <a class="user-nav-link" href="<?= htmlspecialchars($userAppUrl . '/products', ENT_QUOTES, 'UTF-8') ?>">Products</a>
-        <a class="user-nav-link" href="<?= htmlspecialchars($userAppUrl . '/favorites', ENT_QUOTES, 'UTF-8') ?>">
+        <a class="user-nav-link<?= $userActiveNav === 'home' ? ' user-nav-active' : '' ?>" href="<?= htmlspecialchars($userAppUrl . '/', ENT_QUOTES, 'UTF-8') ?>" <?= $userActiveNav === 'home' ? 'aria-current="page"' : '' ?>>Home</a>
+        <a class="user-nav-link<?= $userActiveNav === 'products' ? ' user-nav-active' : '' ?>" href="<?= htmlspecialchars($userAppUrl . '/products', ENT_QUOTES, 'UTF-8') ?>" <?= $userActiveNav === 'products' ? 'aria-current="page"' : '' ?>>Products</a>
+        <a class="user-nav-link<?= $userActiveNav === 'favorites' ? ' user-nav-active' : '' ?>" href="<?= htmlspecialchars($userAppUrl . '/favorites', ENT_QUOTES, 'UTF-8') ?>" <?= $userActiveNav === 'favorites' ? 'aria-current="page"' : '' ?>>
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20.5 8.2c0 4.5-8.5 10.8-8.5 10.8S3.5 12.7 3.5 8.2a4.6 4.6 0 0 1 8.5-2.5 4.6 4.6 0 0 1 8.5 2.5z"/></svg>
             Favorites <span class="user-nav-count" data-user-favorite-count hidden>0</span>
         </a>
-        <a class="user-nav-link user-nav-cart" href="<?= htmlspecialchars($userAppUrl . ($userIsSignedIn ? '/cart' : '/login'), ENT_QUOTES, 'UTF-8') ?>">
+        <a class="user-nav-link user-nav-cart<?= $userActiveNav === 'cart' ? ' user-nav-active' : '' ?>" href="<?= htmlspecialchars($userAppUrl . ($userIsSignedIn ? '/cart' : '/login'), ENT_QUOTES, 'UTF-8') ?>" <?= $userActiveNav === 'cart' ? 'aria-current="page"' : '' ?>>
             <svg class="user-cart-icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M3 3h2l2.4 12.2a2 2 0 0 0 2 1.6h8.8a2 2 0 0 0 2-1.6L22 7H6"/><circle cx="10" cy="20" r="1"/><circle cx="18" cy="20" r="1"/>
             </svg>Cart
