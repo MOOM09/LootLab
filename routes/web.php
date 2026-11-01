@@ -7,10 +7,10 @@
 // HOME & PRODUCTS
 // ======================================================
 
-// Homepage: show the product catalog.
+// Homepage: landing with About.
 $router->get('/', [
     ProductController::class,
-    'index',
+    'home',
 ]);
 
 $router->get('/products', [
