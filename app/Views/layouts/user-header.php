@@ -13,7 +13,7 @@ $_SESSION['csrf_token'] ??= bin2hex(random_bytes(32));
 <title><?= htmlspecialchars($userPageTitle, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="<?= htmlspecialchars($userAppUrl . '/css/user.css?v=loote5', ENT_QUOTES, 'UTF-8') ?>">
+<link rel="stylesheet" href="<?= htmlspecialchars($userAppUrl . '/css/user.css?v=loote6', ENT_QUOTES, 'UTF-8') ?>">
 <script src="<?= htmlspecialchars($userAppUrl . '/js/user.js?v=loote4', ENT_QUOTES, 'UTF-8') ?>" defer></script>
 </head>
 <body class="user-body" data-user-app-url="<?= htmlspecialchars($userAppUrl, ENT_QUOTES, 'UTF-8') ?>" data-loote-landing="<?= ($pageTitle ?? '') === 'Home' ? 'true' : 'false' ?>">
