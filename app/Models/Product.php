@@ -37,7 +37,7 @@ class Product
                 p.is_active,
                 p.created_at,
                 p.updated_at,
-                s.name AS subcategory_name,
+                s.name AS subcategorys_name,
                 c.id AS category_id,
                 c.name AS category_name
              FROM products p
@@ -65,7 +65,7 @@ class Product
                 p.is_active,
                 p.created_at,
                 p.updated_at,
-                s.name AS subcategory_name,
+                s.name AS subcategorys_name,
                 c.id AS category_id,
                 c.name AS category_name
              FROM products p
