@@ -1500,3 +1500,41 @@ body.user-body :focus-visible {
     cursor: pointer;
 }
 .lootlab-3d-hint { text-align: center; color: #aaa3b5; font-size: .88rem; margin: 8px 0 0; }
+
+/* LOOTE storefront overrides */
+.user-navbar-inner{justify-content:space-between}.user-primary-nav{margin-left:auto}
+.user-account-dropdown form{margin:0}
+.user-logout-action{display:block;width:100%;padding:.65rem .7rem;border:0;background:transparent;border-radius:8px;color:#ff6b83;font:inherit;text-align:left;cursor:pointer;font-weight:750}
+.user-logout-action:hover{background:rgba(255,107,131,.1)}
+.user-image-ai-link,.user-admin-shortcut{color:var(--user-primary)!important}
+.user-products-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.user-products-grid>[hidden],.user-category-item[hidden],.user-empty-state[hidden],.loote-greeting[hidden]{display:none!important}
+.user-product-description{margin:.2rem 0 .8rem;color:var(--user-muted);font-size:.85rem;line-height:1.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.user-click-details{color:var(--user-primary);text-decoration:underline;text-underline-offset:3px;font-weight:850;font-size:.78rem;letter-spacing:.05em;margin-bottom:.85rem}
+.user-catalog-search{display:flex;align-items:center;gap:.75rem;margin:1.5rem 0;padding:1rem;border:1px solid var(--user-border);border-radius:16px;background:var(--user-surface)}
+.user-catalog-search label{font-weight:700;white-space:nowrap}
+.user-catalog-search input{flex:1;min-width:0;color:var(--user-text);font:inherit;border:1px solid var(--user-border);border-radius:9px;padding:.75rem;background:var(--user-bg)}
+.user-filters-heading h2{font-size:1.15rem;margin:.7rem 0 0}.user-filters-heading p{color:var(--user-muted);margin:.3rem 0 .9rem}
+.user-catalog-pagination{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:.55rem;margin:2rem 0}
+.user-page-button{min-width:42px;min-height:42px;padding:.5rem .7rem;border:1px solid var(--user-border);border-radius:100px;background:var(--user-surface);color:var(--user-text);font:inherit;font-weight:700;cursor:pointer}
+.user-page-button.user-is-current{background:var(--user-primary);border-color:var(--user-primary);color:var(--user-bg)}
+.user-page-button:disabled{opacity:.35;cursor:not-allowed}.user-page-ellipsis{padding:.5rem;color:var(--user-muted)}
+.user-home-hero{position:relative;overflow:hidden;border:1px solid var(--user-border);border-radius:26px;padding:6rem 2.5rem 5rem;background:radial-gradient(ellipse at 82% 35%,rgba(181,139,255,.26),transparent 48%),linear-gradient(145deg,#1c142c,#0d0914)}
+.user-home-hero h1{max-width:740px;font-size:clamp(2.6rem,6vw,5rem);line-height:1.08;margin:.5rem 0 1rem}.user-home-hero h1 em{color:var(--user-primary);font-style:normal}
+.user-home-hero p{max-width:560px;color:var(--user-muted);font-size:1.08rem;line-height:1.8}.user-home-hero .user-button{margin-top:1rem}
+.user-home-about{margin:3.5rem 0;display:grid;grid-template-columns:1fr 1.4fr;gap:3rem;align-items:start}
+.user-home-about h2{font-size:clamp(1.8rem,3.5vw,2.7rem);margin:.3rem 0}.user-home-about p{color:var(--user-muted);line-height:1.85}
+.user-home-featured{margin:3.5rem 0}.user-home-card img{width:100%;aspect-ratio:4/3;object-fit:cover}
+.loote-assistant{position:fixed;right:22px;bottom:22px;z-index:70}
+.loote-face{display:grid;width:76px;height:76px;border-radius:50%;filter:drop-shadow(0 8px 24px rgba(181,139,255,.5));transition:transform .2s ease}
+.loote-face:hover,.loote-face:focus-visible{transform:scale(1.09) rotate(-6deg)}
+.loote-greeting{position:absolute;right:0;bottom:calc(100% + 12px);min-width:210px;display:flex;flex-direction:column;gap:.25rem;padding:1rem 2.2rem 1rem 1rem;border:1px solid rgba(181,139,255,.5);border-radius:14px;background:#221931;box-shadow:0 10px 35px rgba(0,0,0,.35);color:#fff;font-size:.88rem}
+.loote-greeting strong{color:#d5bcff}.loote-greeting [data-loote-dismiss]{position:absolute;right:9px;top:4px;border:0;background:transparent;color:#eee;font-size:1.3rem;cursor:pointer}
+.loote-sparks{position:absolute;pointer-events:none;inset:-30px;opacity:0;color:#ffdd8c;font-size:1.4rem;letter-spacing:8px}
+@keyframes loote-fly{0%{transform:translate(-75vw,-55vh) rotate(-24deg) scale(.65)}45%{transform:translate(-38vw,-25vh) rotate(20deg) scale(1.1)}75%{transform:translate(-10vw,-18vh) rotate(-9deg)}100%{transform:translate(0,0) rotate(0) scale(1)}}
+@keyframes loote-spark{0%,100%{opacity:0;transform:translate(-40px,-30px) scale(.6)}45%{opacity:1;transform:translate(-20px,-10px) scale(1.3)}}
+.loote-arriving .loote-face{animation:loote-fly 2.25s cubic-bezier(.2,.7,.1,1) both}.loote-arriving .loote-sparks{animation:loote-spark 1.8s ease-out both}
+@media(max-width:1020px){.user-products-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:780px){.user-products-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.user-home-about{grid-template-columns:1fr}.user-catalog-search{flex-wrap:wrap}.user-catalog-search label{width:100%}}
+@media(max-width:560px){.user-products-grid{grid-template-columns:1fr}.user-home-hero{padding:3.5rem 1.2rem}.loote-assistant{right:12px;bottom:12px}.loote-face,.loote-face svg{width:60px;height:60px}}
+@media(prefers-reduced-motion:reduce){.loote-arriving .loote-face,.loote-arriving .loote-sparks{animation:none!important}}
