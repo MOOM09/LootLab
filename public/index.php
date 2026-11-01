@@ -21,6 +21,7 @@ require_once __DIR__ . '/../app/Models/Category.php';
 require_once __DIR__ . '/../app/Models/Product.php';
 require_once __DIR__ . '/../app/Models/Favorite.php';
 require_once __DIR__ . '/../app/Models/CartItem.php';
+require_once __DIR__ . '/../app/Models/PromoCode.php';
 require_once __DIR__ . '/../app/Models/Cart.php';
 require_once __DIR__ . '/../app/Models/Review.php';
 require_once __DIR__ . '/../app/Models/OrderItem.php';
