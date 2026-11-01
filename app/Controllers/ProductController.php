@@ -11,6 +11,25 @@ class ProductController extends Controller
         $this->product = new Product();
     }
 
+    public function home(): void
+    {
+        $topProducts = $this->product->getTopSellingProducts(10);
+        $productsWithSales = count(array_filter(
+            $topProducts,
+            static fn (array $product): bool => (int) ($product['units_sold'] ?? 0) > 0
+        ));
+        $hasDemoRankings = count(array_filter(
+            $topProducts,
+            static fn (array $product): bool => (int) ($product['demo_units'] ?? 0) > 0
+        )) > 0;
+
+        $this->view('home/index', [
+            'topProducts' => $topProducts,
+            'topProductsWithSales' => $productsWithSales,
+            'hasDemoRankings' => $hasDemoRankings,
+        ]);
+    }
+
     public function index(): void
     {
         $id = $this->getOptionalProductId();

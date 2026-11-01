@@ -3,6 +3,7 @@ require_once __DIR__ . '/../Core/Controller.php';
 require_once __DIR__ . '/../Core/Database.php';
 require_once __DIR__ . '/../Interfaces/cartInterface.php';
 require_once __DIR__ . '/../Models/CartItem.php';
+require_once __DIR__ . '/../Models/PromoCode.php';
 require_once __DIR__ . '/../Models/Cart.php';
 require_once __DIR__ . '/../Services/CheckoutService.php';
 require_once __DIR__ . '/../Services/StripeService.php';
@@ -10,7 +11,8 @@ require_once __DIR__ . '/../Services/TextBeeService.php';
 
 class CheckoutController extends Controller
 {
-    private CheckoutService $checkout;
+   private CheckoutService $checkout;
+private Cart $cart;
     private ?StripeService $stripe = null;
     private PDO $db;
     private string $appUrl;
@@ -28,6 +30,7 @@ class CheckoutController extends Controller
         $database = new Database($config['database']);
         $this->db = $database->getConnection();
         $this->checkout = new CheckoutService($database);
+        $this->cart = new Cart($database);
         $this->appUrl = rtrim($config['app_url'], '/');
     }
 
@@ -55,12 +58,21 @@ class CheckoutController extends Controller
     }
 
     private function renderCheckoutError(string $message, array $old = []): void
-    {
-        $this->view('checkout/index', [
-            'error' => $message, 'old' => $old,
-            'appUrl' => $this->appUrl, 'csrfToken' => $this->csrfToken(),
-        ]);
-    }
+{
+    $userId = $this->getUserId();
+
+    $this->view('checkout/index', [
+        'error' => $message,
+        'notice' => null,
+        'promoNotice' => null,
+        'promoError' => null,
+        'old' => $old,
+        'appUrl' => $this->appUrl,
+        'csrfToken' => $this->csrfToken(),
+        ...$this->checkoutSummary($userId)
+    ]);
+}
+    
 
     private function getUserId(): int
     {
@@ -68,17 +80,126 @@ class CheckoutController extends Controller
         return (int) $_SESSION['user_id'];
     }
 
+    private function checkoutSummary(int $userId): array
+{
+    $cartId = $this->cart->getOrCreateCartId($userId);
+
+    $this->cart->refreshPromo($cartId);
+
+    $totals = $this->cart->getTotals($cartId);
+
+    $stmt = $this->db->prepare(
+        'SELECT p.code
+         FROM carts c
+         LEFT JOIN promo_codes p
+             ON p.promo_id = c.promo_code_id
+         WHERE c.id = :cart_id
+           AND c.user_id = :user_id'
+    );
+
+    $stmt->execute([
+        'cart_id' => $cartId,
+        'user_id' => $userId
+    ]);
+
+    return [
+        'totals' => $totals,
+        'appliedPromoCode' => (string) ($stmt->fetchColumn() ?: '')
+    ];
+}
+
     public function index(): void
-    {
-        $this->getUserId();
-        $notice = ($_GET['payment'] ?? '') === 'cancelled'
-            ? 'Your card payment was cancelled. Your order was not charged.' : null;
-        $this->view('checkout/index', [
-            'error' => null, 'notice' => $notice, 'old' => [],
-            'appUrl' => $this->appUrl, 'csrfToken' => $this->csrfToken(),
-        ]);
+{
+    $userId = $this->getUserId();
+
+    $notice = ($_GET['payment'] ?? '') === 'cancelled'
+        ? 'Your card payment was cancelled. Your order was not charged.'
+        : null;
+
+    $promoNotice = $_SESSION['checkout_promo_notice'] ?? null;
+    $promoError = $_SESSION['checkout_promo_error'] ?? null;
+
+    unset(
+        $_SESSION['checkout_promo_notice'],
+        $_SESSION['checkout_promo_error']
+    );
+
+    $this->view('checkout/index', [
+        'error' => null,
+        'notice' => $notice,
+        'promoNotice' => $promoNotice,
+        'promoError' => $promoError,
+        'old' => [],
+        'appUrl' => $this->appUrl,
+        'csrfToken' => $this->csrfToken(),
+        ...$this->checkoutSummary($userId)
+    ]);
+}
+public function applyPromo(): void
+{
+    $userId = $this->getUserId();
+
+    $input = $this->requestData();
+    $this->validateCsrf($input);
+
+    try {
+        $code = trim((string) ($input['promo_code'] ?? ''));
+
+        if ($code === '') {
+            throw new InvalidArgumentException('Please enter a promo code.');
+        }
+
+        $cartId = $this->cart->getOrCreateCartId($userId);
+
+        if (empty($this->cart->getItems($cartId))) {
+            throw new RuntimeException('Your cart is empty.');
+        }
+
+        $config = require __DIR__ . '/../../config/config.php';
+        $database = new Database($config['database']);
+
+        $promoModel = new PromoCode($database);
+        $promo = $promoModel->findValidByCode($code);
+
+        if ($promo === null) {
+            throw new InvalidArgumentException(
+                'Invalid or expired promo code.'
+            );
+        }
+
+        if (!$this->cart->applyPromoByCode($cartId, $code)) {
+            throw new RuntimeException('Could not apply promo code.');
+        }
+
+        $_SESSION['checkout_promo_notice'] =
+            'Promo code applied successfully.';
+
+    } catch (Throwable $e) {
+        $_SESSION['checkout_promo_error'] = $e->getMessage();
     }
 
+    $this->redirect($this->appUrl . '/checkout');
+}
+
+public function removePromo(): void
+{
+    $userId = $this->getUserId();
+
+    $input = $this->requestData();
+    $this->validateCsrf($input);
+
+    $cartId = $this->cart->getOrCreateCartId($userId);
+
+    if ($this->cart->removePromo($cartId)) {
+        $_SESSION['checkout_promo_notice'] =
+            'Promo code removed.';
+    } else {
+        $_SESSION['checkout_promo_error'] =
+            'Could not remove promo code.';
+    }
+
+    $this->redirect($this->appUrl . '/checkout');
+}
     /** Normalize Jordanian phone numbers into +9627XXXXXXXX. */
     private function normalizePhone(string $phone): string
     {

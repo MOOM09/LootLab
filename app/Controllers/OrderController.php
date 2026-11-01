@@ -16,6 +16,34 @@ class OrderController extends Controller
         Response::success($this->order->getAll());
     }
 
+    public function myOrders(): void
+    {
+        $userId = $this->requireUser();
+        $this->view('orders/index', [
+            'orders' => $this->order->getForUser($userId),
+            'appUrl' => rtrim((string) ($_ENV['APP_URL'] ?? ''), '/'),
+        ]);
+    }
+
+    public function myOrderDetails(): void
+    {
+        $userId = $this->requireUser();
+        $id = $this->positiveId($_GET['id'] ?? null);
+        $order = $this->order->getByIdForUser($id, $userId);
+        if ($order === null) {
+            http_response_code(404);
+            $this->view('orders/show', ['order' => null, 'items' => [], 'appUrl' => rtrim((string) ($_ENV['APP_URL'] ?? ''), '/')]);
+            return;
+        }
+        $this->view('orders/show', [
+            'order' => $order,
+            'appUrl' => rtrim((string) ($_ENV['APP_URL'] ?? ''), '/'),
+            'items' => $this->order->getItemsForUserOrder($id, $userId),
+            'canReview' => in_array((string) $order['status'], ['completed', 'shipped'], true)
+                || (int) ($_SESSION['stripe_paid_order_id'] ?? 0) === $id,
+        ]);
+    }
+
     public function show(): void
     {
         $id = $this->positiveId($_GET['id'] ?? null);

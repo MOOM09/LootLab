@@ -7,10 +7,10 @@
 // HOME & PRODUCTS
 // ======================================================
 
-// Homepage: show the product catalog.
+// Homepage: landing with About.
 $router->get('/', [
     ProductController::class,
-    'index',
+    'home',
 ]);
 
 $router->get('/products', [
@@ -246,6 +246,21 @@ $router->get('/profile/design-image', [
 
 $router->get('/orders', [
     OrderController::class,
+    'myOrders',
+], [
+    AuthMiddleware::class,
+]);
+
+$router->get('/orders/details', [
+    OrderController::class,
+    'myOrderDetails',
+], [
+    AuthMiddleware::class,
+]);
+
+// Administrative order listing remains admin-only.
+$router->get('/admin/orders/list', [
+    OrderController::class,
     'index',
 ], [
     AuthMiddleware::class,
@@ -285,6 +300,19 @@ $router->post('/orders/delete', [
 // ======================================================
 // CHECKOUT
 // ======================================================
+$router->post('/checkout/promo', [
+    CheckoutController::class,
+    'applyPromo',
+], [
+    AuthMiddleware::class,
+]);
+
+$router->post('/checkout/promo/remove', [
+    CheckoutController::class,
+    'removePromo',
+], [
+    AuthMiddleware::class,
+]);
 
 $router->get('/checkout', [
     CheckoutController::class,

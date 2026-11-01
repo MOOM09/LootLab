@@ -134,6 +134,8 @@ $reviewUrl = $appUrl
 
     </div>
 
+    <!-- Reviews are displayed to everyone, but writing is enabled only after a verified purchase. -->
+    <p class="user-status-note" data-user-review-eligibility>Purchase this item to unlock your review.</p>
     <!-- WRITE REVIEW -->
     <?php if ($userId !== null): ?>
 
@@ -142,7 +144,8 @@ $reviewUrl = $appUrl
             action="<?= htmlspecialchars($appUrl . '/reviews', ENT_QUOTES, 'UTF-8') ?>"
             method="POST"
             data-user-review-form
-            data-user-async-form>
+            data-user-async-form
+            hidden>
 
             <h3>Share your experience</h3>
 

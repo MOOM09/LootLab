@@ -14,6 +14,28 @@ class Order {
         return $stmt->fetchAll();
     }
 
+    public function getForUser(int $userId): array
+    {
+        $stmt = $this->conn->prepare('SELECT id, total_amount, status, promo_discount, created_at FROM orders WHERE user_id = ? ORDER BY created_at DESC, id DESC');
+        $stmt->execute([$userId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getByIdForUser(int $id, int $userId): ?array
+    {
+        $stmt = $this->conn->prepare('SELECT * FROM orders WHERE id = ? AND user_id = ? LIMIT 1');
+        $stmt->execute([$id, $userId]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result === false ? null : $result;
+    }
+
+    public function getItemsForUserOrder(int $id, int $userId): array
+    {
+        $stmt = $this->conn->prepare('SELECT oi.product_id, p.name, oi.quantity, oi.unit_price FROM order_items oi INNER JOIN products p ON p.id = oi.product_id INNER JOIN orders o ON o.id = oi.order_id WHERE o.id = ? AND o.user_id = ? ORDER BY oi.id');
+        $stmt->execute([$id, $userId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     function getById(int $id) {
         $sql = "SELECT * FROM orders WHERE id=?";
         $stmt = $this->conn->prepare($sql);

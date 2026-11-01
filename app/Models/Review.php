@@ -45,6 +45,22 @@
             return $stmt->rowCount() > 0;
         }
 
+        public function hasPurchased(int $userId, int $productId): bool
+        {
+            $sql = "SELECT 1 FROM order_items oi INNER JOIN orders o ON o.id = oi.order_id WHERE o.user_id = ? AND oi.product_id = ? AND o.status IN ('completed', 'shipped') LIMIT 1";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([$userId, $productId]);
+            return $stmt->fetchColumn() !== false;
+        }
+
+        public function isInVerifiedStripeOrder(int $userId, int $productId, int $orderId): bool
+        {
+            if ($orderId <= 0) return false;
+            $stmt = $this->conn->prepare('SELECT 1 FROM order_items oi JOIN orders o ON o.id=oi.order_id WHERE o.id=? AND o.user_id=? AND oi.product_id=? LIMIT 1');
+            $stmt->execute([$orderId, $userId, $productId]);
+            return $stmt->fetchColumn() !== false;
+        }
+
         function create(int $user_id ,int $product_id,int $rating,string $comment){
             $sql = "INSERT INTO reviews (user_id,product_id,rating,comment) 
                     VALUES(?, ?, ?, ?)";

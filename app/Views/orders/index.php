@@ -70,7 +70,7 @@ require __DIR__ . '/../layouts/user-header.php';
                                     </td>
 
                                     <td>
-                                        <?= htmlspecialchars((string) $order['total_amount'], ENT_QUOTES, 'UTF-8') ?>
+                                        <?= htmlspecialchars((string) $order['total_amount'], ENT_QUOTES, 'UTF-8') ?> JD
                                     </td>
 
                                     <td>
@@ -84,7 +84,7 @@ require __DIR__ . '/../layouts/user-header.php';
                                     <td>
                                         <a
                                             class="user-button-secondary"
-                                            href="<?= htmlspecialchars($appUrl . '/orders/show?id=' . (int) $order['id'], ENT_QUOTES, 'UTF-8') ?>">
+                                            href="<?= htmlspecialchars($appUrl . '/orders/details?id=' . (int) $order['id'], ENT_QUOTES, 'UTF-8') ?>">
                                             View Order
                                         </a>
                                     </td>
