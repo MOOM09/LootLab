@@ -63,8 +63,10 @@ class Product
     public function getTopSellingProducts(int $limit = 10): array
     {
         $limit = max(1, min(30, $limit));
-        $hasDemoTable = $this->db->query("SHOW TABLES LIKE 'product_demo_popularity'")
-            ->fetchColumn() !== false;
+        $hasDemoTable = (int) $this->db->query(
+            "SELECT COUNT(*) FROM information_schema.tables
+             WHERE table_schema = DATABASE() AND table_name = 'product_demo_popularity'"
+        )->fetchColumn() > 0;
         $demoJoin = $hasDemoTable
             ? 'LEFT JOIN product_demo_popularity demo ON demo.product_id = p.id'
             : '';
