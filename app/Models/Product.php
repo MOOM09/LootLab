@@ -55,10 +55,10 @@ class Product
     }
 
     /**
-     * Rank active products by quantities from fulfilled/processing orders.
+     * Rank active products by real sales plus optional demo baseline quantities.
      * A separate, explicitly demo-only table can provide sample ranking data
      * for local previews; no fake orders, payments or stock changes are made.
-     * Without that table, zero-sale products fill the remaining slots.
+     * Without that table, zero-sale products fill the remaining slots.\n     * A new sale increases the score by the purchased quantity, not resets it.
      */
     public function getTopSellingProducts(int $limit = 10): array
     {
@@ -88,7 +88,7 @@ class Product
                 ) sales ON sales.product_id = p.id
                 {$demoJoin}
                 WHERE p.is_active = 1
-                ORDER BY units_sold DESC, demo_units DESC, p.created_at DESC, p.id DESC
+                ORDER BY (COALESCE(sales.units_sold, 0) + {$demoSelect}) DESC, COALESCE(sales.units_sold, 0) DESC, p.id DESC
                 LIMIT {$limit}";
 
         return $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
