@@ -1,42 +1,110 @@
+
 <?php
-
 /**
- * Expects: $order (order row), $appUrl (string).
+ * Expects:
+ * $order (array)
+ * $appUrl (string)
+ *
+ * IMPORTANT:
+ * The controller must verify that the order
+ * belongs to the authenticated user.
  */
+
 $appUrl = rtrim($appUrl ?? '', '/');
+$order = $order ?? null;
+
+$pageTitle = 'Order Details';
+require __DIR__ . '/../layouts/user-header.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order #<?= (int) $order['id'] ?> - LootLab</title>
-</head>
+<section class="user-page">
+    <div class="user-container">
 
-<body>
-    <h1>Order #<?= (int) $order['id'] ?></h1>
+        <p class="user-eyebrow">Purchase details</p>
 
-    <p>
-        <a href="<?= htmlspecialchars($appUrl . '/orders', ENT_QUOTES, 'UTF-8') ?>">Back to orders</a>
-    </p>
+        <?php if (!empty($order) && isset($order['id'])): ?>
 
-    <dl>
-        <dt>Status</dt>
-        <dd><?= htmlspecialchars((string) $order['status'], ENT_QUOTES, 'UTF-8') ?></dd>
+            <h1 class="user-page-title">
+                Order #<?= (int) $order['id'] ?>
+            </h1>
 
-        <dt>Total</dt>
-        <dd><?= htmlspecialchars((string) $order['total_amount'], ENT_QUOTES, 'UTF-8') ?></dd>
+            <p class="user-page-subtitle">
+                Review your order information.
+            </p>
 
-        <dt>Shipping address</dt>
-        <dd><?= nl2br(htmlspecialchars((string) $order['shipping_address'], ENT_QUOTES, 'UTF-8')) ?></dd>
+            <div class="user-form-card">
 
-        <dt>Phone</dt>
-        <dd><?= htmlspecialchars((string) $order['phone'], ENT_QUOTES, 'UTF-8') ?></dd>
+                <dl class="user-order-details">
 
-        <dt>Placed</dt>
-        <dd><?= htmlspecialchars((string) $order['created_at'], ENT_QUOTES, 'UTF-8') ?></dd>
-    </dl>
-</body>
+                    <dt>Order Number</dt>
+                    <dd>
+                        #<?= (int) $order['id'] ?>
+                    </dd>
 
-</html>
+                    <dt>Status</dt>
+                    <dd>
+                        <?= htmlspecialchars((string) ($order['status'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                    </dd>
+
+                    <dt>Total</dt>
+                    <dd>
+                        <?= htmlspecialchars((string) ($order['total_amount'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                    </dd>
+
+                    <dt>Shipping Address</dt>
+                    <dd>
+                        <?= nl2br(htmlspecialchars((string) ($order['shipping_address'] ?? ''), ENT_QUOTES, 'UTF-8')) ?>
+                    </dd>
+
+                    <dt>Phone Number</dt>
+                    <dd>
+                        <?= htmlspecialchars((string) ($order['phone'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                    </dd>
+
+                    <dt>Placed On</dt>
+                    <dd>
+                        <?= htmlspecialchars((string) ($order['created_at'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                    </dd>
+
+                </dl>
+
+            </div>
+
+            <div class="user-form-actions">
+                <a
+                    class="user-button-secondary"
+                    href="<?= htmlspecialchars($appUrl . '/orders', ENT_QUOTES, 'UTF-8') ?>">
+                    Back to Orders
+                </a>
+            </div>
+
+        <?php else: ?>
+
+            <div class="user-empty-state">
+
+                <span class="user-empty-icon" aria-hidden="true">
+                    📦
+                </span>
+
+                <h1 class="user-page-title">
+                    Order Not Found
+                </h1>
+
+                <p>
+                    This order is unavailable.
+                </p>
+
+                <a
+                    class="user-button"
+                    href="<?= htmlspecialchars($appUrl . '/orders', ENT_QUOTES, 'UTF-8') ?>">
+                    Back to Orders
+                </a>
+
+            </div>
+
+        <?php endif; ?>
+
+    </div>
+</section>
+
+<?php require __DIR__ . '/../layouts/user-footer.php'; ?>

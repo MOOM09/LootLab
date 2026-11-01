@@ -42,18 +42,26 @@ class CartController extends Controller
     {
         $userId = $this->getUserId();
 
+if (str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'text/html')) {
+            $this->view('cart/index');
+            return;
+        }
+
         if ($userId === null) {
-            $this->json(200, [
+            Response::success([
                 'items' => $this->guestItems(),
                 'totals' => $this->guestTotals(),
+                'csrf_token' => $this->csrfToken(),
             ]);
+            return;
         }
 
         $cartId = $this->cart->getOrCreateCartId($userId);
 
-        $this->json(200, [
+        Response::success([
             'items' => $this->cart->getItems($cartId),
             'totals' => $this->cart->getTotals($cartId),
+            'csrf_token' => $this->csrfToken(),
         ]);
     }
 
@@ -70,7 +78,14 @@ class CartController extends Controller
             : null;
 
         if ($productId < 1 || $quantity < 1) {
-            $this->json(400, ['error' => 'Invalid product or quantity.']);
+            Response::error('Invalid product or quantity.', 400);
+        }
+
+        if ($designId !== null) {
+            Response::error(
+                'Custom designs are not supported by the current cart schema.',
+                422
+            );
         }
 
         if ($designId !== null && $designId < 1) {
@@ -91,16 +106,16 @@ class CartController extends Controller
 
         $cartId = $this->cart->getOrCreateCartId($userId);
 
-        $success = $this->cart->addItem(
+        if (!$this->cart->addItem(
             $cartId,
             $productId,
             $quantity,
-            $designId
-        );
+            null
+        )) {
+            Response::error('The product could not be added to your cart.', 400);
+        }
 
-        $this->json($success ? 201 : 400, [
-            'success' => $success,
-        ]);
+        Response::success(null, 201, 'Product added to cart.');
     }
 
     // Update a cart item's quantity
@@ -142,7 +157,11 @@ class CartController extends Controller
             $quantity
         );
 
-        $this->json(200, ['success' => $success]);
+        if (!$success) {
+            Response::error('Cart item not found.', 404);
+        }
+
+        Response::success(null, 200, 'Cart quantity updated.');
     }
 
     // Remove one item from the cart
@@ -174,7 +193,11 @@ class CartController extends Controller
         $cartId = $this->cart->getOrCreateCartId($userId);
         $success = $this->cart->removeItem($cartId, $itemId);
 
-        $this->json(200, ['success' => $success]);
+        if (!$success) {
+            Response::error('Cart item not found.', 404);
+        }
+
+        Response::success(null, 200, 'Cart item removed.');
     }
 
     // Remove all items from the cart

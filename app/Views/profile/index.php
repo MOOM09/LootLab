@@ -1,140 +1,376 @@
-<?php
 
-/** @var array $user */
-/** @var string $appUrl */
-/** @var string $csrfToken */
+<?php
+/**
+ * Profile Page
+ *
+ * Expects:
+ * $user (array)
+ * $designs (array)
+ * $appUrl (string)
+ * $csrfToken (string)
+ */
+
+$user = isset($user) && is_array($user) ? $user : [];
+$designs = isset($designs) && is_array($designs) ? $designs : [];
+
+$appUrl = rtrim($appUrl ?? '', '/');
+$csrfToken = $csrfToken ?? '';
+
+$pageTitle = 'Your profile';
+
+require __DIR__ . '/../layouts/user-header.php';
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
+<section class="user-page">
+    <div class="user-container">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile — LootLab</title>
-</head>
+        <p class="user-eyebrow">Your account</p>
 
-<body>
+        <h1 class="user-page-title">Profile</h1>
 
-        <!--
-    Data  comes from ProfileController::index()
-    Inside view(), extract($data) creates $user
+        <p class="user-page-subtitle">
+            Manage your account information and saved AI designs.
+        </p>
 
-    Session user_id → User model → Database row
-    → Controller passes it to view → $user['name']
-        -->
-        <h1> <?= htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8') ?>'s Profile</h1>
-         <section class="user-designs">
-    <h2>تصاميمي</h2>
+        <div class="user-profile-grid">
 
-    <?php if (empty($designs)): ?>
-        <p>لسا ما عندك تصاميم محفوظة.</p>
-    <?php else: ?>
-        <div style="
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 240px));
-            gap: 16px;
-            margin-bottom: 24px;
-        ">
-            <?php foreach ($designs as $design): ?>
-                <?php
-                $imageUrl = $appUrl
-                    . '/profile/design-image?id='
-                    . (int) $design['id'];
-                ?>
+            <!-- ACCOUNT INFORMATION -->
+            <section
+                class="user-info-card"
+                aria-labelledby="user-profile-info-heading">
 
-                <article class="user-design-card">
-                    <a
-                        href="<?= htmlspecialchars(
-                            $imageUrl,
-                            ENT_QUOTES,
-                            'UTF-8'
-                        ) ?>"
-                        target="_blank"
-                        rel="noopener"
-                    >
-                        <img
-                            src="<?= htmlspecialchars(
-                                $imageUrl,
-                                ENT_QUOTES,
+                <h2 id="user-profile-info-heading">
+                    Account Information
+                </h2>
+
+                <dl class="user-profile-facts">
+
+                    <div>
+                        <dt>Name</dt>
+                        <dd dir="auto">
+                            <?= htmlspecialchars(
+                                (string) ($user['name'] ?? ''),
+                                ENT_QUOTES | ENT_SUBSTITUTE,
                                 'UTF-8'
-                            ) ?>"
-                            alt="تصميم <?= (int) $design['id'] ?>"
-                            loading="lazy"
-                            style="
-                                width: 100%;
-                                height: 240px;
-                                object-fit: contain;
-                                border-radius: 12px;
-                            "
-                        >
-                    </a>
+                            ) ?>
+                        </dd>
+                    </div>
 
-                    <p>تصميم #<?= (int) $design['id'] ?></p>
-                    <p>
-    <a href="<?= htmlspecialchars(
-        rtrim($appUrl, '/')
-        . '/aiImage.php?design_id='
-        . (int) $design['id'],
-        ENT_QUOTES,
-        'UTF-8'
-    ) ?>">
-        صمّم على منتج
-    </a>
-</p>
+                    <div>
+                        <dt>Email</dt>
+                        <dd>
+                            <?= htmlspecialchars(
+                                (string) ($user['email'] ?? ''),
+                                ENT_QUOTES | ENT_SUBSTITUTE,
+                                'UTF-8'
+                            ) ?>
+                        </dd>
+                    </div>
 
-                    <small>
-                        <?= htmlspecialchars(
-                            $design['created_at'],
-                            ENT_QUOTES,
-                            'UTF-8'
-                        ) ?>
-                    </small>
-                </article>
-            <?php endforeach; ?>
+                    <div>
+                        <dt>Phone</dt>
+                        <dd>
+                            <?= htmlspecialchars(
+                                (string) ($user['phone'] ?? ''),
+                                ENT_QUOTES | ENT_SUBSTITUTE,
+                                'UTF-8'
+                            ) ?: 'Not provided' ?>
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt>Account Type</dt>
+                        <dd>
+                            <?= htmlspecialchars(
+                                (string) ($user['role'] ?? ''),
+                                ENT_QUOTES | ENT_SUBSTITUTE,
+                                'UTF-8'
+                            ) ?>
+                        </dd>
+                    </div>
+
+                </dl>
+
+                <hr class="user-divider">
+
+                <!-- UPDATE PROFILE -->
+                <form
+                    class="user-form"
+                    action="<?= htmlspecialchars($appUrl . '/profile', ENT_QUOTES, 'UTF-8') ?>"
+                    method="post"
+                    data-user-async-form
+                    data-user-method="PUT"
+                    data-user-json="true"
+                    data-user-auto-hide="true">
+
+                    <h3>Update Profile</h3>
+
+                    <input
+                        type="hidden"
+                        name="csrf_token"
+                        value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
+
+                    <div class="user-field">
+                        <label for="profile-name">Name</label>
+
+                        <input
+                            class="user-input"
+                            id="profile-name"
+                            type="text"
+                            name="name"
+                            maxlength="100"
+                            value="<?= htmlspecialchars((string) ($user['name'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
+                            required>
+                    </div>
+
+                    <div class="user-field">
+                        <label for="profile-phone">Phone</label>
+
+                        <input
+                            class="user-input"
+                            id="profile-phone"
+                            type="tel"
+                            name="phone"
+                            maxlength="25"
+                            value="<?= htmlspecialchars((string) ($user['phone'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">
+                    </div>
+
+                    <p
+                        class="user-form-message"
+                        data-user-form-message
+                        role="status"
+                        aria-live="polite"></p>
+
+                    <div class="user-form-actions">
+                        <button
+                            class="user-button"
+                            type="submit"
+                            data-user-submit>
+                            Save Changes
+                        </button>
+                    </div>
+
+                </form>
+
+            </section>
+
+            <!-- SESSION / ACCOUNT SETTINGS -->
+            <aside class="user-data-card">
+
+                <h2>Session</h2>
+
+                <p class="user-page-subtitle">
+                    Sign out from this device when you are finished.
+                </p>
+
+                <!-- LOGOUT -->
+                <form
+                    class="user-form"
+                    id="logout-form"
+                    action="<?= htmlspecialchars($appUrl . '/logout', ENT_QUOTES, 'UTF-8') ?>"
+                    method="post"
+                    data-user-async-form>
+
+                    <input
+                        type="hidden"
+                        name="csrf_token"
+                        value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
+
+                    <p
+                        class="user-form-message"
+                        id="logout-message"
+                        data-user-form-message
+                        role="status"
+                        aria-live="polite"></p>
+
+                    <button
+                        class="user-button-secondary"
+                        type="submit"
+                        data-user-submit>
+                        Log Out
+                    </button>
+
+                </form>
+
+                <hr class="user-divider">
+
+                <!-- DELETE ACCOUNT -->
+                <details>
+
+                    <summary class="user-nav-link">
+                        Delete Account
+                    </summary>
+
+                    <p class="user-status-note">
+                        This action is permanent. Google accounts require
+                        identity confirmation that is not available in this form.
+                    </p>
+
+                    <form
+                        class="user-form"
+                        action="<?= htmlspecialchars($appUrl . '/profile', ENT_QUOTES, 'UTF-8') ?>"
+                        method="post"
+                        data-user-async-form
+                        data-user-method="DELETE"
+                        data-user-json="true"
+                        data-user-confirm="Delete your LootLab account? This cannot be undone.">
+
+                        <input
+                            type="hidden"
+                            name="csrf_token"
+                            value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
+
+                        <div class="user-field">
+                            <label for="delete-password">
+                                Password
+                            </label>
+
+                            <input
+                                class="user-input"
+                                id="delete-password"
+                                type="password"
+                                name="password"
+                                autocomplete="current-password"
+                                required>
+                        </div>
+
+                        <p
+                            class="user-form-message"
+                            data-user-form-message
+                            role="status"
+                            aria-live="polite"></p>
+
+                        <button
+                            class="user-button-quiet"
+                            type="submit"
+                            data-user-submit>
+                            Delete Account
+                        </button>
+
+                    </form>
+
+                </details>
+
+            </aside>
+
         </div>
-    <?php endif; ?>
+
+        <!-- AI CUSTOM DESIGNS -->
+        <section class="user-designs">
+
+            <p class="user-eyebrow">AI Creations</p>
+
+            <h2 class="user-page-title">
+                تصاميمي
+            </h2>
+
+            <p class="user-page-subtitle">
+                Your saved AI-generated designs.
+            </p>
+
+            <?php if (empty($designs)): ?>
+
+                <div class="user-empty-state">
+
+                    <span
+                        class="user-empty-icon"
+                        aria-hidden="true">
+                        ✦
+                    </span>
+
+                    <h3>لسا ما عندك تصاميم محفوظة</h3>
+
+                    <p>
+                        Create your first AI design and find it here.
+                    </p>
+
+                </div>
+
+            <?php else: ?>
+
+                <div
+                    class="user-products-grid"
+                    style="margin-top: 24px;">
+
+                    <?php foreach ($designs as $design): ?>
+
+                        <?php
+                        $designId = (int) ($design['id'] ?? 0);
+
+                        $imageUrl = $appUrl
+                            . '/profile/design-image?id='
+                            . $designId;
+
+                        $designLink = $appUrl
+                            . '/aiImage.php?design_id='
+                            . $designId;
+                        ?>
+
+                        <article class="user-product-card user-design-card">
+
+                            <div class="user-product-media">
+
+                                <a
+                                    class="user-product-image-link"
+                                    href="<?= htmlspecialchars($imageUrl, ENT_QUOTES, 'UTF-8') ?>"
+                                    target="_blank"
+                                    rel="noopener">
+
+                                    <img
+                                        class="user-product-image"
+                                        src="<?= htmlspecialchars($imageUrl, ENT_QUOTES, 'UTF-8') ?>"
+                                        alt="AI Design #<?= $designId ?>"
+                                        loading="lazy">
+
+                                </a>
+
+                            </div>
+
+                            <div class="user-product-content">
+
+                                <h3 class="user-product-title">
+                                    تصميم #<?= $designId ?>
+                                </h3>
+
+                                <p class="user-product-category">
+                                    <?= htmlspecialchars(
+                                        (string) ($design['created_at'] ?? ''),
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>
+                                </p>
+
+                                <div class="user-product-actions">
+
+                                    <a
+                                        class="user-button-secondary"
+                                        href="<?= htmlspecialchars($imageUrl, ENT_QUOTES, 'UTF-8') ?>"
+                                        target="_blank"
+                                        rel="noopener">
+                                        View Design
+                                    </a>
+
+                                    <a
+                                        class="user-button"
+                                        href="<?= htmlspecialchars($designLink, ENT_QUOTES, 'UTF-8') ?>">
+                                        صمّم على منتج
+                                    </a>
+
+                                </div>
+
+                            </div>
+
+                        </article>
+
+                    <?php endforeach; ?>
+
+                </div>
+
+            <?php endif; ?>
+
+        </section>
+
+    </div>
 </section>
-        <form id="logout-form" method="post"
-              action="<?= htmlspecialchars($appUrl . '/logout', ENT_QUOTES, 'UTF-8') ?>">
-            <input type="hidden" name="csrf_token"
-                   value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
-            <button type="submit">Logout</button>
-        </form>
 
-        <p id="logout-message" role="alert" aria-live="polite"></p>
-
-        <script>
-            const logoutForm = document.getElementById('logout-form');
-            const logoutMessage = document.getElementById('logout-message');
-            const logoutButton = logoutForm.querySelector('button');
-
-            logoutForm.addEventListener('submit', async (event) => {
-                event.preventDefault();
-                logoutButton.disabled = true;
-                logoutMessage.textContent = '';
-
-                try {
-                    const response = await fetch(logoutForm.action, {
-                        method: 'POST',
-                        headers: { 'Accept': 'application/json' },
-                        body: new URLSearchParams(new FormData(logoutForm))
-                    });
-                    const result = await response.json();
-
-                    if (response.ok && result.success) {
-                        window.location.assign(result.data.redirect);
-                        return;
-                    }
-
-                    logoutMessage.textContent = result.message || 'Logout failed.';
-                } catch (error) {
-                    logoutMessage.textContent = 'Unable to log out. Please try again.';
-                } finally {
-                    logoutButton.disabled = false;
-                }
-            });
-        </script>
-</body>
-
-</html>
+<?php require __DIR__ . '/../layouts/user-footer.php'; ?>
