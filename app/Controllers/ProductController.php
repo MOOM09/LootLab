@@ -4,11 +4,18 @@ class ProductController extends Controller
 {
     private Product $product;
     private string $appUrl;
+    private PDO $connection;
+    private FavoriteStockNotificationService $stockNotifications;
 
     public function __construct(array $config)
     {
         $this->appUrl = rtrim($config['app_url'], '/');
-        $this->product = new Product();
+        $database = new Database($config['database']);
+        $this->connection = $database->getConnection();
+        $this->product = new Product($this->connection);
+        $this->stockNotifications = new FavoriteStockNotificationService(
+            $this->connection
+        );
     }
 
     public function index(): void
@@ -92,7 +99,37 @@ class ProductController extends Controller
 
         try {
             $data = $this->validateProduct($input);
-            $this->product->update($id, $data);
+
+            $this->connection->beginTransaction();
+
+            try {
+                $stockEventKey = $this->stockNotifications->createStockEventKey();
+                $previousStock = $this->product->getStockQuantityForUpdate($id);
+
+                if ($previousStock === null) {
+                    $this->connection->rollBack();
+                    http_response_code(404);
+                    $this->view('errors/404', [
+                        'message' => 'Product not found.',
+                    ]);
+                    return;
+                }
+
+                $this->product->update($id, $data);
+                $this->stockNotifications->handleStockChange(
+                    $id,
+                    $previousStock,
+                    $data['stock_quantity'],
+                    $stockEventKey
+                );
+                $this->connection->commit();
+            } catch (Throwable $exception) {
+                if ($this->connection->inTransaction()) {
+                    $this->connection->rollBack();
+                }
+
+                throw $exception;
+            }
 
             $this->redirect('/products?id=' . $id);
         } catch (InvalidArgumentException $e) {

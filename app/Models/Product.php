@@ -139,6 +139,26 @@ class Product
         return $statement->rowCount() > 0;
     }
 
+    public function getStockQuantityForUpdate(int $id): ?int
+    {
+        if (!$this->db->inTransaction()) {
+            throw new LogicException(
+                'Product stock must be locked within a transaction.'
+            );
+        }
+
+        $statement = $this->db->prepare(
+            'SELECT stock_quantity
+             FROM products
+             WHERE id = :id AND is_active = 1
+             FOR UPDATE'
+        );
+        $statement->execute(['id' => $id]);
+        $stockQuantity = $statement->fetchColumn();
+
+        return $stockQuantity === false ? null : (int) $stockQuantity;
+    }
+
     public function delete(int $id): bool
     {
         $statement = $this->db->prepare(

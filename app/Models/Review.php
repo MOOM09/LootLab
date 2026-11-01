@@ -1,9 +1,8 @@
-<?php
+<?php 
+
     class Review{
         private PDO $conn;
         function __construct(PDO $conn){
-            // $conn = new Database();
-            // $this->conn = $conn->connect();
             $this->conn = $conn;
         }
         function getAll(){
@@ -23,7 +22,6 @@
             $sql = "SELECT id FROM products WHERE id = ?";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([$productId]);
-
             return $stmt->fetchColumn() !== false;
         }
 
@@ -32,7 +30,6 @@
             $sql = "SELECT * FROM reviews WHERE product_id = ? ORDER BY created_at DESC";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([$productId]);
-
             return $stmt->fetchAll();
         }
 

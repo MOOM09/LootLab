@@ -20,6 +20,7 @@ require_once __DIR__ . '/../app/Models/User.php';
 require_once __DIR__ . '/../app/Models/Category.php';
 require_once __DIR__ . '/../app/Models/Product.php';
 require_once __DIR__ . '/../app/Models/Favorite.php';
+require_once __DIR__ . '/../app/Models/FavoriteStockNotification.php';
 require_once __DIR__ . '/../app/Models/CartItem.php';
 require_once __DIR__ . '/../app/Models/Cart.php';
 require_once __DIR__ . '/../app/Models/Review.php';
@@ -36,6 +37,7 @@ require_once __DIR__ . '/../app/Services/GoogleAuthService.php';
 require_once __DIR__ . '/../app/Services/AiService.php';
 require_once __DIR__ . '/../app/Services/AiProductCatalog.php';
 require_once __DIR__ . '/../app/Services/PasswordResetService.php';
+require_once __DIR__ . '/../app/Services/FavoriteStockNotificationService.php';
 
 // Middleware.
 require_once __DIR__ . '/../app/Middleware/AuthMiddleware.php';

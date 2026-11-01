@@ -67,6 +67,24 @@ class Favorite
         return $items;
     }
 
+    public function findUserIdsByProduct(int $productId): array
+    {
+        $stmt = $this->connection->prepare(
+            'SELECT DISTINCT f.user_id
+             FROM favorites f
+             INNER JOIN favorite_items fi ON fi.fav_id = f.fav_id
+             WHERE fi.product_id = :product_id
+               AND f.user_id IS NOT NULL
+             ORDER BY f.user_id'
+        );
+        $stmt->execute(['product_id' => $productId]);
+
+        return array_map(
+            'intval',
+            $stmt->fetchAll(PDO::FETCH_COLUMN)
+        );
+    }
+
     public function contains(int $favoriteId, int $productId): bool
     {
         $stmt = $this->connection->prepare(

@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS `favorite_stock_notifications` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int(10) unsigned NOT NULL,
+  `product_id` int(10) unsigned NOT NULL,
+  `notification_type` enum('stock_reached_5','stock_reached_1','stock_restocked') NOT NULL,
+  `stock_quantity` int(11) NOT NULL,
+  `stock_event_key` char(36) NOT NULL,
+  `status` enum('pending','sent','failed') NOT NULL DEFAULT 'pending',
+  `failure_reason` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `processed_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_favorite_stock_event` (`user_id`,`product_id`,`notification_type`,`stock_event_key`),
+  KEY `idx_favorite_stock_pending` (`status`,`id`),
+  KEY `idx_favorite_stock_product` (`product_id`),
+  CONSTRAINT `fk_favorite_stock_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_favorite_stock_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `chk_favorite_stock_quantity` CHECK (`stock_quantity` >= 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
