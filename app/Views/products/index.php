@@ -38,7 +38,7 @@ require __DIR__ . '/../layouts/user-header.php';
 
 
         <div class="user-catalog-layout">
-            <aside class="user-catalog-sidebar" aria-label="Product filters">
+            <aside class="user-catalog-sidebar" aria-label="Product filters, scroll independently to see all options" tabindex="0">
                 <div class="user-sidebar-heading">
                     <div><span class="user-eyebrow">FIND YOUR LOOT</span><h2>Filters</h2></div>
                     <button type="button" class="user-clear-filters" data-user-clear-filters>Clear all</button>
@@ -48,10 +48,10 @@ require __DIR__ . '/../layouts/user-header.php';
             <input id="user-site-search" type="search" name="q" placeholder="Search products, categories and subcategories..." data-user-catalog-search autocomplete="off">
             <button type="submit" class="user-button-secondary">Search</button>
         </form>
-        <div class="user-filters-heading"><h2>Filter products</h2><p>Choose a category, subcategory or product type.</p></div>
+        
 
                 <details class="user-filter-group" open>
-                    <summary>Category <span aria-hidden="true">⌄</span></summary>
+                    <summary><span class="user-filter-label">Category</span><span class="user-filter-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></summary>
                     <div class="user-filter-body">        <div class="user-category-list" role="group" aria-label="Filter products by category">
             <button class="user-category-item" type="button" data-user-category data-category-id="all" data-category-name="All products" aria-pressed="true">
                 All products
@@ -73,7 +73,7 @@ require __DIR__ . '/../layouts/user-header.php';
 </div>
                 </details>
                 <details class="user-filter-group" data-user-subcategory-group hidden open>
-                    <summary>Subcategory <span aria-hidden="true">⌄</span></summary>
+                    <summary><span class="user-filter-label">Subcategory</span><span class="user-filter-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></summary>
                     <div class="user-filter-body">        <!-- Subcategory buttons appear after a category is selected. -->
         <div class="user-category-list" data-user-subcategory-list hidden role="group" aria-label="Filter products by subcategory">
             <button class="user-category-item" type="button" data-user-subcategory data-subcategory-id="all" data-subcategory-name="All subcategories" aria-pressed="true">
@@ -99,7 +99,7 @@ require __DIR__ . '/../layouts/user-header.php';
 </div>
                 </details>
                 <details class="user-filter-group" open>
-                    <summary>Product Type <span aria-hidden="true">⌄</span></summary>
+                    <summary><span class="user-filter-label">Product Type</span><span class="user-filter-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></summary>
                     <div class="user-filter-body">        <!-- Product types: e.g. 3D Models, Posters, Figures -->
         <div class="user-category-list" role="group" aria-label="Filter products by product type" data-user-type-list>
             <button class="user-category-item" type="button" data-user-type data-type-id="all" data-type-name="All types" aria-pressed="true">All types</button>
@@ -114,7 +114,7 @@ require __DIR__ . '/../layouts/user-header.php';
 </div>
                 </details>
                 <details class="user-filter-group" open>
-                    <summary>Price Range <span aria-hidden="true">⌄</span></summary>
+                    <summary><span class="user-filter-label">Price Range</span><span class="user-filter-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></summary>
                     <div class="user-filter-body">
                         <div class="user-price-inputs">
                             <label for="user-min-price">Min (JD)<input id="user-min-price" data-user-min-price type="number" inputmode="decimal" min="0" step="0.01" placeholder="0"></label>
