@@ -261,7 +261,7 @@ require __DIR__ . '/../layouts/user-header.php';
             <p class="user-eyebrow">AI Creations</p>
 
             <h2 class="user-page-title">
-                تصاميمي
+                	My Designs
             </h2>
 
             <p class="user-page-subtitle">
@@ -278,7 +278,7 @@ require __DIR__ . '/../layouts/user-header.php';
                         ✦
                     </span>
 
-                    <h3>لسا ما عندك تصاميم محفوظة</h3>
+                    <h3>No saved designs yet</h3>
 
                     <p>
                         Create your first AI design and find it here.
@@ -329,7 +329,7 @@ require __DIR__ . '/../layouts/user-header.php';
                             <div class="user-product-content">
 
                                 <h3 class="user-product-title">
-                                    تصميم #<?= $designId ?>
+                                   <?= $userLanguage === 'ar' ? 'تصميم' : 'Design' ?> #<?= $designId ?>
                                 </h3>
 
                                 <p class="user-product-category">
@@ -353,7 +353,7 @@ require __DIR__ . '/../layouts/user-header.php';
                                     <a
                                         class="user-button"
                                         href="<?= htmlspecialchars($designLink, ENT_QUOTES, 'UTF-8') ?>">
-                                        صمّم على منتج
+                                       	Customize a Product
                                     </a>
 
                                 </div>

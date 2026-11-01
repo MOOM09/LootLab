@@ -70,6 +70,12 @@ class Router
         $route = $this->routes[$method][$path] ?? null;
 
         if ($route === null) {
+            if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET' &&
+                str_contains((string)($_SERVER['HTTP_ACCEPT'] ?? ''), 'text/html')) {
+                http_response_code(404);
+                require dirname(__DIR__) . '/Views/errors/friendly-404.php';
+                exit;
+            }
             Response::error('Page not found', 404);
             return;
         }

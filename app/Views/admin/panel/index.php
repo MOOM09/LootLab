@@ -1,22 +1,34 @@
 <?php
 /** @var array $bootstrap */
-$adminUrl = rtrim($bootstrap["appUrl"], "/"); ?>
+$adminUrl = rtrim($bootstrap["appUrl"], "/");
+$_SESSION['csrf_token'] ??= bin2hex(random_bytes(32));
+$adminPrefCsrf = $_SESSION['csrf_token']; ?>
+<?php
+$adminTheme = $_SESSION['lootlab_theme'] ?? $_COOKIE['lootlab_theme'] ?? 'plum-dark';
+if ($adminTheme === 'inferno') $adminTheme = 'inferno-light';
+if ($adminTheme === 'plum-light') $adminTheme = 'plum-dark';
+if (!in_array($adminTheme, ['plum-dark', 'inferno-light'], true)) $adminTheme = 'plum-dark';
+$adminLang = $_SESSION['lootlab_lang'] ?? $_COOKIE['lootlab_lang'] ?? 'en';
+if (!in_array($adminLang, ['en', 'ar'], true)) $adminLang = 'en';
+?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= $adminLang ?>" dir="<?= $adminLang === 'ar' ? 'rtl' : 'ltr' ?>" data-loot-theme="<?= $adminTheme ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="theme-color" content="#08070B">
+    <meta name="theme-color" content="<?= $adminTheme === 'plum-dark' ? '#08070B' : '#FFFFFF' ?>">
     <title>LOOT HUB — Admin Studio</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="<?= htmlspecialchars($adminUrl . "/css/admin.css", ENT_QUOTES, "UTF-8") ?>">
+    <link rel="stylesheet" href="<?= htmlspecialchars($adminUrl . "/css/admin.css?v=lootlab-admin-v5", ENT_QUOTES, "UTF-8") ?>">
+    <link rel="stylesheet" href="<?= htmlspecialchars($adminUrl . '/css/themes-admin.css?v=lootlab-admin-v5', ENT_QUOTES, 'UTF-8') ?>">
+    <script src="<?= htmlspecialchars($adminUrl . '/js/i18n.js?v=lootlab-admin-v5', ENT_QUOTES, 'UTF-8') ?>" defer></script>
     <script type="application/json" id="admin-bootstrap"><?= json_encode(
         $bootstrap,
         JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR,
     ) ?></script>
-    <script src="<?= htmlspecialchars($adminUrl . "/js/admin.js", ENT_QUOTES, "UTF-8") ?>" defer></script>
+    <script src="<?= htmlspecialchars($adminUrl . "/js/admin.js?v=lootlab-admin-v5", ENT_QUOTES, "UTF-8") ?>" defer></script>
 </head>
 <body class="admin-body">
 <a class="admin-skip" href="#admin-main">Skip to content</a>
@@ -45,13 +57,20 @@ $adminUrl = rtrim($bootstrap["appUrl"], "/"); ?>
     <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
     <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></symbol>
     <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.5"/><path d="m3 17 6-6 4 4 3-3 5 5"/></symbol>
+    <symbol id="i-gamepad" viewBox="0 0 24 24"><path d="M6.5 8h11a4 4 0 0 1 3.8 3l1.1 5.5a2 2 0 0 1-3.1 2l-3.4-2.4H8.1l-3.4 2.4a2 2 0 0 1-3.1-2L2.7 11a4 4 0 0 1 3.8-3Z"/><path d="M6.5 12h4m-2-2v4m7.7-2h.1m2.2 2h.1"/></symbol>
     <symbol id="i-power" viewBox="0 0 24 24"><path d="M12 2v10M6 5a9 9 0 1 0 12 0"/></symbol>
 </defs></svg>
 <aside class="admin-sidebar" id="admin-sidebar" aria-label="Admin navigation">
-    <a class="admin-brand" href="?page=overview" data-nav="overview"><span class="admin-brand-mark"><i></i><i></i><i></i></span><span>LOOT <b>HUB</b><small>ADMIN STUDIO</small></span></a>
-    <div class="admin-workspace"><span class="admin-workspace-icon">LH</span><div><strong>Your workspace</strong><small>Store management</small></div><span class="admin-live-dot" title="Admin workspace"></span></div>
+    <a class="admin-brand" href="?page=overview" data-nav="overview" aria-label="LOOT HUB Admin Overview">
+        <span class="admin-brand-mark" aria-hidden="true">
+            <img class="admin-logo-dark" src="<?= htmlspecialchars($adminUrl . '/images/branding/loot-hub-symbol.png', ENT_QUOTES, 'UTF-8') ?>" alt="">
+            <span class="admin-logo-light"><svg><use href="#i-gamepad"/></svg></span>
+        </span>
+        <span>LOOT <b>HUB</b><small>ADMIN STUDIO</small></span>
+    </a>
+   
     <p class="admin-nav-label">WORKSPACE</p>
-    <nav>
+    <nav aria-label="Management sections">
         <a href="?page=overview" data-nav="overview"><svg><use href="#i-grid"/></svg><span>Overview</span><span class="admin-nav-live">LIVE</span></a>
         <a href="?page=users" data-nav="users"><svg><use href="#i-users"/></svg><span>Users</span></a>
         <a href="?page=products" data-nav="products"><svg><use href="#i-box"/></svg><span>Products</span></a>
@@ -62,20 +81,78 @@ $adminUrl = rtrim($bootstrap["appUrl"], "/"); ?>
         <a href="?page=promos" data-nav="promos"><svg><use href="#i-tag"/></svg><span>Promo codes</span></a>
         <a href="?page=reviews" data-nav="reviews"><svg><use href="#i-star"/></svg><span>Reviews</span></a>
     </nav>
-    <div class="admin-sidebar-bottom">
-        <a class="admin-store-link" href="<?= htmlspecialchars(
-            $adminUrl . "/products",
-            ENT_QUOTES,
-            "UTF-8",
-        ) ?>" target="_blank" rel="noopener"><svg><use href="#i-arrow"/></svg>Visit storefront<span>↗</span></a>
-        <a href="?page=settings" class="admin-admin-profile" data-nav="settings"><span class="admin-avatar" data-admin-avatar>LH</span><span><strong data-admin-name>Administrator</strong><small>Account settings</small></span><svg><use href="#i-settings"/></svg></a>
-    </div>
+        </nav>
+
+    <a class="admin-workspace" href="?page=settings" data-nav="settings">
+        <span class="admin-avatar admin-workspace-avatar" data-admin-avatar aria-hidden="true">LH</span>
+
+        <span class="admin-workspace-identity">
+            <strong data-admin-name>
+                <?= htmlspecialchars((string) ($bootstrap["user"]["name"] ?? "Administrator"), ENT_QUOTES, "UTF-8") ?>
+            </strong>
+            <small>Account settings</small>
+        </span>
+
+        <span class="admin-live-dot"></span>
+    </a>
+</aside>
 </aside>
 <button class="admin-mobile-scrim" id="admin-mobile-scrim" aria-label="Close navigation" hidden></button>
 <div class="admin-shell">
     <header class="admin-topbar">
-        <div class="admin-breadcrumb"><button class="admin-icon-button admin-mobile-toggle" data-action="menu" aria-label="Open navigation" aria-expanded="false"><svg><use href="#i-menu"/></svg></button><span>Workspace</span><svg><use href="#i-chevron"/></svg><strong id="admin-crumb">Overview</strong></div>
-        <div class="admin-top-actions"><button class="admin-global-search" data-action="search" aria-label="Search workspace"><svg><use href="#i-search"/></svg><span>Search the store…</span><kbd>Ctrl K</kbd></button><span class="admin-top-separator"></span><button class="admin-icon-button admin-notifications" data-nav="inventory" title="Review low-stock products" aria-label="Low-stock notifications"><svg><use href="#i-bell"/></svg><i></i></button><button class="admin-avatar" data-admin-avatar data-nav="settings" aria-label="Your admin account">LH</button></div>
+        <div class="admin-breadcrumb">
+            <button class="admin-icon-button admin-mobile-toggle" data-action="menu" aria-label="Open navigation" aria-expanded="false"><svg><use href="#i-menu"/></svg></button>
+            <a href="?page=overview" data-nav="overview" class="admin-workspace-crumb">Workspace</a>
+            <svg><use href="#i-chevron"/></svg><strong id="admin-crumb">Overview</strong>
+        </div>
+        <div class="admin-top-actions">
+            <button class="admin-global-search" data-action="search" aria-label="Search workspace"><svg><use href="#i-search"/></svg><span>Search the store…</span><kbd>Ctrl K</kbd></button>
+            <span class="admin-top-separator"></span>
+            <button class="admin-icon-button admin-notifications" data-nav="inventory" title="Review low-stock products" aria-label="Low-stock notifications"><svg><use href="#i-bell"/></svg><i></i></button>
+            <details class="admin-account-menu" data-admin-account-menu>
+                <summary
+    aria-label="Account and profile"
+    title="Account and profile"
+    class="admin-profile-trigger"
+>
+    <svg
+        class="admin-profile-icon"
+        width="26"
+        height="26"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.7"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+    >
+        <circle cx="12" cy="12" r="10"/>
+        <circle cx="12" cy="8" r="3"/>
+        <path d="M5 19c1-4 3-5 7-5s6 1 7 5"/>
+    </svg>
+</summary>
+                <div class="admin-account-dropdown">
+                    <a href="?page=settings" data-nav="settings"><svg><use href="#i-settings"/></svg><span>Your Profile</span></a>
+                    <div class="admin-pref-group"><span class="admin-pref-title">Language</span>
+                        <div class="admin-lang-buttons" role="group" aria-label="Language">
+                            <button type="button" data-admin-pref="lang" data-value="en" aria-pressed="<?= $adminLang === 'en' ? 'true' : 'false' ?>">English</button>
+                            <button type="button" data-admin-pref="lang" data-value="ar" aria-pressed="<?= $adminLang === 'ar' ? 'true' : 'false' ?>">العربية</button>
+                        </div>
+                    </div>
+                    <div class="admin-pref-group"><span class="admin-pref-title">Theme</span>
+                        <div class="admin-theme-buttons" role="group" aria-label="Color theme">
+                            <button type="button" class="admin-theme-dot admin-dot-red" data-admin-pref="theme" data-value="inferno-light" aria-label="Red and white light theme" title="Inferno Red · Light" aria-pressed="<?= $adminTheme === 'inferno-light' ? 'true' : 'false' ?>"></button>
+                            <button type="button" class="admin-theme-dot admin-dot-purple" data-admin-pref="theme" data-value="plum-dark" aria-label="Purple and black dark theme" title="Plum · Dark" aria-pressed="<?= $adminTheme === 'plum-dark' ? 'true' : 'false' ?>"></button>
+                        </div>
+                    </div>
+                    <form method="post" action="<?= htmlspecialchars($adminUrl . '/logout', ENT_QUOTES, 'UTF-8') ?>" data-admin-logout>
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($adminPrefCsrf, ENT_QUOTES, 'UTF-8') ?>">
+                        <button type="submit" class="admin-logout-button"><svg><use href="#i-power"/></svg><span>Log Out</span></button>
+                    </form>
+                </div>
+            </details>
+        </div>
     </header>
     <main class="admin-main" id="admin-main" tabindex="-1"><div class="admin-loading"><span></span>Getting your workspace ready…</div></main>
     <footer class="admin-footer"><span>LOOT HUB <span class="admin-footer-dot">·</span> Admin Studio</span><span>Made for your next chapter.</span></footer>

@@ -1,395 +1,288 @@
 <?php
-$escape = static fn (string $value): string => htmlspecialchars(
-    $value,
+$pageTitle = 'AI Image Studio';
+$userHideAiLink = true;
+$userExtraCss = '/css/ai-studio.css';
+
+$escape = static fn ($value): string => htmlspecialchars(
+    (string) $value,
     ENT_QUOTES | ENT_SUBSTITUTE,
     'UTF-8'
 );
+
+$userBaseUrl = rtrim((string) ($_ENV['APP_URL'] ?? ''), '/');
+
+require __DIR__ . '/../layouts/user-header.php';
 ?>
 
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <title>Loot Hub — تصميمك بالـAI</title>
-
-    <style>
-        :root {
-            color-scheme: dark;
-            --background: #111827;
-            --panel: #1f2937;
-            --text: #f9fafb;
-            --muted: #cbd5e1;
-            --border: #64748b;
-            --accent: #a78bfa;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            padding: 30px 16px;
-            background: var(--background);
-            color: var(--text);
-            font-family: Arial, sans-serif;
-        }
-
-        main {
-            max-width: 1000px;
-            margin-inline: auto;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 24px;
-        }
-
-        .panel {
-            min-width: 0;
-            padding: 24px;
-            border-radius: 16px;
-            background: var(--panel);
-        }
-
-        label {
-            display: block;
-            margin: 18px 0 10px;
-        }
-
-        input,
-        select,
-        textarea,
-        button {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            font: inherit;
-        }
-
-        input,
-        select,
-        textarea {
-            background: var(--background);
-            color: var(--text);
-        }
-
-        textarea {
-            min-height: 140px;
-            resize: vertical;
-            line-height: 1.7;
-        }
-
-        button {
-            margin-top: 16px;
-            border: 0;
-            background: var(--accent);
-            color: var(--background);
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .button-secondary {
-            border: 1px solid var(--border);
-            background: transparent;
-            color: var(--text);
-        }
-
-        .camera-actions {
-            display: flex;
-            gap: 12px;
-        }
-
-        .camera-actions button {
-            flex: 1;
-        }
-
-        img {
-            display: block;
-            max-width: 100%;
-            max-height: 450px;
-            margin: 20px auto 0;
-            border-radius: 12px;
-            object-fit: contain;
-        }
-
-        .preview {
-            max-height: 230px;
-        }
-
-        .camera-video {
-            display: block;
-            width: 100%;
-            max-height: 350px;
-            margin-top: 16px;
-            border-radius: 12px;
-            background: #000;
-            object-fit: contain;
-        }
-
-        .error {
-            padding: 16px;
-            margin-bottom: 20px;
-            border-radius: 10px;
-            background: #7f1d1d;
-        }
-
-        .note {
-            color: var(--muted);
-            font-size: 14px;
-            line-height: 1.7;
-        }
-
-        a {
-            color: #c4b5fd;
-        }
-
-        :is(button, input, select, textarea, a):focus-visible {
-            outline: 2px solid #c4b5fd;
-            outline-offset: 3px;
-        }
-
-        [hidden] {
-            display: none !important;
-        }
-
-        @media (max-width: 650px) {
-            .grid {
-                grid-template-columns: 1fr;
-            }
-
-            .panel {
-                padding: 18px;
-            }
-        }
-    </style>
-    <link rel="stylesheet" href="css/ai-products.css">
-</head>
-
-<body>
-<main>
-    <h1>تصميمك بالـAI 🧪</h1>
-
-    <p class="note">
-        ارفع صورة واضحة لوجهك أو التقطها بالكاميرا،
-        واكتب التصميم اللي بدك إياه بالعربي أو الإنجليزي.
-    </p>
-
-    <?php if ($error !== ''): ?>
-        <div class="error" role="alert">
-            <?= $escape($error) ?>
+<div class="ai-studio" dir="ltr">
+    <!-- Studio heading -->
+    <div class="ai-studio-heading">
+        <div>
+            <span class="ai-kicker">LOOT HUB / CREATIVE LAB</span>
+            <h1>Make it <span>yours.</span> <small>✦</small></h1>
+            <p>
+                Turn your photo into a one-of-a-kind design with LOOTE AI.
+                Then wear it, gift it, or save it.
+            </p>
         </div>
 
-        <p class="note">
-            اختار صورتك مرة ثانية بعد تصحيح الخطأ.
-        </p>
+        <a class="ai-outline" href="<?= $escape($userBaseUrl . '/ai.php') ?>">
+            ✦ Chat with LOOTE
+        </a>
+    </div>
+
+    <?php if ($error !== ''): ?>
+        <div class="ai-generation-error" role="alert">
+            <?= $escape($error) ?>
+        </div>
     <?php endif; ?>
 
-    <div class="grid">
-        <section class="panel">
-            <h2>صمّم شخصيتك</h2>
+    <div class="ai-studio-grid">
+        <!-- Step 01: Design input -->
+        <section class="ai-studio-card ai-input-card">
+            <div class="ai-card-title">
+                <span class="ai-step">01</span>
+                <div>
+                    <h2>Create your design</h2>
+                    <p>Upload a portrait and tell LOOTE your idea.</p>
+                </div>
+            </div>
 
             <form
                 id="image-form"
                 method="POST"
-                action="aiImage.php"
+                action="<?= $escape($userBaseUrl . '/aiImage.php') ?>"
                 enctype="multipart/form-data"
             >
-                <input
-                    type="hidden"
-                    name="csrf_token"
-                    value="<?= $escape($csrfToken) ?>"
-                >
-
+                <input type="hidden" name="csrf_token" value="<?= $escape($csrfToken) ?>">
                 <input type="hidden" name="mode" value="text">
 
                 <label for="image">
-                    صورتك — JPG أو PNG، حتى 5MB
+                    Your photo <small>(JPG / PNG, max 5 MB)</small>
                 </label>
-
                 <input
                     id="image"
                     name="image"
                     type="file"
-                    accept="image/png,image/jpeg"
+                    accept="image/jpeg,image/png"
                     required
                 >
 
                 <button
                     id="open-camera"
-                    class="button-secondary"
+                    class="ai-outline ai-camera-btn"
                     type="button"
                     aria-controls="camera-box"
                     aria-expanded="false"
                     hidden
                 >
-                    📷 افتح الكاميرا
+                    📷 Use camera instead
                 </button>
 
                 <div id="camera-box" hidden>
                     <video
                         id="camera-video"
                         class="camera-video"
-                        aria-label="معاينة الكاميرا"
+                        aria-label="Camera preview"
                         autoplay
                         muted
                         playsinline
                     ></video>
 
-                    <div class="camera-actions">
-                        <button
-                            id="capture-photo"
-                            type="button"
-                            disabled
-                        >
-                            التقط الصورة
+                    <div class="ai-camera-actions">
+                        <button id="capture-photo" class="ai-primary" type="button" disabled>
+                            Take photo
                         </button>
-
-                        <button
-                            id="close-camera"
-                            class="button-secondary"
-                            type="button"
-                        >
-                            إغلاق الكاميرا
+                        <button id="close-camera" class="ai-outline" type="button">
+                            Close camera
                         </button>
                     </div>
                 </div>
 
-                <p
-                    id="camera-message"
-                    class="note"
-                    role="status"
-                ></p>
+                <p id="camera-message" class="ai-help" role="status"></p>
+                <img id="preview" class="ai-photo-preview" alt="Uploaded image preview" hidden>
 
-                <img
-                    id="preview"
-                    class="preview"
-                    alt="معاينة صورتك"
-                    hidden
-                >
-
-                <label for="subject">
-                    الشخص الموجود في صورتك
-                </label>
-
+                <label for="subject">Person in photo</label>
                 <select id="subject" name="subject" required>
-                    <option
-                        value="person"
-                        <?= $subject === 'person' ? 'selected' : '' ?>
-                    >
-                        بدون تحديد
+                    <option value="person" <?= $subject === 'person' ? 'selected' : '' ?>>
+                        Person / no preference
                     </option>
-
-                    <option
-                        value="man"
-                        <?= $subject === 'man' ? 'selected' : '' ?>
-                    >
-                        رجل
-                    </option>
-
-                    <option
-                        value="woman"
-                        <?= $subject === 'woman' ? 'selected' : '' ?>
-                    >
-                        امرأة
-                    </option>
+                    <option value="man" <?= $subject === 'man' ? 'selected' : '' ?>>Man</option>
+                    <option value="woman" <?= $subject === 'woman' ? 'selected' : '' ?>>Woman</option>
                 </select>
 
-                <label for="description">
-                    كيف بدك يكون تصميمك؟
-                </label>
-
+                <label for="description">Describe your idea</label>
                 <textarea
                     id="description"
                     name="description"
                     maxlength="1000"
                     rows="5"
-                    dir="auto"
-                    placeholder="مثال: حوّلني لشخصية أنمي بلبس ناروتو بقرية كونوها"
+                    placeholder="Example: Transform me into an anime hero wearing a futuristic blue jacket, cinematic background…"
                     required
                 ><?= $escape($description) ?></textarea>
 
-                <button id="generate-button" type="submit">
-                    ولّد تصميمي
+                <button id="generate-button" class="ai-primary" type="submit">
+                    ✦ Generate my design
                 </button>
 
-                <p id="status" class="note" role="status"></p>
-
+                <p id="status" class="ai-help" role="status"></p>
                 <noscript>
-                    <p class="note">
-                        يمكنك رفع صورة والتوليد بدون JavaScript.
-                        تشغيل الكاميرا والمعاينة يحتاجان JavaScript.
-                    </p>
+                    <p class="ai-help">JavaScript is required for the live progress display.</p>
                 </noscript>
             </form>
         </section>
 
-        <section class="panel">
-            <h2>النتيجة</h2>
+        <!-- Step 02: Generated design -->
+        <section class="ai-studio-card ai-result-card">
+            <div class="ai-card-title">
+                <span class="ai-step">02</span>
+                <div>
+                    <h2>Your creation</h2>
+                    <p>Designed by you, powered by AI.</p>
+                </div>
+            </div>
 
             <?php if ($generatedImage !== ''): ?>
-                <img
-                    src="data:image/png;base64,<?= $escape($generatedImage) ?>"
-                    id="generated-design"
-                    alt="التصميم الناتج بالذكاء الاصطناعي"
-                >
-
-                <p>
-                    <a
-                        href="data:image/png;base64,<?= $escape($generatedImage) ?>"
-                        download="loothub-design.png"
+                <div class="ai-result-frame">
+                    <img
+                        id="generated-design"
+                        src="data:image/png;base64,<?= $escape($generatedImage) ?>"
+                        alt="Your generated AI artwork"
                     >
-                        تنزيل تصميمي ↓
+                </div>
+
+                <div class="ai-result-actions">
+                    <a
+                        class="ai-outline"
+                        href="data:image/png;base64,<?= $escape($generatedImage) ?>"
+                        download="loothub-ai-design.png"
+                    >
+                        ↓ Download image
                     </a>
+                    <a
+                        class="ai-outline"
+                        id="ai-profile-link"
+                        href="<?= $escape($userBaseUrl . '/profile') ?>"
+                    >
+                        ✓ Add to my profile
+                    </a>
+                </div>
+
+                <p class="ai-help">
+                    ✓ Saved to your profile automatically. You can also add a printed
+                    product to the cart below.
                 </p>
             <?php else: ?>
-                <p class="note">
-                    تصميمك رح يظهر هون بعد التوليد.
-                </p>
+                <div class="ai-empty-result">
+                    <span>✦</span>
+                    <h3>Your imagination starts here</h3>
+                    <p>Upload a photo, describe a style, and your design will appear here.</p>
+                </div>
             <?php endif; ?>
         </section>
     </div>
 
-<?php if ($generatedImage !== ''): ?>
-<section class="ai-products" id="ai-products" aria-labelledby="ai-products-title">
-    <h2 id="ai-products-title">جرّب تصميمك على منتج</h2>
-    <p class="note">الطباعة من الأمام فقط ومجانية. اسحب المجسّم لتدويره.</p>
-    <?php if (!empty($savedDesignId)): ?>
-        <p class="note">تم حفظ تصميم #<?= (int) $savedDesignId ?> في حسابك.
-        <a href="profile">تصاميمي</a></p>
+    <?php if ($generatedImage !== '' && !empty($savedDesignId)): ?>
+        <!-- Step 03: 3D product customizer -->
+        <section
+            class="ai-studio-card ai-product-customizer"
+            id="ai-products"
+            data-design-id="<?= (int) $savedDesignId ?>"
+        >
+            <div class="ai-card-title">
+                <span class="ai-step">03</span>
+                <div>
+                    <h2>Wear your creation</h2>
+                    <p>See your art printed on a product. Choose a style, then add it to the cart.</p>
+                </div>
+            </div>
+
+            <div class="ai-options" role="group" aria-label="Choose product">
+                <button type="button" data-model="hoodie-black" aria-pressed="true">Black hoodie</button>
+                <button type="button" data-model="hoodie-white" aria-pressed="false">White hoodie</button>
+                <button type="button" data-model="tshirt-black" aria-pressed="false">Black T-shirt</button>
+                <button type="button" data-model="tshirt-white" aria-pressed="false">White T-shirt</button>
+                <button type="button" data-model="mug-white" aria-pressed="false">White mug</button>
+            </div>
+
+            <div class="ai-preview-layout">
+                <div>
+                    <div
+                        class="ai-stage"
+                        id="ai-stage"
+                        aria-label="Interactive 3D product preview"
+                    ></div>
+
+                    <!-- Print positioning controls -->
+                    <div class="ai-controls">
+                        <label for="ai-print-size">
+                            Print Size
+                            <input id="ai-print-size" type="range" min="40" max="100" value="75">
+                        </label>
+                        <label for="ai-print-x">
+                            Left / Right
+                            <input id="ai-print-x" type="range" min="-100" max="100" value="0">
+                        </label>
+                        <label for="ai-print-y">
+                            Up / Down
+                            <input id="ai-print-y" type="range" min="-100" max="100" value="0">
+                        </label>
+                    </div>
+
+                    <p id="ai-model-status" class="ai-help" role="status">Loading preview…</p>
+                    <p class="ai-credit" id="ai-model-credit"></p>
+                </div>
+
+                <div class="ai-purchase-panel">
+                    <span class="ai-kicker">CUSTOM-MADE FOR YOU</span>
+                    <h3 id="ai-product-name">Black hoodie</h3>
+                    <p class="ai-large-price">
+                        <strong id="ai-product-price">10.00</strong> JOD
+                    </p>
+                    <p>One unique piece featuring your personal AI design.</p>
+
+                    <div class="ai-purchase-actions">
+                        <button class="ai-primary" type="button" id="ai-add-cart">
+                            🛒 Add to cart
+                        </button>
+                        <a class="ai-outline" href="<?= $escape($userBaseUrl . '/profile') ?>">
+                            ✓ Add to my profile
+                        </a>
+                    </div>
+
+                    <p id="ai-cart-feedback" role="status" class="ai-help"></p>
+                    <p class="ai-help">
+                        Secure checkout · Your AI design stays attached to this item.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <script type="module" src="<?= $escape($userBaseUrl . '/js/ai-products.js') ?>"></script>
+        <script src="<?= $escape($userBaseUrl . '/js/ai-studio-cart.js') ?>" defer></script>
     <?php endif; ?>
-    <div class="ai-options" role="group" aria-label="اختيار المنتج">
-        <button type="button" data-model="hoodie-black" aria-pressed="true">هودي أسود</button>
-        <button type="button" data-model="hoodie-white" aria-pressed="false">هودي أبيض</button>
-        <button type="button" data-model="tshirt-black" aria-pressed="false">تيشيرت أسود</button>
-        <button type="button" data-model="tshirt-white" aria-pressed="false">تيشيرت أبيض</button>
-        <button type="button" data-model="mug-white" aria-pressed="false">مج أبيض</button>
-    </div>
-    <p id="ai-model-status" class="note" role="status">جاري تحميل المعاينة…</p>
-    <div class="ai-stage" id="ai-stage" aria-label="معاينة المنتج ثلاثية الأبعاد"></div>
-    <div class="ai-controls">
-        <label>حجم الطباعة<input id="ai-print-size" type="range" min="40" max="100" value="75"></label>
-        <label>يمين / يسار<input id="ai-print-x" type="range" min="-100" max="100" value="0"></label>
-        <label>أعلى / أسفل<input id="ai-print-y" type="range" min="-100" max="100" value="0"></label>
-    </div>
-    <button type="button" id="ai-front" class="button-secondary">عرض من الأمام</button>
-    <p class="note">هذه معاينة للطباعة. ربط المنتج والمقاس والسعر بالسلة هو الخطوة التالية.</p>
-    <p class="ai-credit" id="ai-model-credit"></p>
-</section>
-<script type="module" src="js/ai-products.js"></script>
-<?php endif; ?>
+</div>
 
-</main>
-
+<!-- AI generation progress overlay -->
+<div
+    id="ai-progress-layer"
+    class="ai-progress-overlay"
+    role="status"
+    aria-live="polite"
+    hidden
+>
+    <div class="ai-progress-modal">
+        <div class="ai-progress-logo">✦</div>
+        <span class="ai-kicker">LOOTE IS CREATING</span>
+        <h2>Making your design…</h2>
+        <div class="ai-progress-number" id="ai-progress-number">0%</div>
+        <div class="ai-progress-track">
+            <div id="ai-progress-bar"></div>
+        </div>
+        <p id="ai-progress-phase">Preparing your prompt…</p>
+        <small>Estimated progress — generation time depends on the AI service.</small>
+    </div>
+</div>
 <script>
 (() => {
     'use strict';
@@ -625,27 +518,54 @@ $escape = static fn (string $value): string => htmlspecialchars(
         }
     }
 
-    function handleSubmit(event) {
-        if (isSubmitting) {
-            event.preventDefault();
-            return;
-        }
-
-        if (!form.checkValidity()) {
-            event.preventDefault();
-            form.reportValidity();
-            return;
-        }
-
+    async function handleSubmit(event) {
+        event.preventDefault();
+        if (isSubmitting) return;
+        if (!form.checkValidity()) {form.reportValidity();return;}
         isSubmitting = true;
         stopCamera();
-
         generateButton.disabled = true;
-        generateButton.textContent = 'جاري التوليد...';
-        cameraMessage.textContent = '';
-
-        statusMessage.textContent =
-            'جاري تجهيز الوصف وتوليد التصميم. ممكن يحتاج عدة دقائق.';
+        generateButton.textContent = 'Generating your design…';
+        const layer = document.getElementById('ai-progress-layer');
+        const bar = document.getElementById('ai-progress-bar');
+        const number = document.getElementById('ai-progress-number');
+        const phase = document.getElementById('ai-progress-phase');
+        layer.hidden = false;
+        let progress = 0;
+        let timer = setInterval(() => {
+            // This is an animated estimate, not backend generation telemetry.
+            progress = Math.min(95, progress + (progress < 65 ? 2 : .3));
+            number.textContent = `${Math.floor(progress)}%`;
+            bar.style.width = `${progress}%`;
+            phase.textContent = progress < 30 ? 'Preparing your prompt…' : progress < 70 ? 'Creating your AI artwork…' : 'Finishing touches…';
+        }, 600);
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST', body: new FormData(form), credentials: 'same-origin',
+                headers: {'Accept': 'text/html'}
+            });
+            const html = await response.text();
+            const result = new DOMParser().parseFromString(html, 'text/html');
+            const errorBox = result.querySelector('.ai-generation-error');
+            if (!response.ok || errorBox) {
+                throw new Error(errorBox?.textContent?.trim() || 'Could not create the image. Please try again.');
+            }
+            if (!response.url.includes('design_id=')) {
+                throw new Error('The image was not saved. Please check your connection and try again.');
+            }
+            clearInterval(timer);
+            number.textContent = '100%';bar.style.width = '100%';
+            phase.textContent = 'Your design is ready!';
+            window.setTimeout(() => window.location.assign(response.url), 500);
+        } catch (error) {
+            clearInterval(timer);
+            layer.hidden = true;
+            statusMessage.textContent = error.message || 'Generation failed. Please try again.';
+            statusMessage.classList.add('ai-generation-error');
+            generateButton.disabled = false;
+            generateButton.textContent = 'Generate my design';
+            isSubmitting = false;
+        }
     }
 
     openCameraButton.hidden = false;
@@ -678,12 +598,11 @@ $escape = static fn (string $value): string => htmlspecialchars(
     window.addEventListener('pageshow', () => {
         isSubmitting = false;
         generateButton.disabled = false;
-        generateButton.textContent = 'ولّد تصميمي';
+        generateButton.textContent = 'Generate my design';
         openCameraButton.disabled = false;
         statusMessage.textContent = '';
         updatePreview();
     });
 })();
 </script>
-</body>
-</html>
+<?php require __DIR__ . '/../layouts/user-footer.php'; ?>

@@ -288,6 +288,10 @@ final class AdminPanelStore
                 $values,
             );
         }
+        require_once __DIR__ . '/../Services/ContentTranslationService.php';
+        (new ContentTranslationService($this->db))->save('product', $id, [
+            'name' => $name, 'description' => $description
+        ]);
         return $this->product($id);
     }
     public function archiveProduct(int $id): array
@@ -312,6 +316,8 @@ final class AdminPanelStore
             }
             $this->run("UPDATE categories SET name=? WHERE id=?", [$name, $id]);
         }
+        require_once __DIR__ . '/../Services/ContentTranslationService.php';
+        (new ContentTranslationService($this->db))->save('category', $id, ['name' => $name]);
         return ["id" => $id, "name" => $name];
     }
     public function saveSubcategory(array $input): array
@@ -337,6 +343,8 @@ final class AdminPanelStore
             }
             $this->run("UPDATE subcategories SET name=? WHERE id=?", [$name, $id]);
         }
+        require_once __DIR__ . '/../Services/ContentTranslationService.php';
+        (new ContentTranslationService($this->db))->save('subcategory', $id, ['name' => $name]);
         return ["id" => $id, "name" => $name, "category_id" => $categoryId];
     }
     public function deleteCategory(array $input): array
@@ -505,7 +513,7 @@ final class AdminPanelStore
     public function overview(array $query): array
     {
         $range = self::text($query, "range", 10);
-        $days = $range === "7d" ? 7 : ($range === "30d" ? 30 : 0);
+        $days = match ($range) { "7d" => 7, "30d" => 30, "33d" => 33, default => 0 };
         $start = $days
             ? new DateTimeImmutable("-" . ($days - 1) . " days midnight")
             : new DateTimeImmutable("first day of -11 months midnight");
@@ -546,7 +554,7 @@ final class AdminPanelStore
         return [
             "stats" => $stats,
             "series" => $series,
-            "range" => $days === 7 ? "7d" : ($days === 30 ? "30d" : "12m"),
+            "range" => $days === 7 ? "7d" : ($days === 30 ? "30d" : ($days === 33 ? "33d" : "12m")),
             "recent_orders" => $this->orders([])["items"],
             "top_products" => array_slice($top["items"], 0, 4),
             "status" => $this->rows("SELECT status,COUNT(*) AS n FROM orders GROUP BY status"),
@@ -596,10 +604,13 @@ final class AdminPanelStore
                 ) {
                     throw new InvalidArgumentException("Your current password is incorrect.");
                 }
-                if (strlen($password) < 8 || $password !== $confirm) {
+                if (strlen($password) < 12 || $password !== $confirm) {
                     throw new InvalidArgumentException(
-                        "Passwords must match and contain at least 8 characters.",
+                        "Passwords must match and contain at least 12 characters.",
                     );
+                }
+                if (password_verify($password, $owner["password"])) {
+                    throw new InvalidArgumentException("Choose a password different from your current password.");
                 }
                 $this->run("UPDATE users SET password=?,session_version=session_version+1 WHERE id=?", [
                     password_hash($password, PASSWORD_DEFAULT),

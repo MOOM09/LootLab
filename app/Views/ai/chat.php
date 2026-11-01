@@ -1,160 +1,17 @@
+<?php
+$pageTitle = 'LOOTE AI';
+$userHideAiLink = true;
+$userExtraCss = '/css/ai-studio.css';
+require __DIR__ . '/../layouts/user-header.php';
 
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>LootLab AI</title>
-
-    <style>
-        * { box-sizing: border-box; }
-
-        body {
-            margin: 0;
-            padding: 24px 16px;
-            background: #111827;
-            color: #f9fafb;
-            font-family: Arial, sans-serif;
-        }
-
-        .container {
-            display: grid;
-            grid-template-columns: 260px minmax(0, 1fr);
-            gap: 24px;
-            max-width: 1100px;
-            margin: auto;
-        }
-
-        aside {
-            padding: 18px;
-            border-radius: 14px;
-            background: #1f2937;
-            align-self: start;
-        }
-
-        .history-link {
-            display: block;
-            padding: 12px;
-            margin: 8px 0;
-            border-radius: 8px;
-            color: white;
-            text-decoration: none;
-            overflow-wrap: anywhere;
-        }
-
-        .history-link:hover,
-        .history-link.active {
-            background: #4c3d72;
-        }
-
-        .history-link small {
-            display: block;
-            margin-top: 6px;
-            color: #cbd5e1;
-        }
-
-        textarea {
-            width: 100%;
-            min-height: 100px;
-            margin: 12px 0;
-            padding: 14px;
-            border: 1px solid #4b5563;
-            border-radius: 12px;
-            background: #1f2937;
-            color: white;
-            font: inherit;
-            resize: vertical;
-        }
-
-        button {
-            padding: 12px 20px;
-            border: 0;
-            border-radius: 10px;
-            background: #a78bfa;
-            color: #111827;
-            font: inherit;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        button:disabled {
-            opacity: .6;
-            cursor: wait;
-        }
-
-        .chat-message {
-            margin: 16px 0;
-            padding: 18px;
-            border-radius: 12px;
-            overflow-wrap: anywhere;
-        }
-
-        .user-message {
-            background: #37305a;
-            margin-left: 24px;
-        }
-
-        .assistant-message {
-            background: #1f2937;
-            margin-right: 24px;
-        }
-
-        .message-text {
-            margin-top: 10px;
-            white-space: pre-wrap;
-            line-height: 1.8;
-        }
-
-        .error {
-            padding: 16px;
-            margin: 16px 0;
-            background: #7f1d1d;
-            border-radius: 10px;
-        }
-
-        .note { color: #c4b5fd; }
-
-        @media (max-width: 700px) {
-            .container { grid-template-columns: 1fr; }
-            aside { max-height: 280px; overflow-y: auto; }
-        }
-
-        .history-action {
-    margin: 10px 0;
-}
-
-.history-action label {
-    display: block;
-    margin-bottom: 6px;
-    font-size: 13px;
-}
-
-.history-action input[type="text"] {
-    width: 100%;
-    padding: 9px;
-    margin-bottom: 8px;
-    border: 1px solid #64748b;
-    border-radius: 8px;
-    background: #111827;
-    color: white;
-    font: inherit;
-}
-
-.history-action button {
-    padding: 8px 12px;
-    font-size: 13px;
-}
-
-.delete-button {
-    background: #fca5a5;
-}
-    </style>
-</head>
-
-<body>
+// Translate UI labels only; never alter messages or AI-generated content.
+$chatIsArabic = $userLanguage === 'ar';
+$chatText = static fn (string $en, string $ar): string => $chatIsArabic ? $ar : $en;
+?>
+<div class="ai-chat-shell" dir="<?= $chatIsArabic ? 'rtl' : 'ltr' ?>"><div class="loote-chat-banner" dir="<?= $chatIsArabic ? 'rtl' : 'ltr' ?>"><div><span class="ai-kicker">YOUR SHOPPING SIDEKICK</span><h1>Meet LOOTE <span>✦</span></h1><p>Discover products, get inspired, and find your next favorite.</p></div><a class="ai-outline" href="<?= htmlspecialchars($userAppUrl . '/aiImage.php', ENT_QUOTES, 'UTF-8') ?>">✦ AI Image Studio</a></div>
 <div class="container">
     <aside>
-        <h2>المحادثات السابقة</h2>
+        <h2><?= $chatText('Previous Conversations', 'المحادثات السابقة') ?></h2>
 
         <form method="POST" action="ai.php">
             <input type="hidden" name="action" value="new_chat">
@@ -163,7 +20,7 @@
                 name="csrf_token"
                 value="<?= escapeHtml($_SESSION['ai_csrf']) ?>"
             >
-            <button type="submit">+ محادثة جديدة</button>
+            <button type="submit"><?= $chatText('+ New Conversation', '+ محادثة جديدة') ?></button>
         </form>
 
         <?php foreach ($conversations as $conversation): ?>
@@ -193,7 +50,7 @@
     >
 
     <label for="title-<?= (int) $conversation['id'] ?>">
-        عنوان المحادثة
+        <?= $chatText('Conversation Title', 'عنوان المحادثة') ?>
     </label>
 
     <input
@@ -205,14 +62,14 @@
         required
     >
 
-    <button type="submit">حفظ العنوان</button>
+    <button type="submit"><?= $chatText('Save Title', 'حفظ العنوان') ?></button>
 </form>
 
 <form
     method="POST"
     action="ai.php"
     class="history-action"
-    onsubmit="return confirm('حذف المحادثة وكل رسائلها نهائيًا؟');"
+    onsubmit="return confirm(<?= htmlspecialchars(json_encode($chatText('Permanently delete this conversation and all messages?', 'حذف المحادثة وكل رسائلها نهائيًا؟'), JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8') ?>);"
 >
     <input type="hidden" name="action" value="delete">
 
@@ -229,19 +86,19 @@
     >
 
     <button type="submit" class="delete-button">
-        حذف المحادثة
+        <?= $chatText('Delete Conversation', 'حذف المحادثة') ?>
     </button>
 </form>
         <?php endforeach; ?>
 
         <?php if ($conversations === []): ?>
-            <p>لا توجد محادثات محفوظة بعد.</p>
+            <p><?= $chatText('No saved conversations yet.', 'لا توجد محادثات محفوظة بعد.') ?></p>
         <?php endif; ?>
     </aside>
 
-    <main>
-        <h1>مساعد LootLab 🧪</h1>
-        <p>احكيلي شو بتحب أو لمين بدك هدية.</p>
+    <section class="loote-chat-main">
+        <h1>LOOTE — Your AI shopping assistant ✦</h1>
+        <p><?= $chatText('Tell me what you love or who you are shopping for.', 'احكيلي شو بتحب أو لمين بدك هدية.') ?></p>
         <?php if ($error !== ''): ?>
             <div class="error" role="alert">
                 <?= escapeHtml($error) ?>
@@ -253,7 +110,7 @@
                 class="chat-message <?= $entry['role'] === 'user' ? 'user-message' : 'assistant-message' ?>"
             >
                 <strong>
-                    <?= $entry['role'] === 'user' ? 'أنت' : 'LootLab AI' ?>
+                    <?= $entry['role'] === 'user' ? $chatText('You', 'أنت') : 'LOOTE AI' ?>
                 </strong>
 
                 <div class="message-text" dir="auto"><?= escapeHtml($entry['content']) ?></div>
@@ -275,22 +132,22 @@
                 value="<?= escapeHtml($_SESSION['ai_csrf']) ?>"
             >
 
-            <label for="message">رسالتك</label>
+            <label for="message"><?= $chatText('Your Message', 'رسالتك') ?></label>
 
             <textarea
                 id="message"
                 name="message"
                 dir="auto"
                 maxlength="1500"
-                placeholder="بدي هدية لصاحبي بحب ناروتو"
+                placeholder="<?= htmlspecialchars($chatText('I need a gift for my friend who loves Naruto', 'بدي هدية لصاحبي بحب ناروتو'), ENT_QUOTES, 'UTF-8') ?>"
                 required
             ><?= escapeHtml($message) ?></textarea>
 
             <button type="submit" id="send-button">
-                إرسال
+                <?= $chatText('Send', 'إرسال') ?>
             </button>
         </form>
-    </main>
+    </section>
 </div>
 <script>
 (() => {
@@ -299,6 +156,20 @@
     const chatForm = document.getElementById('chat-form');
     const sendButton = document.getElementById('send-button');
     const messageInput = document.getElementById('message');
+
+    // Chat-only strings are selected from the server's saved language preference.
+    const chatCopy = <?= json_encode([
+        'sending' => $chatText('Responding...', 'جاري الرد...'),
+        'send' => $chatText('Send', 'إرسال'),
+        'you' => $chatText('You', 'أنت'),
+        'waiting' => $chatText('Waiting for a response...', 'بانتظار الرد...'),
+        'invalidChunk' => $chatText('Invalid response chunk received.', 'وصل جزء غير صالح من الرد.'),
+        'replyError' => $chatText('Could not complete the response.', 'تعذّر إكمال الرد.'),
+        'invalidId' => $chatText('Invalid conversation ID received.', 'وصل رقم محادثة غير صالح.'),
+        'startError' => $chatText('Could not start the response. Please sign in and refresh the page.', 'تعذّر بدء الرد. تأكد من تسجيل الدخول وحدّث الصفحة.'),
+        'connectionError' => $chatText('Connection ended before saving was confirmed. Refresh to check.', 'انقطع الاتصال قبل تأكيد الحفظ. حدّث الصفحة للتحقق.'),
+        'receiveError' => $chatText('Could not receive the response.', 'تعذّر استقبال الرد.'),
+    ], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
 
     if (!chatForm || !sendButton || !messageInput) {
         return;
@@ -310,7 +181,7 @@
         sending = value;
         sendButton.disabled = value;
         messageInput.readOnly = value;
-        sendButton.textContent = value ? 'جاري الرد...' : 'إرسال';
+        sendButton.textContent = value ? chatCopy.sending : chatCopy.send;
         chatForm.setAttribute('aria-busy', String(value));
     }
 
@@ -321,7 +192,7 @@
         );
 
         const heading = document.createElement('strong');
-        heading.textContent = role === 'user' ? 'أنت' : 'Loot Hub AI';
+        heading.textContent = role === 'user' ? chatCopy.you : 'LOOTE AI';
 
         const content = document.createElement('div');
         content.className = 'message-text';
@@ -406,7 +277,7 @@
         );
 
         const userMessage = addMessage('user', message);
-        const assistant = addMessage('assistant', 'بانتظار الرد...');
+        const assistant = addMessage('assistant', chatCopy.waiting);
 
         userMessage.article.scrollIntoView({
             behavior: 'smooth',
@@ -491,18 +362,18 @@
 
             if (item.type === 'delta') {
                 if (typeof item.text !== 'string') {
-                    throw new Error('وصل جزء غير صالح من الرد.');
+                    throw new Error(chatCopy.invalidChunk);
                 }
 
                 reply += item.text;
                 startTyping();
             } else if (item.type === 'error') {
-                throw new Error(item.message || 'تعذّر إكمال الرد.');
+                throw new Error(item.message || chatCopy.replyError);
             } else if (item.type === 'done') {
                 const id = Number(item.conversation_id);
 
                 if (!Number.isSafeInteger(id) || id < 1) {
-                    throw new Error('وصل رقم محادثة غير صالح.');
+                    throw new Error(chatCopy.invalidId);
                 }
 
                 completed = true;
@@ -523,7 +394,7 @@
                 !response.body
             ) {
                 throw new Error(
-                    'تعذّر بدء الرد. تأكد من تسجيل الدخول وحدّث الصفحة.'
+                    chatCopy.startError
                 );
             }
 
@@ -570,7 +441,7 @@
 
             if (!completed) {
                 throw new Error(
-                    'انقطع الاتصال قبل تأكيد الحفظ. حدّث الصفحة للتحقق.'
+                    chatCopy.connectionError
                 );
             }
 
@@ -600,7 +471,7 @@
             showError(
                 error instanceof Error
                     ? error.message
-                    : 'تعذّر استقبال الرد.'
+                    : chatCopy.receiveError
             );
         } finally {
             stopTyping();
@@ -620,5 +491,6 @@
     });
 })();
 </script>
-</body>
-</html>
+
+</div>
+<?php require __DIR__ . '/../layouts/user-footer.php'; ?>

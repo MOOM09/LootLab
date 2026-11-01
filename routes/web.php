@@ -4,6 +4,9 @@
 /** @var Router $router */
 
 // ======================================================
+// PERSONALIZATION: available to both guests and signed-in users
+$router->post('/preferences', [PreferenceController::class, 'update']);
+
 // HOME & PRODUCTS
 // ======================================================
 
@@ -84,8 +87,9 @@ $router->post('/logout', [
 
 // Email verification: enter a one-time code (no public email links).
 $router->get('/verify-email', [EmailVerificationController::class, 'verify']);
-$router->get('/verify-email/pending', [EmailVerificationController::class, 'pending']);
-$router->post('/verify-email/resend', [EmailVerificationController::class, 'resend']);
+$router->get('/verify-email/pending', [AuthController::class, 'showPendingVerification']);
+$router->post('/verify-email/pending', [AuthController::class, 'verifyPendingRegistration']);
+$router->post('/verify-email/resend', [AuthController::class, 'resendPendingVerification']);
 $router->post('/verify-email/confirm', [EmailVerificationController::class, 'confirm']);
 
 // Google OAuth
@@ -137,12 +141,16 @@ $router->post('/cart/add', [
     'add',
 ]);
 
-$router->post('/cart/update', [
+$router->post('/cart/add-design', [
+    CartController::class,
+    'addDesign',
+], [AuthMiddleware::class]);
+$router->put('/cart/update', [
     CartController::class,
     'update',
 ]);
 
-$router->post('/cart/remove', [
+$router->delete('/cart/remove', [
     CartController::class,
     'remove',
 ]);

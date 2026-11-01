@@ -1,3 +1,4 @@
+
 <?php
 
 class Product
@@ -17,7 +18,6 @@ class Product
             throw new RuntimeException('Database configuration is not available.');
         }
 
-
         $database = new Database($config['database']);
         $this->db = $database->getConnection();
     }
@@ -25,7 +25,7 @@ class Product
     public function getAll(): array
     {
         $statement = $this->db->query(
-            'SELECT
+            "SELECT
                 p.id,
                 p.subcategorys_id,
                 p.name,
@@ -48,39 +48,49 @@ class Product
              INNER JOIN categories c ON c.id = s.category_id
              LEFT JOIN product_types pt ON pt.id = p.product_type_id
              WHERE p.is_active = 1
-             ORDER BY p.created_at DESC, p.id DESC'
+               AND p.name NOT LIKE 'LOOTE Custom %'
+             ORDER BY p.created_at DESC, p.id DESC"
         );
 
-        return $statement->fetchAll();
+        $rows = $statement->fetchAll(PDO::FETCH_ASSOC);
+        require_once __DIR__ . '/../Services/ContentTranslationService.php';
+        return (new ContentTranslationService($this->db))->localizeProducts($rows);
     }
 
-    /**
-     * Rank active products by real sales plus optional demo baseline quantities.
-     * A separate, explicitly demo-only table can provide sample ranking data
-     * for local previews; no fake orders, payments or stock changes are made.
-     * Without that table, zero-sale products fill the remaining slots.\n     * A new sale increases the score by the purchased quantity, not resets it.
-     */
     public function getTopSellingProducts(int $limit = 10): array
     {
         $limit = max(1, min(30, $limit));
+
         $hasDemoTable = (int) $this->db->query(
-            "SELECT COUNT(*) FROM information_schema.tables
-             WHERE table_schema = DATABASE() AND table_name = 'product_demo_popularity'"
+            "SELECT COUNT(*)
+             FROM information_schema.tables
+             WHERE table_schema = DATABASE()
+               AND table_name = 'product_demo_popularity'"
         )->fetchColumn() > 0;
+
         $demoJoin = $hasDemoTable
             ? 'LEFT JOIN product_demo_popularity demo ON demo.product_id = p.id'
             : '';
+
         $demoSelect = $hasDemoTable
             ? 'COALESCE(demo.demo_units, 0)'
             : '0';
 
-        $sql = "SELECT p.id, p.name, p.description, p.image, p.price,
-                       p.discount_price, p.stock_quantity,
-                       COALESCE(sales.units_sold, 0) AS units_sold,
-                       {$demoSelect} AS demo_units
+        $sql = "SELECT
+                    p.id,
+                    p.name,
+                    p.description,
+                    p.image,
+                    p.price,
+                    p.discount_price,
+                    p.stock_quantity,
+                    COALESCE(sales.units_sold, 0) AS units_sold,
+                    {$demoSelect} AS demo_units
                 FROM products p
                 LEFT JOIN (
-                    SELECT oi.product_id, SUM(oi.quantity) AS units_sold
+                    SELECT
+                        oi.product_id,
+                        SUM(oi.quantity) AS units_sold
                     FROM order_items oi
                     INNER JOIN orders o ON o.id = oi.order_id
                     WHERE o.status IN ('processing', 'shipped', 'completed')
@@ -88,10 +98,16 @@ class Product
                 ) sales ON sales.product_id = p.id
                 {$demoJoin}
                 WHERE p.is_active = 1
-                ORDER BY (COALESCE(sales.units_sold, 0) + {$demoSelect}) DESC, COALESCE(sales.units_sold, 0) DESC, p.id DESC
+                  AND p.name NOT LIKE 'LOOTE Custom %'
+                ORDER BY
+                    (COALESCE(sales.units_sold, 0) + {$demoSelect}) DESC,
+                    COALESCE(sales.units_sold, 0) DESC,
+                    p.id DESC
                 LIMIT {$limit}";
 
-        return $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        $rows = $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        require_once __DIR__ . '/../Services/ContentTranslationService.php';
+        return (new ContentTranslationService($this->db))->localizeProducts($rows);
     }
 
     public function getById(int $id): ?array
@@ -119,14 +135,18 @@ class Product
              INNER JOIN subcategories s ON s.id = p.subcategorys_id
              INNER JOIN categories c ON c.id = s.category_id
              LEFT JOIN product_types pt ON pt.id = p.product_type_id
-             WHERE p.id = :id AND p.is_active = 1
+             WHERE p.id = :id
+               AND p.is_active = 1
              LIMIT 1'
         );
+
         $statement->execute(['id' => $id]);
 
-        $product = $statement->fetch();
+        $product = $statement->fetch(PDO::FETCH_ASSOC);
 
-        return $product === false ? null : $product;
+        if ($product === false) return null;
+        require_once __DIR__ . '/../Services/ContentTranslationService.php';
+        return (new ContentTranslationService($this->db))->localizeProducts([$product])[0];
     }
 
     public function create(array $data): int
@@ -153,7 +173,12 @@ class Product
 
         $statement->execute($this->productParameters($data));
 
-        return (int) $this->db->lastInsertId();
+        $id = (int) $this->db->lastInsertId();
+        require_once __DIR__ . '/../Services/ContentTranslationService.php';
+        (new ContentTranslationService($this->db))->save('product', $id, [
+            'name' => $data['name'], 'description' => $data['description']
+        ]);
+        return $id;
     }
 
     public function update(int $id, array $data): bool
@@ -176,7 +201,14 @@ class Product
 
         $statement->execute($parameters);
 
-        return $statement->rowCount() > 0;
+        $updated = $statement->rowCount() > 0;
+        if ($updated) {
+            require_once __DIR__ . '/../Services/ContentTranslationService.php';
+            (new ContentTranslationService($this->db))->save('product', $id, [
+                'name' => $data['name'], 'description' => $data['description']
+            ]);
+        }
+        return $updated;
     }
 
     public function delete(int $id): bool
@@ -184,8 +216,10 @@ class Product
         $statement = $this->db->prepare(
             'UPDATE products
              SET is_active = 0
-             WHERE id = :id AND is_active = 1'
+             WHERE id = :id
+               AND is_active = 1'
         );
+
         $statement->execute(['id' => $id]);
 
         return $statement->rowCount() > 0;
