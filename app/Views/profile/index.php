@@ -24,7 +24,77 @@
     → Controller passes it to view → $user['name']
         -->
         <h1> <?= htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8') ?>'s Profile</h1>
+         <section class="user-designs">
+    <h2>تصاميمي</h2>
 
+    <?php if (empty($designs)): ?>
+        <p>لسا ما عندك تصاميم محفوظة.</p>
+    <?php else: ?>
+        <div style="
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 240px));
+            gap: 16px;
+            margin-bottom: 24px;
+        ">
+            <?php foreach ($designs as $design): ?>
+                <?php
+                $imageUrl = $appUrl
+                    . '/profile/design-image?id='
+                    . (int) $design['id'];
+                ?>
+
+                <article class="user-design-card">
+                    <a
+                        href="<?= htmlspecialchars(
+                            $imageUrl,
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?>"
+                        target="_blank"
+                        rel="noopener"
+                    >
+                        <img
+                            src="<?= htmlspecialchars(
+                                $imageUrl,
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>"
+                            alt="تصميم <?= (int) $design['id'] ?>"
+                            loading="lazy"
+                            style="
+                                width: 100%;
+                                height: 240px;
+                                object-fit: contain;
+                                border-radius: 12px;
+                            "
+                        >
+                    </a>
+
+                    <p>تصميم #<?= (int) $design['id'] ?></p>
+                    <p>
+    <a href="<?= htmlspecialchars(
+        rtrim($appUrl, '/')
+        . '/aiImage.php?design_id='
+        . (int) $design['id'],
+        ENT_QUOTES,
+        'UTF-8'
+    ) ?>">
+        صمّم على منتج
+    </a>
+</p>
+
+                    <small>
+                        <?= htmlspecialchars(
+                            $design['created_at'],
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?>
+                    </small>
+                </article>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+</section>
         <form id="logout-form" method="post"
               action="<?= htmlspecialchars($appUrl . '/logout', ENT_QUOTES, 'UTF-8') ?>">
             <input type="hidden" name="csrf_token"

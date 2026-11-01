@@ -1,6 +1,4 @@
-
 <?php
-
 class SmsService
 {
     private string $apiKey;

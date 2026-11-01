@@ -29,7 +29,8 @@ class Favorite
     {
         $stmt = $this->connection->prepare(
             'INSERT INTO favorites (user_id)
-         VALUES (:user_id)'
+                VALUES (:user_id)
+                ON DUPLICATE KEY UPDATE fav_id = LAST_INSERT_ID(fav_id)'
         );
 
         $stmt->execute([
@@ -120,7 +121,8 @@ class Favorite
     {
         $stmt = $this->connection->prepare(
             'INSERT INTO favorites (session_id)
-         VALUES (:session_id)'
+            VALUES (:session_id)
+            ON DUPLICATE KEY UPDATE fav_id = LAST_INSERT_ID(fav_id)'
         );
 
         $stmt->execute([

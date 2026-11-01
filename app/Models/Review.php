@@ -62,4 +62,3 @@
                  $stmt->execute([$id]);
         }
     }
-?>

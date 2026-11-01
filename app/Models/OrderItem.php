@@ -1,11 +1,12 @@
-
 <?php
 
 class OrderItem {
     private PDO $conn;
 
-    public function __construct(Database $database) {
-        $this->conn = $database->getConnection();
+    public function __construct(PDO|Database $connection) {
+        $this->conn = $connection instanceof Database
+            ? $connection->getConnection()
+            : $connection;
     }
 
     function getAll() {
@@ -43,4 +44,3 @@ class OrderItem {
         $stmt->execute([$id]);
     }
 }
-?>
