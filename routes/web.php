@@ -246,6 +246,21 @@ $router->get('/profile/design-image', [
 
 $router->get('/orders', [
     OrderController::class,
+    'myOrders',
+], [
+    AuthMiddleware::class,
+]);
+
+$router->get('/orders/details', [
+    OrderController::class,
+    'myOrderDetails',
+], [
+    AuthMiddleware::class,
+]);
+
+// Administrative order listing remains admin-only.
+$router->get('/admin/orders/list', [
+    OrderController::class,
     'index',
 ], [
     AuthMiddleware::class,
