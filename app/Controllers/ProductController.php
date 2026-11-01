@@ -11,6 +11,13 @@ class ProductController extends Controller
         $this->product = new Product();
     }
 
+    public function home(): void
+    {
+        $this->view('home/index', [
+            'featuredProducts' => array_slice($this->product->getAll(), 0, 3),
+        ]);
+    }
+
     public function index(): void
     {
         $id = $this->getOptionalProductId();
