@@ -36,7 +36,7 @@ require __DIR__ . '/../layouts/user-header.php';
                         <?php if ($topProductsWithSales >= count($topProducts) && count($topProducts) > 0): ?>
                             Ranked by quantities from processed and fulfilled orders.
                         <?php elseif ($hasDemoRankings): ?>
-                            Preview leaderboard: sample popularity rankings fill products without completed sales.
+                            Preview leaderboard: simulated starting sales are added to confirmed sales for ranking.
                         <?php else: ?>
                             Discover popular picks while confirmed sales rankings build up.
                         <?php endif; ?>
