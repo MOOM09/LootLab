@@ -495,8 +495,9 @@
         };
 
         const performCartAction = async (row, method) => {
-            const itemId = Number(row.dataset.cartItemId);
-            if (!Number.isInteger(itemId) || itemId < 1 || pendingItems.has(itemId)) return;
+           const itemId = row.dataset.cartItemId;
+
+if (!itemId || pendingItems.has(itemId)) return;
 
             const payload = { item_id: itemId };
             if (method === 'PUT') {

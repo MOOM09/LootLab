@@ -188,7 +188,7 @@ class ProductController extends Controller
             ['options' => ['min_range' => 1]]
         );
 
-        if ($subcategorysId === false) {
+       if ($subcategoryId === false) {
             throw new InvalidArgumentException('A valid subcategory is required.');
         }
 

@@ -15,18 +15,19 @@ class OrderController extends Controller
     {
         Response::success($this->order->getAll());
     }
+public function show(): void
+{
+    $userId = $this->requireUser();
+    $id = $this->positiveId($_GET['id'] ?? null);
 
-    public function show(): void
-    {
-        $id = $this->positiveId($_GET['id'] ?? null);
-        $order = $this->order->getById($id);
+    $order = $this->order->getById($id);
 
-        if (!$order) {
-            Response::error('Order not found.', 404);
-        }
-
-        Response::success($order);
+    if (!$order || (int) $order['user_id'] !== $userId) {
+        Response::error('Order not found.', 404);
     }
+
+    Response::success($order);
+}
 
     public function store(): void
     {

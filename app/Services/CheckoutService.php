@@ -144,15 +144,34 @@ class CheckoutService
                  (:order_id, :product_id, :quantity, :price, :design_id)'
             );
 
-            foreach ($validatedItems as $item) {
-                $statement->execute([
-                    'order_id' => $orderId,
-                    'product_id' => $item['product_id'],
-                    'quantity' => $item['quantity'],
-                    'price' => $item['price'],
-                    'design_id' => $item['custom_design_id']
-                ]);
-            }
+           $stockStatement = $this->db->prepare(
+    'UPDATE products
+     SET stock_quantity = stock_quantity - :quantity
+     WHERE id = :product_id
+       AND stock_quantity >= :quantity'
+);
+
+foreach ($validatedItems as $item) {
+    $statement->execute([
+        'order_id' => $orderId,
+        'product_id' => $item['product_id'],
+        'quantity' => $item['quantity'],
+        'price' => $item['price'],
+        'design_id' => $item['custom_design_id']
+    ]);
+
+    // Deduct stock for Cash on Delivery orders.
+    if ($clearCart) {
+        $stockStatement->execute([
+            'quantity' => $item['quantity'],
+            'product_id' => $item['product_id']
+        ]);
+
+        if ($stockStatement->rowCount() !== 1) {
+            throw new Exception('Insufficient product stock.');
+        }
+    }
+}
 
             $this->db->commit();
 
