@@ -37,13 +37,22 @@ require __DIR__ . '/../layouts/user-header.php';
         </p>
 
 
-        <form class="user-catalog-search" action="<?= htmlspecialchars($userAppUrl . '/products', ENT_QUOTES, 'UTF-8') ?>" method="get" role="search" data-user-search-form>
+        <div class="user-catalog-layout">
+            <aside class="user-catalog-sidebar" aria-label="Product filters">
+                <div class="user-sidebar-heading">
+                    <div><span class="user-eyebrow">FIND YOUR LOOT</span><h2>Filters</h2></div>
+                    <button type="button" class="user-clear-filters" data-user-clear-filters>Clear all</button>
+                </div>
+                        <form class="user-catalog-search" action="<?= htmlspecialchars($userAppUrl . '/products', ENT_QUOTES, 'UTF-8') ?>" method="get" role="search" data-user-search-form>
             <label for="user-site-search">Search products</label>
             <input id="user-site-search" type="search" name="q" placeholder="Search products, categories and subcategories..." data-user-catalog-search autocomplete="off">
             <button type="submit" class="user-button-secondary">Search</button>
         </form>
         <div class="user-filters-heading"><h2>Filter products</h2><p>Choose a category, subcategory or product type.</p></div>
-        <div class="user-category-list" role="group" aria-label="Filter products by category">
+
+                <details class="user-filter-group" open>
+                    <summary>Category <span aria-hidden="true">⌄</span></summary>
+                    <div class="user-filter-body">        <div class="user-category-list" role="group" aria-label="Filter products by category">
             <button class="user-category-item" type="button" data-user-category data-category-id="all" data-category-name="All products" aria-pressed="true">
                 All products
             </button>
@@ -61,7 +70,11 @@ require __DIR__ . '/../layouts/user-header.php';
             <?php endforeach; ?>
         </div>
 
-        <!-- Subcategory buttons appear after a category is selected. -->
+</div>
+                </details>
+                <details class="user-filter-group" data-user-subcategory-group hidden open>
+                    <summary>Subcategory <span aria-hidden="true">⌄</span></summary>
+                    <div class="user-filter-body">        <!-- Subcategory buttons appear after a category is selected. -->
         <div class="user-category-list" data-user-subcategory-list hidden role="group" aria-label="Filter products by subcategory">
             <button class="user-category-item" type="button" data-user-subcategory data-subcategory-id="all" data-subcategory-name="All subcategories" aria-pressed="true">
                 All subcategories
@@ -83,7 +96,11 @@ require __DIR__ . '/../layouts/user-header.php';
             <?php endforeach; ?>
         </div>
 
-        <!-- Product types: e.g. 3D Models, Posters, Figures -->
+</div>
+                </details>
+                <details class="user-filter-group" open>
+                    <summary>Product Type <span aria-hidden="true">⌄</span></summary>
+                    <div class="user-filter-body">        <!-- Product types: e.g. 3D Models, Posters, Figures -->
         <div class="user-category-list" role="group" aria-label="Filter products by product type" data-user-type-list>
             <button class="user-category-item" type="button" data-user-type data-type-id="all" data-type-name="All types" aria-pressed="true">All types</button>
             <?php foreach ($userProductTypes as $typeId => $typeName): ?>
@@ -94,6 +111,28 @@ require __DIR__ . '/../layouts/user-header.php';
             <?php endforeach; ?>
         </div>
 
+</div>
+                </details>
+                <details class="user-filter-group" open>
+                    <summary>Price Range <span aria-hidden="true">⌄</span></summary>
+                    <div class="user-filter-body">
+                        <div class="user-price-inputs">
+                            <label for="user-min-price">Min (JD)<input id="user-min-price" data-user-min-price type="number" inputmode="decimal" min="0" step="0.01" placeholder="0"></label>
+                            <span aria-hidden="true">—</span>
+                            <label for="user-max-price">Max (JD)<input id="user-max-price" data-user-max-price type="number" inputmode="decimal" min="0" step="0.01" placeholder="Any"></label>
+                        </div>
+                        <div class="user-price-quick" aria-label="Price range presets" role="group">
+                            <button type="button" data-user-price-preset="all" data-min="" data-max="" aria-pressed="true">All prices</button>
+                            <button type="button" data-user-price-preset="0-20" data-min="0" data-max="20" aria-pressed="false">Up to 20 JD</button>
+                            <button type="button" data-user-price-preset="20-50" data-min="20" data-max="50" aria-pressed="false">20 – 50 JD</button>
+                            <button type="button" data-user-price-preset="50-100" data-min="50" data-max="100" aria-pressed="false">50 – 100 JD</button>
+                            <button type="button" data-user-price-preset="100-200" data-min="100" data-max="200" aria-pressed="false">100 – 200 JD</button>
+                            <button type="button" data-user-price-preset="200-up" data-min="200" data-max="" aria-pressed="false">200+ JD</button>
+                        </div>
+                    </div>
+                </details>
+            </aside>
+            <div class="user-catalog-results">
         <div class="user-section-heading">
             <div>
                 <h2>Explore the collection</h2>
@@ -183,9 +222,9 @@ require __DIR__ . '/../layouts/user-header.php';
                         <div class="user-product-price" aria-label="Product price">
                             <?php if ($discountPrice !== null): ?>
                                 <span class="user-price-current"><?= number_format($discountPrice, 2) ?> JD</span>
-                                <span class="user-price-old"><?= number_format($price, 2) ?> JD JD</span>
+                                <span class="user-price-old"><?= number_format($price, 2) ?> JD</span>
                             <?php else: ?>
-                                <span class="user-price-current"><?= number_format($price, 2) ?></span>
+                                <span class="user-price-current"><?= number_format($price, 2) ?> JD</span>
                             <?php endif; ?>
                         </div>
                         <p class="user-product-description" dir="auto"><?= htmlspecialchars($productDescription !== '' ? $productDescription : 'Explore this LootLab collectible.', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></p>
@@ -224,7 +263,9 @@ require __DIR__ . '/../layouts/user-header.php';
             <span aria-hidden="true">i</span>
             <span>Ratings appear on product pages when reviews are available.</span>
         </p>
+            </div>
+        </div>
     </div>
 </section>
-<script src="<?= htmlspecialchars($userAppUrl . '/js/catalog-filter-fix.js?v=loote2', ENT_QUOTES, 'UTF-8') ?>" defer></script>
+<script src="<?= htmlspecialchars($userAppUrl . '/js/catalog-filter-fix.js?v=loote3', ENT_QUOTES, 'UTF-8') ?>" defer></script>
 <?php require __DIR__ . '/../layouts/user-footer.php'; ?>
