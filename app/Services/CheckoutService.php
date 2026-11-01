@@ -4,6 +4,7 @@
 require_once __DIR__ . '/../Core/Database.php';
 require_once __DIR__ . '/../Interfaces/cartInterface.php';
 require_once __DIR__ . '/../Models/CartItem.php';
+require_once __DIR__ . '/../Models/PromoCode.php';
 require_once __DIR__ . '/../Models/Cart.php';
 
 class CheckoutService
@@ -132,7 +133,17 @@ class CheckoutService
                     'custom_design_id' => $item['custom_design_id'] ?? null
                 ];
             }
+             // Revalidate the promo code before creating the order.
+$this->cart->refreshPromo($cartId);
 
+$cartTotals = $this->cart->getTotals($cartId);
+
+$discount = min(
+    $total,
+    max(0, (float) $cartTotals['discount'])
+);
+
+$total = round(max(0, $total - $discount), 2);
             // Create order.
             $statement = $this->db->prepare(
                 'INSERT INTO orders

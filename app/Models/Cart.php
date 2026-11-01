@@ -79,17 +79,16 @@ class Cart implements CartInterface
         return $removed;
     }
 
-    public function clear(int $cartId): bool
-    {
-        $cleared = $this->items->clear($cartId);
+   public function clear(int $cartId): bool
+{
+    $cleared = $this->items->clear($cartId);
 
-        //? An empty cart cannot hold a discount.
-        if ($cleared) {
-            $this->refreshPromo($cartId);
-        }
-
-        return $cleared;
+    if (!$cleared) {
+        return false;
     }
+
+    return $this->removePromo($cartId);
+}
 
     public function getTotals(int $cartId): array
     {

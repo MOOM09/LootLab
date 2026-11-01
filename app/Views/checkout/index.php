@@ -6,6 +6,15 @@ $notice = $notice ?? null;
 $appUrl = rtrim($appUrl ?? '', '/');
 $csrfToken = $csrfToken ?? '';
 $selectedMethod = $old['payment_method'] ?? 'cod';
+$totals = $totals ?? [
+    'subtotal' => 0,
+    'discount' => 0,
+    'total' => 0
+];
+
+$appliedPromoCode = $appliedPromoCode ?? '';
+$promoNotice = $promoNotice ?? null;
+$promoError = $promoError ?? null;
 
 $pageTitle = 'Checkout';
 require __DIR__ . '/../layouts/user-header.php';
@@ -34,6 +43,87 @@ require __DIR__ . '/../layouts/user-header.php';
                     <?= htmlspecialchars((string) $notice, ENT_QUOTES, 'UTF-8') ?>
                 </p>
             <?php endif; ?>
+
+<div class="user-field">
+
+    <h2>Promo Code</h2>
+
+    <?php if ($promoNotice): ?>
+        <p role="status" style="color: green;">
+            <?= htmlspecialchars($promoNotice, ENT_QUOTES, 'UTF-8') ?>
+        </p>
+    <?php endif; ?>
+
+    <?php if ($promoError): ?>
+        <p role="alert" style="color: crimson;">
+            <?= htmlspecialchars($promoError, ENT_QUOTES, 'UTF-8') ?>
+        </p>
+    <?php endif; ?>
+
+    <form method="POST"
+          action="<?= htmlspecialchars($appUrl . '/checkout/promo', ENT_QUOTES, 'UTF-8') ?>">
+
+        <input type="hidden"
+               name="csrf_token"
+               value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
+
+        <input
+            class="user-input"
+            type="text"
+            name="promo_code"
+            placeholder="Enter promo code"
+            maxlength="100"
+            required>
+
+        <button class="user-button" type="submit">
+            Apply Promo
+        </button>
+    </form>
+
+    <?php if ($appliedPromoCode !== ''): ?>
+
+        <p>
+            Applied:
+            <strong>
+                <?= htmlspecialchars($appliedPromoCode, ENT_QUOTES, 'UTF-8') ?>
+            </strong>
+        </p>
+
+        <form method="POST"
+              action="<?= htmlspecialchars($appUrl . '/checkout/promo/remove', ENT_QUOTES, 'UTF-8') ?>">
+
+            <input type="hidden"
+                   name="csrf_token"
+                   value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
+
+            <button class="user-button-secondary" type="submit">
+                Remove Promo
+            </button>
+        </form>
+
+    <?php endif; ?>
+
+</div>
+
+<div class="user-field">
+    <h2>Order Summary</h2>
+
+    <p>
+        Subtotal:
+        <?= number_format((float) $totals['subtotal'], 2) ?> JOD
+    </p>
+
+    <p>
+        Discount:
+        -<?= number_format((float) $totals['discount'], 2) ?> JOD
+    </p>
+
+    <h3>
+        Total:
+        <?= number_format((float) $totals['total'], 2) ?> JOD
+    </h3>
+</div>
+
 
             <form
                 class="user-form"

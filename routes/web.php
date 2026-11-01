@@ -285,6 +285,19 @@ $router->post('/orders/delete', [
 // ======================================================
 // CHECKOUT
 // ======================================================
+$router->post('/checkout/promo', [
+    CheckoutController::class,
+    'applyPromo',
+], [
+    AuthMiddleware::class,
+]);
+
+$router->post('/checkout/promo/remove', [
+    CheckoutController::class,
+    'removePromo',
+], [
+    AuthMiddleware::class,
+]);
 
 $router->get('/checkout', [
     CheckoutController::class,
