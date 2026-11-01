@@ -1556,8 +1556,9 @@ body.user-body :focus-visible {
 .user-filter-group:last-child{border-bottom:0}
 .user-filter-group>summary{display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:1.2rem 1.25rem;font-size:1rem;font-weight:750;list-style:none}
 .user-filter-group>summary::-webkit-details-marker{display:none}
-.user-filter-group>summary span{transition:transform .2s}
-.user-filter-group[open]>summary span{transform:rotate(180deg)}
+/* Rotate only the chevron SVG, never the text label. */
+.user-filter-group>summary .user-filter-label{transform:none;}
+.user-filter-group[open]>summary .user-filter-label{transform:none;}
 .user-filter-body{padding:0 1.25rem 1.3rem}
 .user-filter-body .user-category-list{display:flex;flex-wrap:wrap;gap:.5rem;margin:0;padding:0;border:0}
 .user-filter-body .user-category-item{font-size:.77rem;line-height:1.35;min-height:36px;padding:.48rem .65rem;text-align:left}
