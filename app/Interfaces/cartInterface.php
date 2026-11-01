@@ -25,4 +25,10 @@ interface CartInterface
 
     /** Stores the promo code id and its calculated discount on the cart. */
     public function applyPromo(int $cartId, ?int $promoId, float $discount): bool;
+
+    /** Clears the promo code id and resets the stored discount to zero. */
+    public function removePromo(int $cartId): bool;
+
+    /** Recalculates (or clears) the stored discount from the current cart subtotal. */
+    public function refreshPromo(int $cartId): bool;
 }
