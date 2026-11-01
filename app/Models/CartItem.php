@@ -14,8 +14,10 @@ class CartItem
         $statement = $this->db->prepare(
             'SELECT cart_items.id,
                     cart_items.product_id,
+                    cart_items.custom_design_id,
                     cart_items.quantity,
                     products.name,
+                    products.image,
                     products.price,
                     (cart_items.quantity * products.price) AS line_total
              FROM cart_items
@@ -25,20 +27,21 @@ class CartItem
         );
         $statement->execute(['cart_id' => $cartId]);
 
-        return $statement->fetchAll();
+        $items = $statement->fetchAll();
+        require_once __DIR__ . '/../Services/ContentTranslationService.php';
+        $products = array_map(static fn(array $item): array => [
+            'id' => (int)$item['product_id'], 'name' => (string)$item['name']
+        ], $items);
+        $localized = (new ContentTranslationService($this->db))->localizeProducts($products);
+        foreach ($localized as $index => $product) $items[$index]['name'] = $product['name'];
+        return $items;
     }
 
     public function add(int $cartId, int $productId, int $quantity, ?int $designId): bool
     {
-        if ($designId !== null) {
-            throw new InvalidArgumentException(
-                'Custom designs are not supported by the current cart schema.'
-            );
-        }
-
         $statement = $this->db->prepare(
-            'INSERT INTO cart_items (cart_id, product_id, quantity)
-             VALUES (:cart_id, :product_id, :quantity)
+            'INSERT INTO cart_items (cart_id, product_id, quantity, custom_design_id)
+             VALUES (:cart_id, :product_id, :quantity, :design_id)
              ON DUPLICATE KEY UPDATE quantity = quantity + VALUES(quantity)'
         );
 
@@ -46,6 +49,7 @@ class CartItem
             'cart_id'    => $cartId,
             'product_id' => $productId,
             'quantity'   => $quantity,
+            'design_id' => $designId,
         ]);
     }
 

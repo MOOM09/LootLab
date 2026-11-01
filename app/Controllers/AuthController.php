@@ -12,22 +12,18 @@ class AuthController extends Controller
     private string $appUrl;
     private Database $database;
     private GoogleAuthService $googleAuth;
-    private EmailVerificationService $emailVerification;
+    private array $authConfig;
 
     public function __construct(array $config)
     {
         $this->appUrl = $config['app_url'];
+        $this->authConfig = $config;
 
         $this->database = new Database($config['database']);
 
         $this->user = new User($this->database->getConnection());
 
         $this->googleAuth = new GoogleAuthService($config['google']);
-        $this->emailVerification = new EmailVerificationService(
-            $this->database->getConnection(),
-            new MailService($config['mail']),
-            $this->appUrl
-        );
     }
 
     public function showLogin(): void
@@ -90,41 +86,116 @@ class AuthController extends Controller
         }
 
         $passwordHash = password_hash($password, PASSWORD_DEFAULT);
-
+        $code = (string) random_int(100000, 999999);
+        $pending = [
+            'name' => $name, 'email' => $email, 'password_hash' => $passwordHash,
+            'code_hash' => password_hash($code, PASSWORD_DEFAULT),
+            'expires_at' => time() + 600, 'last_sent' => time(),
+            'attempts' => 0,
+        ];
+        // Do not create a users record before the address is verified.
         try {
-            $userId = $this->user->create($name, $email, $passwordHash);
-        } catch (PDOException $exception) {
-            // Handle duplicate email if another request registered it first.
-            if (
-                $exception->getCode() === '23000' &&
-                (int) ($exception->errorInfo[1] ?? 0) === 1062
-            ) {
-                Response::error('Email is already registered.', 409);
-            }
+            (new MailService($this->authConfig['mail']))->send(
+                $email,
+                'LootHub verification code',
+                "Welcome to LootHub!\nYour verification code is: {$code}\nIt expires in 10 minutes. If you did not sign up, ignore this message."
+            );
+        } catch (Throwable $exception) {
+            error_log('Registration email failed: ' . $exception->getMessage());
+            Response::error('We could not send the verification code. Check your email address or try again.', 503);
+        }
+        $_SESSION['pending_registration'] = $pending;
+        Response::success(
+            ['redirect' => $this->appUrl . '/verify-email/pending'],
+            200,
+            'We sent a 6-digit verification code to your email.'
+        );
+    }
 
+    public function showPendingVerification(): void
+    {
+        if (!isset($_SESSION['pending_registration'])) {
+            $this->redirect($this->appUrl . '/register');
+        }
+        $this->view('auth/verify-email', [
+            'appUrl' => $this->appUrl,
+            'csrfToken' => $this->csrfToken(),
+            'email' => $_SESSION['pending_registration']['email'],
+        ]);
+    }
+
+    public function verifyPendingRegistration(): void
+    {
+        $input = $this->requestData();
+        $this->validateCsrf($input);
+        $pending = $_SESSION['pending_registration'] ?? null;
+        if (!is_array($pending)) {
+            Response::error('Please create an account first.', 400);
+        }
+        if (time() > $pending['expires_at']) {
+            Response::error('This code expired. Please request a new code.', 422);
+        }
+        if ($pending['attempts'] >= 5) {
+            Response::error('Too many incorrect attempts. Please request a new code.', 429);
+        }
+        $code = $input['code'] ?? '';
+        if (!is_string($code) || !preg_match('/^\d{6}$/D', $code)) {
+            Response::error('Enter the 6-digit code sent to your email.', 422);
+        }
+        $_SESSION['pending_registration']['attempts']++;
+        if (!password_verify($code, (string)$pending['code_hash'])) {
+            Response::error('Incorrect verification code.', 422);
+        }
+        if ($this->user->findByEmail($pending['email']) !== null) {
+            unset($_SESSION['pending_registration']);
+            Response::error('This email is already registered. Please log in.', 409);
+        }
+        try {
+            $userId = $this->user->create($pending['name'], $pending['email'], $pending['password_hash']);
+        } catch (PDOException $exception) {
+            if ((int)($exception->errorInfo[1] ?? 0) === 1062) {
+                Response::error('This email is already registered. Please log in.', 409);
+            }
             throw $exception;
         }
-
-        // Keep the visitor signed out until the email OTP is confirmed.
-        // Their guest cart/favorites remain in the guest session and will merge on login.
-        $_SESSION['pending_verification_email'] = $email;
-        $_SESSION['pending_verification_user_id'] = (int) $userId;
-
-        try {
-            $this->emailVerification->sendForUser((int) $userId, $email, $name);
-        } catch (Throwable $exception) {
-            // Account remains pending, and the visitor can request a fresh code.
-            error_log('Verification email delivery failed: ' . get_class($exception));
+        unset($_SESSION['pending_registration']);
+        $user = $this->user->findById($userId);
+        if ($user === null) {
+            Response::error('Your account was created but could not be loaded. Please log in.', 500);
         }
+        (new Favorite($this->database->getConnection()))->mergeGuestIntoUser(session_id(), $userId);
+        $this->mergeGuestCart($userId);
+        session_regenerate_id(true);
+        $_SESSION['user_id'] = $userId;
+        $_SESSION['session_version'] = (int)$user['session_version'];
+        Response::success(['redirect' => $this->appUrl . '/products'], 201, 'Email verified! Welcome to LootHub.');
+    }
 
-        Response::success(
-            [
-                'id' => $userId,
-                'redirect' => $this->appUrl . '/verify-email/pending',
-            ],
-            201,
-            'Account created. Check your email for a 6-digit verification code.'
-        );
+    public function resendPendingVerification(): void
+    {
+        $this->validateCsrf($this->requestData());
+        $pending = $_SESSION['pending_registration'] ?? null;
+        if (!is_array($pending)) {
+            Response::error('Please create an account first.', 400);
+        }
+        if (time() - (int)$pending['last_sent'] < 60) {
+            Response::error('Please wait at least 60 seconds before requesting another code.', 429);
+        }
+        $code = (string) random_int(100000, 999999);
+        try {
+            (new MailService($this->authConfig['mail']))->send(
+                $pending['email'], 'Your new LootHub verification code',
+                "Your LootHub verification code is: {$code}\nValid for 10 minutes."
+            );
+        } catch (Throwable $exception) {
+            error_log('Resend verification failed: ' . $exception->getMessage());
+            Response::error('Could not send the email. Please try again.', 503);
+        }
+        $_SESSION['pending_registration']['code_hash'] = password_hash($code, PASSWORD_DEFAULT);
+        $_SESSION['pending_registration']['expires_at'] = time() + 600;
+        $_SESSION['pending_registration']['last_sent'] = time();
+        $_SESSION['pending_registration']['attempts'] = 0;
+        Response::success(null, 200, 'New verification code sent.');
     }
 
     // ? Validate registration fields and return errors
@@ -233,11 +304,6 @@ class AuthController extends Controller
             Response::error('Your account is inactive.', 403);
         }
 
-        if (empty($user['email_verified_at'])) {
-            $_SESSION['pending_verification_email'] = $user['email'];
-            Response::error('Please verify your email before logging in. Open /verify-email/pending to enter or resend the code.', 403);
-        }
-
         $favorite = new Favorite($this->database->getConnection());
 
         $favorite->mergeGuestIntoUser(
@@ -249,7 +315,6 @@ class AuthController extends Controller
 
         session_regenerate_id(true);
         $_SESSION['user_id'] = (int) $user['id'];
-        $_SESSION['role'] = (string) ($user['role'] ?? 'user');
         // Remember the account's session version at login to know if 
         // the session is before or after changing the password.
         $_SESSION['session_version'] = (int) $user['session_version'];
@@ -392,6 +457,9 @@ class AuthController extends Controller
     // ? Find the Google account or create a new LootLab account.
     private function findOrCreateGoogleUser(array $identity): array
     {
+        if (empty($identity['email_verified'])) {
+            Response::error('Your Google email must be verified before an account can be created.', 403);
+        }
         $googleId = $identity['sub'];
         $email = $identity['email'];
 
@@ -464,7 +532,6 @@ class AuthController extends Controller
         session_regenerate_id(true);
 
         $_SESSION['user_id'] = (int) $user['id'];
-        $_SESSION['role'] = (string) ($user['role'] ?? 'user');
         // Remember the account's session version at Google login.
         $_SESSION['session_version'] = (int) $user['session_version'];
 

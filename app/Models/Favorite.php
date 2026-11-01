@@ -63,7 +63,12 @@ class Favorite
         ]);
 
         $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+        require_once __DIR__ . '/../Services/ContentTranslationService.php';
+        $products = array_map(static fn (array $item): array => [
+            'id' => (int)$item['product_id'], 'name' => (string)$item['name']
+        ], $items);
+        $localized = (new ContentTranslationService($this->connection))->localizeProducts($products);
+        foreach ($localized as $index => $product) $items[$index]['name'] = $product['name'];
         return $items;
     }
 

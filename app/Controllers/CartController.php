@@ -81,22 +81,12 @@ if (str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'text/html')) {
             Response::error('Invalid product or quantity.', 400);
         }
 
-        if ($designId !== null) {
-            Response::error(
-                'Custom designs are not supported by the current cart schema.',
-                422
-            );
-        }
-
-        if ($designId !== null && $designId < 1) {
-            $designId = null;
-        }
-
         $userId = $this->getUserId();
-
         if ($userId === null) {
-            $this->addGuestItem($productId, $quantity, $designId);
-            return;
+            Response::error('Please log in before adding products to the cart.', 401);
+        }
+        if ($designId !== null && $designId < 1) {
+            Response::error('Invalid design ID.', 422);
         }
 
         //? A custom design may only be attached by its owner.
@@ -110,12 +100,61 @@ if (str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'text/html')) {
             $cartId,
             $productId,
             $quantity,
-            null
+            $designId
         )) {
             Response::error('The product could not be added to your cart.', 400);
         }
 
         Response::success(null, 201, 'Product added to cart.');
+    }
+
+    // Add the signed-in user's AI design to a fixed-price printable product.
+    // Product mappings are supplied by database/lootlab_ai_print_products.sql.
+    public function addDesign(): void
+    {
+        $input = $this->requestData();
+        $this->validateCsrf($input);
+        $userId = $this->getUserId();
+        if ($userId === null) {
+            Response::error('Sign in to order your custom design.', 401);
+        }
+        $designId = filter_var($input['custom_design_id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        $modelKey = $input['model_key'] ?? '';
+        $prices = [
+            'hoodie-black' => 10.00, 'hoodie-white' => 10.00,
+            'tshirt-black' => 8.00, 'tshirt-white' => 8.00,
+            'mug-white' => 5.00,
+        ];
+        if (($designId === false || $designId === null) || !is_string($modelKey) || !isset($prices[$modelKey])) {
+            Response::error('Choose a valid design and product.', 422);
+        }
+        if (!$this->ownsDesign((int) $designId, $userId)) {
+            Response::error('This design does not belong to your account.', 403);
+        }
+        try {
+            $statement = $this->db->prepare(
+                'SELECT p.id, p.price, p.is_active, p.stock_quantity
+                 FROM ai_print_products a
+                 INNER JOIN products p ON p.id = a.product_id
+                 WHERE a.model_key = :model_key LIMIT 1'
+            );
+            $statement->execute(['model_key' => $modelKey]);
+            $product = $statement->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $exception) {
+            error_log((string) $exception);
+            Response::error('Please import the AI print products SQL migration first.', 503);
+        }
+        if (!$product || (int) $product['is_active'] !== 1 || (int) $product['stock_quantity'] < 1) {
+            Response::error('This product is currently unavailable.', 409);
+        }
+        if (abs((float) $product['price'] - $prices[$modelKey]) > .001) {
+            Response::error('Custom product pricing is not configured correctly.', 409);
+        }
+        $cartId = $this->cart->getOrCreateCartId($userId);
+        if (!$this->cart->addItem($cartId, (int) $product['id'], 1, (int) $designId)) {
+            Response::error('Unable to add your design to the cart.', 409);
+        }
+        Response::success(['redirect' => rtrim((string)($_ENV['APP_URL'] ?? ''), '/') . '/cart'], 201, 'Your custom product was added to the cart.');
     }
 
     // Update a cart item's quantity
@@ -315,12 +354,19 @@ if (str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'text/html')) {
                 'product_id'       => (int) $product['id'],
                 'quantity'         => $quantity,
                 'custom_design_id' => $guestItem['design_id'] ?? null,
-                'name'             => $product['name'],
-                'price'            => (string) $product['price'],
+                'name'  => $product['name'],
+'image' => $product['image'],
+'price' => (string) $product['price'],
                 'line_total'       => (string) round((float) $product['price'] * $quantity, 2),
             ];
         }
 
+        require_once __DIR__ . '/../Services/ContentTranslationService.php';
+        $products = array_map(static fn (array $item): array => [
+            'id' => (int) $item['product_id'], 'name' => (string) $item['name']
+        ], $items);
+        $localized = (new ContentTranslationService($this->db))->localizeProducts($products);
+        foreach ($localized as $index => $product) $items[$index]['name'] = $product['name'];
         return $items;
     }
 
@@ -331,6 +377,7 @@ if (str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'text/html')) {
 
         foreach ($this->guestItems() as $item) {
             $subtotal += (float) $item['line_total'];
+            
         }
 
         return [
@@ -363,19 +410,27 @@ if (str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'text/html')) {
         return $statement->fetchColumn() !== false;
     }
 
-    private function findActiveProduct(int $productId): ?array
-    {
-        $statement = $this->db->prepare(
-            'SELECT id, name, price, stock_quantity
-             FROM products
-             WHERE id = :product_id AND is_active = 1
-             LIMIT 1'
-        );
+   private function findActiveProduct(int $productId): ?array
+{
+    $statement = $this->db->prepare(
+        'SELECT
+            id,
+            name,
+            image,
+            price,
+            stock_quantity
+         FROM products
+         WHERE id = :product_id
+           AND is_active = 1
+         LIMIT 1'
+    );
 
-        $statement->execute(['product_id' => $productId]);
+    $statement->execute([
+        'product_id' => $productId
+    ]);
 
-        $product = $statement->fetch(PDO::FETCH_ASSOC);
+    $product = $statement->fetch(PDO::FETCH_ASSOC);
 
-        return $product === false ? null : $product;
-    }
+    return $product === false ? null : $product;
+}
 }

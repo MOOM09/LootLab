@@ -65,7 +65,7 @@
         reviews: 'Reviews',
         settings: 'Account settings',
     };
-    let state = { page: 'overview', query: { page: 1 }, range: '12m' },
+    let state = { page: 'overview', query: { page: 1 }, range: '33d' },
         meta = { categories: [], subcategories: [] },
         rows = [],
         selected = new Set(),
@@ -149,6 +149,8 @@
         if (!names[page]) page = 'overview';
         closeDialog(drawer);
         closeDialog(modal);
+        const accountMenu = document.querySelector('[data-admin-account-menu]');
+        if (accountMenu) accountMenu.open = false;
         mobile(false);
         selected.clear();
         state = {
@@ -273,6 +275,7 @@
         const controls = `<div class="admin-range" role="group" aria-label="Chart period">${[
             ['7d', '7D'],
             ['30d', '30D'],
+            ['33d', '33D'],
             ['12m', '12M'],
         ]
             .map(
@@ -302,7 +305,7 @@
                     .points.map((p) => p.join(','))
                     .join(
                         ' ',
-                    )}"/></svg><div class="admin-mini-caption"><span>A growing community.</span><span>${state.range === '12m' ? 'Last 12 months' : state.range === '7d' ? 'Last 7 days' : 'Last 30 days'}</span></div></div></section></div></div>
+                    )}"/></svg><div class="admin-mini-caption"><span>A growing community.</span><span>${state.range === '12m' ? 'Last 12 months' : state.range === '7d' ? 'Last 7 days' : state.range === '33d' ? 'Last 33 days' : 'Last 30 days'}</span></div></div></section></div></div>
 <div class="admin-two-panels"><section class="admin-panel"><div class="admin-panel-header"><div><h2>Recent orders</h2><p>The latest from your store</p></div><a class="admin-link" href="?page=orders" data-nav="orders">View all ${icon('arrow')}</a></div>${data.recent_orders.length ? rowOrders(data.recent_orders.slice(0, 5), true) : empty('Your first order starts here', 'New orders will appear as customers check out.')}<div class="admin-panel-bottom"><span>Newest orders first</span><span>Updated just now</span></div></section>
 <section class="admin-panel"><div class="admin-panel-header"><div><h2>Best-selling products</h2><p>Processing, shipped & completed orders</p></div>${icon('star')}</div><div class="admin-top-products">${data.top_products.length ? data.top_products.map((p) => `<a class="admin-top-product" href="?page=products" data-action="product" data-id="${Number(p.id)}">${thumb(p)}<div><strong>${esc(p.name)}</strong><small>${esc(p.category_name)}</small></div><span class="admin-sales">${num(p.units_sold)}<small>units</small></span></a>`).join('') : empty('Make room for your next hit', 'Add products to start your collection.')}</div><div class="admin-panel-bottom"><span>Built for your next favorite</span><a class="admin-link" href="?page=products&sort=sold-desc" data-action="top-products">Explore products ${icon('arrow')}</a></div></section></div>
 ${Number(s.low_stock) ? `<div class="admin-alert-banner">${icon('alert')}<span><strong>${num(s.low_stock)} products</strong> are running low or out of stock.</span><a class="admin-link" href="?page=inventory" data-nav="inventory">Review inventory ${icon('arrow')}</a></div>` : ''}`,
@@ -332,7 +335,7 @@ ${Number(s.low_stock) ? `<div class="admin-alert-banner">${icon('alert')}<span><
                     ['', 'All statuses'],
                     ['1', 'Active'],
                     ['0', 'Inactive'],
-                ])}</div></div>${data.items.length ? `<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Customer</th><th>Phone</th><th>Joined</th><th>Orders</th><th>Status</th><th>Actions</th></tr></thead><tbody>${data.items.map((u) => `<tr data-action="user" data-id="${Number(u.id)}"><td><div class="admin-row-name">${avatar(u.name, u.id)}<div><span class="admin-primary-text">${esc(u.name)}</span><small class="admin-secondary-text">${esc(u.email)}</small></div></div></td><td>${esc(u.phone || '—')}</td><td>${date(u.created_at)}</td><td>${num(u.orders_count)}</td><td>${badge(Number(u.is_active) ? 'active' : 'inactive')}</td><td><div class="admin-cell-actions"><button class="admin-icon-button" type="button" data-action="user" data-id="${Number(u.id)}" aria-label="View ${esc(u.name)}">${icon('chevron')}</button><button class="admin-icon-button ${Number(u.is_active) ? 'danger' : ''}" type="button" data-action="user-status" data-id="${Number(u.id)}" data-active="${Number(u.is_active) ? 0 : 1}" title="${Number(u.is_active) ? 'Deactivate account' : 'Activate account'}" aria-label="${Number(u.is_active) ? 'Deactivate' : 'Activate'} ${esc(u.name)}">${icon('power')}</button></div></td></tr>`).join('')}</tbody></table></div>` : empty('No customers match', 'Try another search or clear the date and status filters.')}${pagination(data)}</section>`,
+                ])}</div></div>${data.items.length ? `<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Customer</th><th>Phone</th><th>Joined</th><th>Orders</th><th>Status</th><th>Actions</th></tr></thead><tbody>${data.items.map((u) => `<tr data-action="user" data-id="${Number(u.id)}"><td><div class="admin-row-name">${avatar(u.name, u.id)}<div><span class="admin-primary-text">${esc(u.name)}</span><small class="admin-secondary-text">${esc(u.email)}</small></div></div></td><td>${esc(u.phone || '—')}</td><td>${date(u.created_at)}</td><td>${num(u.orders_count)}</td><td>${badge(Number(u.is_active) ? 'active' : 'inactive')}</td><td><div class="admin-cell-actions"><button class="admin-button secondary small" type="button" data-action="user" data-id="${Number(u.id)}" aria-label="Manage ${esc(u.name)}">Manage</button></div></td></tr>`).join('')}</tbody></table></div>` : empty('No customers match', 'Try another search or clear the date and status filters.')}${pagination(data)}</section>`,
         );
     }
     function productsTable(data) {
@@ -444,13 +447,44 @@ ${Number(s.low_stock) ? `<div class="admin-alert-banner">${icon('alert')}<span><
         );
     }
     function settingsPage(u) {
+        const passwords = Number(u.has_password)
+            ? `<details class="admin-password-panel" data-admin-password-panel>
+                <summary><span>Change password</span><span class="admin-password-chevron">⌄</span></summary>
+                <div class="admin-password-fields">
+                    <p class="admin-preview-note">Password fields are only enabled when you open this section. Your current password is required to change it.</p>
+                    ${field('Current password', 'current_password', '', 'password', 'autocomplete="off" maxlength="128" data-admin-password-field disabled')}
+                    <div class="admin-form-row">
+                        ${field('New password', 'new_password', '', 'password', 'autocomplete="new-password" minlength="12" maxlength="128" data-admin-password-field disabled')}
+                        ${field('Confirm new password', 'confirm_password', '', 'password', 'autocomplete="new-password" minlength="12" maxlength="128" data-admin-password-field disabled')}
+                    </div>
+                    <p class="admin-preview-note">Use at least 12 characters. Changing the password signs out other sessions.</p>
+                </div>
+            </details>`
+            : '<p class="admin-privacy-note">This account uses Google sign-in. Manage its password with your Google account.</p>';
         mount(
-            title(
-                'Make it yours',
-                'Your admin profile',
-                'Keep your information up to date and your account secure.',
-            ) +
-                `<div class="admin-settings-layout"><section class="admin-panel admin-profile-card"><span class="admin-avatar" data-admin-avatar>${u.avatar ? `<img src="${esc(imageUrl(u.avatar))}" alt="">` : esc(initials(u.name))}</span><div><h2>${esc(u.name)}</h2><p>Administrator</p></div><label class="admin-profile-upload">Change photo<input type="file" accept="image/png,image/jpeg,image/webp" data-admin-photo aria-label="Upload admin profile photo"></label></section><section class="admin-panel"><form class="admin-settings-form" data-form="settings"><h2>Account information</h2><div class="admin-form-error" role="alert" hidden></div><div class="admin-form-row">${field('Full name', 'name', u.name, 'text', 'required maxlength="100"')}${field('Phone number', 'phone', u.phone || '', 'tel', 'maxlength="25"')}</div>${field('Email address', 'email', u.email, 'email', 'readonly')}<small class="admin-preview-note">Email is your sign-in identity and is read-only here.</small><hr class="admin-settings-divider"><h2>Change password</h2>${Number(u.has_password) ? `${field('Current password', 'current_password', '', 'password', 'autocomplete="current-password" maxlength="128"')}<div class="admin-form-row">${field('New password', 'new_password', '', 'password', 'autocomplete="new-password" minlength="8" maxlength="128"')}${field('Confirm new password', 'confirm_password', '', 'password', 'autocomplete="new-password" minlength="8" maxlength="128"')}</div><p class="admin-preview-note">Leave password fields empty to keep your password. Changing it signs out your other sessions.</p>` : '<p class="admin-privacy-note">This account uses Google sign-in. Manage its password with your Google account.</p>'}<button class="admin-button" type="submit">${icon('check')}Save changes</button><hr class="admin-settings-divider"><a class="admin-button secondary" href="${esc(B.appUrl + '/products')}" target="_blank" rel="noopener">${icon('arrow')}Visit the storefront</a><p class="admin-preview-note">Opens the customer-facing store in a new tab. Your admin permissions are unchanged.</p></form></section></div>`,
+            title('Make it yours', 'Your admin profile', 'Keep your information up to date and your account secure.') +
+            `<div class="admin-settings-layout">
+                <section class="admin-panel admin-profile-card">
+                    <span class="admin-avatar" data-admin-avatar>${u.avatar ? `<img src="${esc(imageUrl(u.avatar))}" alt="">` : esc(initials(u.name))}</span>
+                    <div><h2>${esc(u.name)}</h2><p>Administrator</p></div>
+                    <label class="admin-profile-upload">Change photo<input type="file" accept="image/png,image/jpeg,image/webp" data-admin-photo aria-label="Upload admin profile photo"></label>
+                </section>
+                <section class="admin-panel">
+                    <form class="admin-settings-form" data-form="settings" autocomplete="off">
+                        <h2>Account information</h2>
+                        <div class="admin-form-error" role="alert" hidden></div>
+                        <div class="admin-form-row">
+                            ${field('Full name', 'name', u.name, 'text', 'required maxlength="100"')}
+                            ${field('Phone number', 'phone', u.phone || '', 'tel', 'maxlength="25"')}
+                        </div>
+                        ${field('Email address', 'email', u.email, 'email', 'readonly')}
+                        <small class="admin-preview-note">Email is your sign-in identity and is read-only here.</small>
+                        <hr class="admin-settings-divider">
+                        ${passwords}
+                        <button class="admin-button" type="submit">${icon('check')}Save changes</button>
+                    </form>
+                </section>
+            </div>`,
         );
     }
     async function loadPage(showLoader = true) {
@@ -1233,6 +1267,76 @@ ${Number(s.low_stock) ? `<div class="admin-alert-banner">${icon('alert')}<span><
         wrap.addEventListener('pointerleave', () => (tooltip.hidden = true));
         wrap.addEventListener('focusout', () => (tooltip.hidden = true));
     }
+    // Password inputs cannot be accidentally submitted from browser autofill.
+    document.addEventListener('toggle', (event) => {
+        const panel = event.target;
+        if (!(panel instanceof HTMLDetailsElement) || !panel.matches('[data-admin-password-panel]')) return;
+        panel.querySelectorAll('[data-admin-password-field]').forEach((input) => {
+            input.disabled = !panel.open;
+            if (!panel.open) input.value = '';
+        });
+    }, true);
+
+    // The admin and storefront share the same authenticated preference endpoint.
+    document.querySelectorAll('[data-admin-pref]').forEach((button) => {
+        button.addEventListener('click', async () => {
+            const type = button.dataset.adminPref;
+            const value = button.dataset.value;
+            if (button.getAttribute('aria-pressed') === 'true') return;
+            const previous = document.documentElement.dataset.lootTheme;
+            if (type === 'theme') document.documentElement.dataset.lootTheme = value;
+            button.disabled = true;
+            try {
+                const body = new URLSearchParams({
+                    type, value, csrf_token: document.querySelector('[data-admin-logout] [name="csrf_token"]').value,
+                });
+                const response = await fetch(B.appUrl + '/preferences', {
+                    method: 'POST', credentials: 'same-origin',
+                    headers: { Accept: 'application/json' }, body,
+                });
+                const result = await response.json();
+                if (!response.ok || !result.success) throw new Error(result.message || 'Could not save preference.');
+                if (type === 'lang') {
+                    location.reload();
+                    return;
+                }
+                document.querySelectorAll(`[data-admin-pref="${type}"]`).forEach((item) => {
+                    item.setAttribute('aria-pressed', String(item.dataset.value === value));
+                });
+                toast('Appearance saved.');
+            } catch (error) {
+                if (type === 'theme') document.documentElement.dataset.lootTheme = previous;
+                toast(error.message || 'Could not save preference.', true);
+            } finally {
+                button.disabled = false;
+            }
+        });
+    });
+    document.addEventListener('click', (event) => {
+        const menu = document.querySelector('[data-admin-account-menu]');
+        if (menu?.open && !menu.contains(event.target)) menu.open = false;
+    });
+    document.querySelector('[data-admin-logout]')?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (!window.confirm(window.LootI18n?.t('Are you sure you want to log out?') || 'Are you sure you want to log out?')) return;
+        const form = event.currentTarget;
+        const submit = form.querySelector('[type="submit"]');
+        submit.disabled = true;
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST', credentials: 'same-origin',
+                headers: { Accept: 'application/json' },
+                body: new URLSearchParams(new FormData(form)),
+            });
+            const result = await response.json();
+            if (!response.ok || !result.success) throw new Error(result.message || 'Could not log out.');
+            location.href = result.data?.redirect || B.appUrl + '/login';
+        } catch (error) {
+            toast(error.message || 'Could not log out.', true);
+            submit.disabled = false;
+        }
+    });
+
     drawer.addEventListener('close', () => {
         if (previewObjectUrl) {
             URL.revokeObjectURL(previewObjectUrl);
@@ -1247,6 +1351,8 @@ ${Number(s.low_stock) ? `<div class="admin-alert-banner">${icon('alert')}<span><
             globalSearch();
         }
         if (event.key === 'Escape') {
+            const accountMenu = document.querySelector('[data-admin-account-menu]');
+            if (accountMenu) accountMenu.open = false;
             const open = $('.admin-combo-menu:not([hidden])');
             if (open) {
                 event.preventDefault();

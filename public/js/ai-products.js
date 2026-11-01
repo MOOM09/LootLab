@@ -58,16 +58,38 @@ async function boot() {
         });
         textures.forEach(t=> {if(t!==texture)t.dispose();});
     }
-    function updatePrint() {
-        const scale = Number(document.getElementById('ai-print-size').value)/100;
-        const ratio = image.naturalWidth / image.naturalHeight || 1;
-        const maxW=mug?.85:.55, maxH=mug?.85:.62;
-        let w=maxW*scale, h=w/ratio;
-        if(h>maxH*scale){h=maxH*scale;w=h*ratio;}
-        const x=Number(document.getElementById('ai-print-x').value)/100*(maxW-w)/2;
-        const y=(mug?0:.05)+Number(document.getElementById('ai-print-y').value)/100*(maxH-h)/2;
-        uniforms.rect.value.set(x,y,w,h); uniforms.mug.value=mug?1:0; render();
+    
+function updatePrint() {
+    const sizeInput = document.getElementById('ai-print-size');
+    const xInput = document.getElementById('ai-print-x');
+    const yInput = document.getElementById('ai-print-y');
+
+    const scale = Number(sizeInput?.value ?? 75) / 100;
+
+    const ratio = image.naturalWidth / image.naturalHeight || 1;
+
+    const maxW = mug ? 0.85 : 0.55;
+    const maxH = mug ? 0.85 : 0.62;
+
+    let w = maxW * scale;
+    let h = w / ratio;
+
+    if (h > maxH * scale) {
+        h = maxH * scale;
+        w = h * ratio;
     }
+
+    const x = Number(xInput?.value ?? 0) / 100 * (maxW - w) / 2;
+
+    const y = (mug ? 0 : 0.05)
+        + Number(yInput?.value ?? 0) / 100 * (maxH - h) / 2;
+
+    uniforms.rect.value.set(x, y, w, h);
+    uniforms.mug.value = mug ? 1 : 0;
+
+    render();
+}
+
     function addPrint(material) {
         material.onBeforeCompile = shader => {
             shader.uniforms.aiDesign=uniforms.design;
@@ -134,7 +156,7 @@ async function boot() {
     }
     host.querySelectorAll('[data-model]').forEach(button=>button.addEventListener('click',()=>select(button.dataset.model).catch(showError)));
     host.querySelectorAll('input[type="range"]').forEach(input=>input.addEventListener('input',updatePrint));
-    document.getElementById('ai-front').addEventListener('click',()=>{if(current){current.rotation.set(0,0,0);render();}});
+    // No front-view reset button. The model remains freely rotatable.
     let drag=null;
     stage.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY};stage.setPointerCapture(e.pointerId);});
     stage.addEventListener('pointermove',e=>{

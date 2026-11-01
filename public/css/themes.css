@@ -1,0 +1,752 @@
+/*
+ * LootLab — Theme Overrides
+ *
+ * Themes:
+ *   plum-dark     → Purple / Black (dark)
+ *   inferno-light → Red / White (light)
+ *
+ * Load after the existing site stylesheets.
+ * Preserves current selectors and animations.
+ */
+
+/* 01. COLOR TOKENS — PLUM / BLACK (DARK) */
+html[data-loot-theme="plum-dark"] {
+    color-scheme: dark;
+    --user-bg: #08070B;
+    --user-surface: #15121C;
+    --user-surface-raised: #1B1724;
+    --user-primary: #B58BFF;
+    --user-primary-hover: #9B6FE8;
+    --user-text: #F5F2FA;
+    --user-muted: #AAA3B5;
+    --user-border: #2C2538;
+    --user-danger: #FF8F9A;
+    --user-success: #9BE2BC;
+    --user-shadow: 0 18px 48px rgba(0,0,0,.28);
+    --loot-glow: 181,139,255;
+    --loot-navbar: rgba(8,7,11,.94);
+    --loot-hero-start: #211430;
+    --loot-hero-end: #08070B;
+    --loot-card: #15121C;
+    --loot-panel: #110F17;
+    --loot-btn-text: #110B1B;
+    --loot-hero-glow: rgba(181,139,255,.25);
+}
+
+
+/* 02. COLOR TOKENS — RED / WHITE (LIGHT) */
+html[data-loot-theme="inferno-light"] {
+    color-scheme: light;
+    --user-bg: #FFFDFD;
+    --user-surface: #FFFFFF;
+    --user-surface-raised: #FFF0F1;
+    --user-primary: #CB2639;
+    --user-primary-hover: #AB162B;
+    --user-text: #24191C;
+    --user-muted: #665B5F;
+    --user-border: #F0D6DA;
+    --user-danger: #B91C32;
+    --user-success: #176D47;
+    --user-shadow: 0 18px 50px rgba(99,29,40,.10);
+    --loot-glow: 203,38,57;
+    --loot-navbar: rgba(255,255,255,.96);
+    --loot-hero-start: #FFE7EA;
+    --loot-hero-end: #FFFFFF;
+    --loot-card: #FFFFFF;
+    --loot-panel: #FFF8F8;
+    --loot-btn-text: #FFFFFF;
+    --loot-hero-glow: rgba(203,38,57,.16);
+}
+
+
+/* 03. GLOBAL LAYOUT AND NAVIGATION */
+html[data-loot-theme] body.user-body {
+    background: radial-gradient(ellipse at 50% -22rem,rgba(var(--loot-glow),.10),transparent 57rem),var(--user-bg);
+    color: var(--user-text);
+}
+
+html[data-loot-theme] .user-navbar {
+    background: var(--loot-navbar);
+    border-bottom-color: var(--user-border);
+}
+
+html[data-loot-theme] .user-navbar.user-is-scrolled {
+    box-shadow: 0 8px 32px rgba(var(--loot-glow),.10);
+}
+
+
+/* 04. CARDS, HERO AND PRODUCT MEDIA */
+html[data-loot-theme] .user-product-card,
+html[data-loot-theme] .user-topten-card,
+html[data-loot-theme] .user-form-card,
+html[data-loot-theme] .user-info-card,
+html[data-loot-theme] .user-data-card,
+html[data-loot-theme] .user-empty-state,
+html[data-loot-theme] .user-notice-card,
+html[data-loot-theme] .user-cart-item {
+    background: var(--loot-card);
+    border-color: var(--user-border);
+    color: var(--user-text);
+}
+
+html[data-loot-theme] .user-home-hero {
+    background: radial-gradient(circle at 80% 28%,var(--loot-hero-glow),transparent 55%),linear-gradient(135deg,var(--loot-hero-start),var(--loot-hero-end));
+    border-color: var(--user-border);
+}
+
+html[data-loot-theme] .user-product-media,
+html[data-loot-theme] .user-topten-media,
+html[data-loot-theme] .cart-product-image {
+    background: var(--loot-panel);
+    border-color: var(--user-border);
+}
+
+html[data-loot-theme] .user-product-card:hover,
+html[data-loot-theme] .user-topten-card:hover,
+html[data-loot-theme] .user-product-card:focus-within {
+    border-color: var(--user-primary);
+    box-shadow: 0 24px 55px rgba(var(--loot-glow),.20),0 0 22px rgba(var(--loot-glow),.12);
+}
+
+html[data-loot-theme] .user-button {
+    background: var(--user-primary);
+    color: var(--loot-btn-text) !important;
+}
+
+html[data-loot-theme] .user-button:hover:not(:disabled) {
+    background: var(--user-primary-hover);
+    box-shadow: 0 7px 28px rgba(var(--loot-glow),.35);
+}
+
+
+/* 05. ACCOUNT MENU AND USER PREFERENCES */
+html[data-loot-theme] .user-account-dropdown {
+    min-width: 242px;
+    padding: 10px;
+    max-height: min(75vh,520px);
+    overflow: auto;
+    background: var(--user-surface);
+    color: var(--user-text);
+    border-color: var(--user-border);
+}
+
+html[data-loot-theme] .user-account-dropdown>a {
+    display: block;
+    color: var(--user-text);
+    font-weight: 650;
+}
+
+html[data-loot-theme] .user-account-dropdown button {
+    cursor: pointer;
+}
+
+.loot-preference-block {
+    padding: 10px 8px;
+    border-top: 1px solid var(--user-border);
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.loot-setting-label {
+    font-size: .78rem;
+    color: var(--user-muted);
+    font-weight: 800;
+    letter-spacing: .015em;
+}
+
+.loot-lang-options {
+    display: flex;
+    gap: 7px;
+}
+
+.loot-lang-options button {
+    flex: 1;
+    border: 1px solid var(--user-border);
+    border-radius: 9px;
+    background: var(--user-surface-raised);
+    padding: 7px 8px;
+    color: var(--user-text);
+    font-weight: 750;
+    font-size: .85rem;
+}
+
+.loot-lang-options button[aria-pressed="true"] {
+    border-color: var(--user-primary);
+    box-shadow: 0 0 0 2px rgba(var(--loot-glow),.16);
+}
+
+.loot-theme-choices {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 1px 2px 4px;
+}
+
+.loot-theme-dot {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    outline: 2px solid transparent;
+    outline-offset: 3px;
+    transition: transform .22s,outline-color .22s,box-shadow .22s;
+}
+
+.loot-theme-dot:hover {
+    transform: scale(1.12);
+}
+
+.loot-theme-dot[aria-pressed="true"] {
+    outline-color: var(--user-primary);
+    box-shadow: 0 0 16px rgba(var(--loot-glow),.37);
+}
+
+.loot-dot-inferno {
+    background: linear-gradient(135deg,#FFFFFF 49%,#CB2639 51%);
+}
+
+.loot-dot-plum {
+    background: linear-gradient(135deg,#08070B 49%,#B58BFF 51%);
+}
+
+.loot-dropdown-divider {
+    border-top: 1px solid var(--user-border);
+    margin: 5px 2px;
+}
+
+html[data-loot-theme] .user-logout-action {
+    width: 100%;
+    text-align: start;
+    color: var(--user-danger) !important;
+    padding: 11px 9px;
+    border-radius: 9px;
+}
+
+
+/* 06. LINKS, AUTHENTICATION AND FORMS */
+html[data-loot-theme] .user-nav-link.user-nav-active {
+    color: var(--user-primary);
+}
+
+html[data-loot-theme] .loothub-guest-nav a {
+    background: var(--user-surface-raised);
+    color: var(--user-text);
+    border-color: var(--user-border);
+}
+
+html[data-loot-theme] .loothub-guest-nav a:hover {
+    color: var(--user-primary);
+}
+
+html[data-loot-theme] .loothub-auth-shell {
+    background: var(--user-surface);
+    border-color: var(--user-border);
+    box-shadow: var(--user-shadow);
+}
+
+html[data-loot-theme] .loothub-auth-hero {
+    background: radial-gradient(circle at 85% 14%,rgba(var(--loot-glow),.5),transparent 50%),linear-gradient(145deg,var(--loot-hero-start),var(--loot-hero-end));
+    color: var(--user-text);
+}
+
+html[data-loot-theme] .loothub-auth-hero h2 em,
+html[data-loot-theme] .loothub-auth-kicker {
+    color: var(--user-primary);
+}
+
+html[data-loot-theme] .loothub-auth-hero>p:not(.loothub-auth-kicker) {
+    color: var(--user-muted);
+}
+
+html[data-loot-theme] .loothub-auth-logo {
+    color: var(--user-primary);
+}
+
+html[data-loot-theme] .loothub-login-required {
+    background: var(--user-surface);
+    color: var(--user-text);
+    border-color: var(--user-primary);
+}
+
+html[data-loot-theme] .loothub-login-required a,
+html[data-loot-theme] .loothub-cart-design-link {
+    color: var(--user-primary) !important;
+}
+
+html[data-loot-theme] .user-topten-rank {
+    background: var(--user-surface-raised);
+    color: var(--user-primary);
+    border-color: var(--user-primary);
+}
+
+html[data-loot-theme] .user-topten-price {
+    color: var(--user-primary);
+}
+
+html[data-loot-theme] .user-input,
+html[data-loot-theme] .user-select,
+html[data-loot-theme] .user-textarea,
+html[data-loot-theme] input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+html[data-loot-theme] textarea,
+html[data-loot-theme] select {
+    background: var(--user-surface-raised);
+    color: var(--user-text);
+    border-color: var(--user-border);
+}
+
+html[data-loot-theme] input::placeholder,
+html[data-loot-theme] textarea::placeholder {
+    color: var(--user-muted);
+}
+
+html[data-loot-theme="inferno-light"] .user-home-hero p,
+html[data-loot-theme="inferno-light"] .user-topten-description {
+    color: var(--user-muted);
+}
+
+html[data-loot-theme="inferno-light"] .user-body,
+html[data-loot-theme="inferno-light"] .user-footer {
+    color: var(--user-text);
+}
+
+html[data-loot-theme="inferno-light"] .user-topten-hint,
+html[data-loot-theme="inferno-light"] .user-page-subtitle {
+    color: var(--user-muted);
+}
+
+
+/* 07. ANIMATIONS AND INTERACTIONS */
+@keyframes loot-neon-breathe {
+    0%,
+    100% {
+        box-shadow: 0 0 10px rgba(var(--loot-glow),.08);
+    }
+
+    50% {
+        box-shadow: 0 0 28px rgba(var(--loot-glow),.30);
+    }
+}
+
+@keyframes loot-float {
+    0%,
+    100% {
+        translate: 0 0;
+    }
+
+    50% {
+        translate: 0 -8px;
+    }
+}
+
+@keyframes loot-shine {
+    0% {
+        transform: translateX(-135%) rotate(16deg);
+    }
+
+    100% {
+        transform: translateX(280%) rotate(16deg);
+    }
+}
+
+@keyframes loot-up {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+html[data-loot-theme] .user-product-card::after,
+html[data-loot-theme] .user-topten-card::after {
+    content: "";
+    position: absolute;
+    inset: -45% auto -45% -120%;
+    width: 42%;
+    background: linear-gradient(90deg,transparent,rgba(255,255,255,.11),transparent);
+    pointer-events: none;
+    transform: rotate(16deg);
+    z-index: 2;
+}
+
+html[data-loot-theme] .user-product-card:hover::after,
+html[data-loot-theme] .user-topten-card:hover::after {
+    animation: loot-shine .85s ease-out 1;
+}
+
+html[data-loot-theme] .user-product-card:hover .user-product-image {
+    transform: scale(1.075);
+}
+
+html[data-loot-theme] .user-home-hero {
+    animation: loot-up .65s both,loot-neon-breathe 6s ease-in-out infinite;
+}
+
+html[data-loot-theme] .loote-face {
+    animation: loot-float 4.3s ease-in-out infinite;
+    filter: drop-shadow(0 0 14px rgba(var(--loot-glow),.4));
+}
+
+html[data-loot-theme] .loote-greeting {
+    background: var(--user-surface);
+    color: var(--user-text);
+    border-color: var(--user-primary);
+}
+
+html[data-loot-theme] .loote-greeting strong {
+    color: var(--user-primary);
+}
+
+html[data-loot-theme] .loote-face svg path:first-child {
+    fill: rgba(var(--loot-glow),.20);
+    stroke: var(--user-primary);
+}
+
+html[data-loot-theme] .loote-arriving .loote-face {
+    animation: loote-fly 2.25s cubic-bezier(.2,.7,.1,1) both;
+}
+
+
+/* 08. RIGHT-TO-LEFT SUPPORT */
+html[dir="rtl"] .user-account-dropdown {
+    right: auto;
+    left: 0;
+}
+
+html[dir="rtl"] .user-primary-nav,
+html[dir="rtl"] .user-navbar-inner {
+    direction: rtl;
+}
+
+html[dir="rtl"] .user-form,
+html[dir="rtl"] .user-page,
+html[dir="rtl"] .user-home-hero {
+    text-align: right;
+}
+
+html[dir="rtl"] .user-field label {
+    text-align: right;
+}
+
+html[dir="rtl"] input[type="email"],
+html[dir="rtl"] input[type="url"],
+html[dir="rtl"] input[type="password"] {
+    direction: ltr;
+    text-align: left;
+}
+
+html[dir="rtl"] .user-cart-item-controls {
+    direction: rtl;
+}
+
+html[dir="rtl"] .user-topten-track,
+html[dir="rtl"] .user-topten-viewport {
+    direction: ltr;
+}
+
+html[dir="rtl"] .loote-greeting {
+    right: 0;
+    left: auto;
+    text-align: right;
+    direction: rtl;
+    max-width: min(300px, calc(100vw - 32px));
+    overflow-wrap: anywhere;
+}
+
+
+/* 09. RESPONSIVE BREAKPOINTS */
+@media (max-width:780px) {
+    html[data-loot-theme] .user-account-dropdown {
+        min-width: 200px;
+        max-height: 60vh;
+    }
+
+    .loot-theme-choices {
+        justify-content: center;
+    }
+}
+
+@media (prefers-reduced-motion:reduce) {
+    html[data-loot-theme] .user-home-hero,
+    html[data-loot-theme] .loote-face,
+    html[data-loot-theme] .loote-arriving .loote-face {
+        animation: none !important;
+    }
+
+    html[data-loot-theme] .user-product-card::after,
+    html[data-loot-theme] .user-topten-card::after {
+        display: none;
+    }
+}
+
+
+/* 10. AI STUDIO AND LOOTE CHAT */
+html[data-loot-theme] :is(.ai-studio,.ai-chat-shell) {
+    --ai-bg: var(--user-bg);
+    --ai-surface: var(--user-surface);
+    --ai-border: var(--user-border);
+    --ai-muted: var(--user-muted);
+    --ai-primary: var(--user-primary);
+    --ai-text: var(--user-text);
+}
+
+html[data-loot-theme] :is(.ai-studio-card,.ai-chat-shell .container aside,.ai-chat-shell .loote-chat-main) {
+    background: var(--loot-card);
+    border-color: var(--user-border);
+    box-shadow: var(--user-shadow);
+    color: var(--user-text);
+}
+
+html[data-loot-theme] .ai-card-title {
+    border-bottom-color: var(--user-border);
+}
+
+html[data-loot-theme] :is(.ai-kicker,.ai-studio h1 span,.loote-chat-banner h1 span,.ai-large-price,.ai-large-price strong,.ai-progress-number) {
+    color: var(--user-primary);
+}
+
+html[data-loot-theme] .ai-step {
+    background: var(--user-surface-raised);
+    color: var(--user-primary);
+}
+
+html[data-loot-theme] .ai-primary {
+    background: var(--user-primary) !important;
+    border-color: var(--user-primary) !important;
+    color: #fff !important;
+}
+
+html[data-loot-theme] .ai-outline {
+    background: var(--user-surface-raised) !important;
+    border-color: var(--user-border) !important;
+    color: var(--user-text) !important;
+}
+
+html[data-loot-theme] .ai-options button {
+    background: var(--user-surface-raised);
+    border-color: var(--user-border);
+    color: var(--user-text);
+}
+
+html[data-loot-theme] .ai-options button[aria-pressed=true] {
+    background: var(--user-primary);
+    border-color: var(--user-primary);
+    color: #fff;
+}
+
+html[data-loot-theme] :is(.ai-studio input,.ai-studio select,.ai-studio textarea,.ai-chat-shell input,.ai-chat-shell textarea) {
+    background: var(--user-surface-raised);
+    color: var(--user-text);
+    border-color: var(--user-border);
+}
+
+html[data-loot-theme] .ai-purchase-panel {
+    background: var(--loot-panel);
+    border-color: var(--user-border);
+    color: var(--user-text);
+}
+
+html[data-loot-theme] .ai-empty-result {
+    background: radial-gradient(circle at center,var(--user-surface-raised),var(--user-bg));
+    border-color: var(--user-border);
+}
+
+html[data-loot-theme] .ai-empty-result>span {
+    color: var(--user-primary);
+}
+
+html[data-loot-theme] .ai-stage {
+    background: radial-gradient(circle,var(--user-surface-raised),var(--user-bg));
+    border-color: var(--user-border);
+}
+
+html[data-loot-theme] .ai-chat-shell :is(.history-link,.user-message,.assistant-message) {
+    background: var(--user-surface-raised);
+    color: var(--user-text);
+    border-color: var(--user-border);
+}
+
+html[data-loot-theme] .ai-chat-shell .history-link.active {
+    background: var(--user-primary);
+    color: #fff;
+}
+
+html[data-loot-theme] .ai-chat-shell button:not(.delete-button) {
+    background: var(--user-primary);
+    color: #fff;
+}
+
+html[data-loot-theme] .ai-progress-modal {
+    background: var(--user-surface);
+    border-color: var(--user-primary);
+    color: var(--user-text);
+}
+
+html[data-loot-theme] .ai-progress-track>div {
+    background: linear-gradient(90deg,var(--user-primary-hover),var(--user-primary));
+}
+
+html[dir="rtl"] .ai-studio {
+    direction: rtl;
+}
+
+html[dir="rtl"] .ai-chat-shell {
+    direction: rtl;
+}
+
+html[dir="rtl"] .ai-chat-shell .loote-chat-banner {
+    direction: rtl;
+}
+
+/* 13. RTL HEADER POSITION AND FLOATING ACCOUNT MENU */
+/* In Arabic, the brand stays at the right and the account action at far left. */
+@media (min-width: 1021px) {
+    html[dir="rtl"] .user-navbar-inner {
+        direction: rtl;
+    }
+
+    html[dir="rtl"] .user-nav-tools {
+        margin-inline-start: auto;
+        margin-inline-end: 0;
+        margin-left: 0;
+        margin-right: auto;
+    }
+}
+
+html[dir="rtl"] .user-account-dropdown {
+    left: 0;
+    right: auto;
+    text-align: right;
+    direction: rtl;
+}
+
+html[dir="ltr"] .user-account-dropdown {
+    left: auto;
+    right: 0;
+    text-align: left;
+    direction: ltr;
+}
+
+/* 14. OFFICIAL BRAND SYMBOL — CONTINUOUS ORBITAL ROTATION */
+html[data-loot-theme] .user-brand-mark--animated {
+    display: grid;
+    place-items: center;
+    overflow: visible;
+    background: transparent;
+    border-color: var(--user-border);
+}
+
+html[data-loot-theme] .user-brand-mark--animated img {
+    width: 34px;
+    height: 34px;
+    object-fit: contain;
+    display: block;
+    animation: loot-symbol-orbit 5s linear infinite;
+    transform-origin: center center;
+    filter: drop-shadow(0 0 6px rgba(181, 139, 255, 0.4));
+}
+
+@keyframes loot-symbol-orbit {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+/* Respect the device's motion accessibility setting. */
+@media (prefers-reduced-motion: reduce) {
+    html[data-loot-theme] .user-brand-mark--animated img {
+        animation: none;
+    }
+}
+/* Rotating Gaming Logo */
+.loot-brand-icon {
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #D51F40;
+    color: #FFFFFF;
+    border-radius: 12px;
+
+    animation: loot-logo-spin 5s linear infinite;
+}
+
+.loot-brand-icon i {
+    font-size: 22px;
+}
+
+@keyframes loot-logo-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .loot-brand-icon {
+        animation: none;
+    }
+}
+
+/* Logo Container */
+.loot-brand-icon {
+    width: 46px;
+    height: 46px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent !important;
+    animation: loot-logo-spin 5s linear infinite;
+}
+
+/* Dark Theme: Purple Squares */
+.loot-logo-dark {
+    display: block;
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+}
+
+.loot-logo-light {
+    display: none;
+}
+
+/* Light Theme: Red Controller */
+html[data-loot-theme="inferno-light"] .loot-logo-dark {
+    display: none;
+}
+
+html[data-loot-theme="inferno-light"] .loot-logo-light {
+    display: inline-flex;
+    width: 44px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+    background: #D51F40;
+    color: #FFFFFF;
+    border-radius: 12px;
+}
+
+.loot-logo-light i {
+    font-size: 23px;
+}
+
+/* Continuous Rotation */
+@keyframes loot-logo-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .loot-brand-icon {
+        animation: none;
+    }
+}

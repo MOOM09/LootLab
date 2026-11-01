@@ -4,12 +4,13 @@
 $pageTitle = 'Create account';
 require __DIR__ . '/../layouts/user-header.php';
 ?>
-<section class="user-page">
+<section class="user-page loothub-auth-page"><div class="loothub-auth-shell">
+    <aside class="loothub-auth-hero"><span class="loothub-auth-logo">L✦</span><p class="loothub-auth-kicker">THE LOOT HUB EXPERIENCE</p><h2>Welcome to your<br><em>next obsession.</em></h2><p>Gaming, anime, and custom creations. Discover your world.</p><div class="loothub-auth-orbit">✦</div></aside>
     <div class="user-container">
-        <div class="user-form-card">
+        <div class="user-form-card loothub-auth-card">
             <p class="user-eyebrow">Join the community</p>
             <h1 class="user-page-title">Create your account</h1>
-            <p class="user-page-subtitle">Create your LootHub account. We will email you a verification link before your first login.</p>
+            <p class="user-page-subtitle">Save favorites and keep your LootLab account in one place.</p>
 
             <form
                 class="user-form"
@@ -43,7 +44,7 @@ require __DIR__ . '/../layouts/user-header.php';
                 <p class="user-form-message" data-user-form-message role="alert" aria-live="polite"></p>
                 <div class="user-form-actions">
                     <button class="user-button" type="submit" data-user-submit>Create account</button>
-                    <a class="user-button-secondary" href="<?= htmlspecialchars($appUrl . '/auth/google', ENT_QUOTES, 'UTF-8') ?>">Continue with Google</a>
+                    <a class="user-button-secondary loothub-google-button" href="<?= htmlspecialchars($appUrl . '/auth/google', ENT_QUOTES, 'UTF-8') ?>"><span class="loothub-google-g" aria-hidden="true">G</span> Continue with Google</a>
                 </div>
             </form>
             <div class="user-form-links">
@@ -52,5 +53,5 @@ require __DIR__ . '/../layouts/user-header.php';
             </div>
         </div>
     </div>
-</section>
+</div></section>
 <?php require __DIR__ . '/../layouts/user-footer.php'; ?>

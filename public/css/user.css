@@ -1855,3 +1855,79 @@ body.user-body :focus-visible {
     .user-topten-viewport { overflow-x: auto; mask-image: none; -webkit-mask-image: none; }
     .user-topten-track { animation: none !important; transform: none !important; }
 }
+
+/* LootHub 2026 presentation patch — shared luxury gaming identity */
+.loothub-guest-nav{position:absolute;left:50%;transform:translateX(-50%);top:50%;margin-top:-12px}
+.loothub-guest-nav a{font-size:.95rem;font-weight:800;text-decoration:none;color:#f8f4ff;padding:12px 24px;border-radius:999px;border:1px solid #443459;background:#1d1428}
+.loothub-guest-nav a:hover{background:#2b1b3f;color:#c6a3ff}
+.user-navbar-inner{position:relative}
+.loothub-login-required{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:1000;background:#241932;color:#fff;padding:17px 24px;border:1px solid #ac7bec;box-shadow:0 16px 50px #0009;border-radius:16px;text-align:center;max-width:min(95vw,550px);font-size:14px}
+.loothub-login-required a{color:#caaaff;font-weight:800}
+.loothub-cart-design-link{display:block;margin:10px 0;color:#c39dff!important;font-size:13px}
+.loothub-checkout-btn{display:inline-flex;margin:18px 0!important;padding:13px 22px!important;text-decoration:none!important}
+.loothub-auth-page{padding:32px 16px 55px!important;min-height:calc(100vh - 160px);display:flex;align-items:center;justify-content:center}
+.loothub-auth-shell{max-width:980px;width:100%;display:grid;grid-template-columns:.82fr 1fr;overflow:hidden;border-radius:28px;border:1px solid #39284c;background:#15101d;box-shadow:0 35px 90px #0007}
+.loothub-auth-hero{background:radial-gradient(circle at 88% 10%,#6950bd88,transparent 42%),linear-gradient(145deg,#5c43b6,#301963 68%,#1a1036);position:relative;overflow:hidden;min-height:520px;padding:42px;display:flex;flex-direction:column;justify-content:center;color:#fff}
+.loothub-auth-logo{font-size:34px;font-weight:900;position:absolute;top:30px;left:36px;color:#fff}
+.loothub-auth-kicker{font-size:11px;letter-spacing:.3em;font-weight:800;color:#d0c2ff}
+.loothub-auth-hero h2{font-size:clamp(35px,4.6vw,52px);line-height:1.14;letter-spacing:-.045em;margin:16px 0;font-weight:900}
+.loothub-auth-hero h2 em{font-style:normal;color:#d7beff}
+.loothub-auth-hero>p:not(.loothub-auth-kicker){font-size:14px;max-width:260px;line-height:1.7;color:#e0d6fb}
+.loothub-auth-orbit{position:absolute;bottom:-100px;right:-80px;width:280px;height:280px;border:1px solid #ffffff44;border-radius:50%;display:grid;place-items:center;font-size:100px;color:#ffffff24;box-shadow:0 0 0 45px #ffffff08,0 0 0 95px #ffffff06}
+.loothub-auth-shell>.user-container{min-width:0;max-width:none;width:100%;padding:0}
+.loothub-auth-card{max-width:none!important;margin:0!important;padding:clamp(25px,3.8vw,42px)!important;background:transparent!important;border:0!important;box-shadow:none!important;border-radius:0!important}
+.loothub-auth-card .user-page-title{font-size:clamp(25px,2.9vw,35px)!important;line-height:1.15;margin-bottom:8px}
+.loothub-auth-card .user-page-subtitle{font-size:13px;margin-bottom:18px}
+.loothub-auth-card .user-form-grid{gap:10px}
+.loothub-auth-card .user-field{margin-bottom:10px}
+.loothub-auth-card .user-input{padding:12px 14px!important;min-height:44px}
+.loothub-auth-card .user-form-actions{display:flex;flex-direction:column;gap:10px}
+.loothub-auth-card .user-form-actions>.user-button,.loothub-auth-card .user-form-actions>a{justify-content:center;width:100%;min-height:45px;margin:0}
+.loothub-google-button{display:flex!important;align-items:center;gap:10px;background:#f8f8fb!important;border:1px solid #ccc9d5!important;color:#26212b!important;font-weight:750}
+.loothub-google-g{font-size:21px;font-weight:900;font-family:Arial,sans-serif;color:#4285f4;letter-spacing:-.1em}
+.loothub-auth-card .user-form-links{margin-top:14px!important;font-size:13px}
+.loothub-auth-notice{border:1px solid #8659ca;background:#30203e;padding:12px;color:#e4d2ff;border-radius:10px}
+.loothub-otp-input{text-align:center;letter-spacing:.5em;font-size:25px!important;font-weight:800}
+@media(max-width:760px){.loothub-auth-shell{grid-template-columns:1fr}.loothub-auth-hero{min-height:180px;padding:32px}.loothub-auth-hero h2{font-size:30px;margin:7px 0}.loothub-auth-orbit{display:none}.loothub-auth-logo{position:static;font-size:18px;margin-bottom:8px}.loothub-guest-nav{right:14px;left:auto;transform:none}}
+
+/* Rescue: LOOTE opens from signed-in navigation; never show floating assistant. */
+.loote-assistant{display:none!important}
+.loothub-guest-nav{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2}
+.user-navbar-inner{position:relative}
+/* Always show LOOTE on every page */
+.loote-assistant {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Cart product thumbnail */
+.cart-product-info {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.cart-product-image {
+    width: 110px;
+    height: 110px;
+    object-fit: contain;
+    flex-shrink: 0;
+    border-radius: 12px;
+    background: #100c18;
+    border: 1px solid #332640;
+    padding: 8px;
+}
+
+.cart-product-details {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+@media (max-width: 600px) {
+    .cart-product-image {
+        width: 80px;
+        height: 80px;
+    }
+}

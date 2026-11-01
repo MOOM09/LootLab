@@ -1,0 +1,84 @@
+
+/* LOOTE AI + Create Studio — designed to sit inside existing user layout */
+.ai-studio,.ai-chat-shell{--ai-bg:#0a0710;--ai-surface:#191121;--ai-border:#3a294f;--ai-muted:#aca1ba;--ai-primary:#bb91ff;--ai-text:#f6f2ff;max-width:1200px;margin:0 auto;padding:44px 20px 80px;color:var(--ai-text);font-family:inherit}
+.ai-studio *,.ai-chat-shell *{box-sizing:border-box}
+.ai-studio-heading,.loote-chat-banner{display:flex;justify-content:space-between;align-items:center;gap:22px;padding:8px 0 30px}
+.ai-kicker{color:#c19cff;font-weight:900;letter-spacing:.2em;font-size:11px}
+.ai-studio h1,.loote-chat-banner h1{font-weight:900;font-size:clamp(34px,5vw,58px);line-height:1.1;letter-spacing:-.06em;margin:12px 0}
+.ai-studio h1 span,.loote-chat-banner h1 span{color:#c7a4ff}
+.ai-studio h1 small{font-size:.6em;color:#ad82e9}
+.ai-studio-heading p,.loote-chat-banner p{color:var(--ai-muted);max-width:610px;font-size:15px;line-height:1.8;margin:0}
+.ai-studio-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+.ai-studio-card,.ai-chat-shell .container aside,.ai-chat-shell .loote-chat-main{background:linear-gradient(155deg,#21162c,#130e1b);border:1px solid var(--ai-border);box-shadow:0 14px 45px #0005;border-radius:22px;padding:28px;min-width:0}
+.ai-card-title{display:flex;gap:14px;align-items:center;border-bottom:1px solid #3a294a;padding-bottom:18px;margin-bottom:23px}
+.ai-step{font-size:13px;font-weight:900;width:39px;height:39px;flex:none;display:grid;place-items:center;background:#492c6f;color:#e1ccff;border-radius:12px}
+.ai-card-title h2{font-size:21px;font-weight:800;margin:0 0 5px;line-height:1.2}
+.ai-card-title p{font-size:13px;color:var(--ai-muted);margin:0}
+.ai-studio form label{display:block;font-size:13px;font-weight:750;margin:18px 0 8px}
+.ai-studio form label small{font-weight:500;color:var(--ai-muted)}
+.ai-studio :is(input[type=file],select,textarea){width:100%;color:var(--ai-text);font:inherit;background:#0b0912;border:1px solid #4b365f;padding:12px;border-radius:12px;outline:none;max-width:100%}
+.ai-studio :is(input,select,textarea):focus-visible{border-color:#c79fff;box-shadow:0 0 0 3px #a878e933}
+.ai-studio textarea{min-height:135px;line-height:1.7;resize:vertical}
+.ai-studio button,.ai-studio a.ai-outline,.loote-chat-banner a.ai-outline{cursor:pointer;font:inherit;border-radius:12px;text-decoration:none;transition:transform .18s ease,background .18s ease;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 18px}
+.ai-studio button:hover,.ai-studio .ai-outline:hover,.loote-chat-banner .ai-outline:hover{transform:translateY(-2px)}
+.ai-primary{background:#bc94ff!important;border:1px solid #bc94ff!important;color:#130b20!important;font-weight:850!important}
+.ai-outline{border:1px solid #604675!important;background:#241931!important;color:#eee4ff!important;font-weight:700}
+#generate-button{width:100%;margin-top:16px}
+.ai-camera-btn{width:100%;margin-top:10px}
+.ai-camera-actions,.ai-result-actions,.ai-purchase-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.ai-camera-actions>*{flex:1}
+.camera-video{max-width:100%;height:auto;max-height:250px;border-radius:12px;margin-top:12px}
+.ai-photo-preview{max-height:180px;max-width:100%;object-fit:contain;margin-top:12px;border:1px solid #59446c;border-radius:12px}
+.ai-help{font-size:12px;color:#aaa0bb;line-height:1.8;margin:12px 0}
+.ai-generation-error{margin:15px 0;border-radius:14px;background:#442030;color:#ffced9;border:1px solid #9f4959;padding:15px}
+.ai-empty-result{height:390px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border:1px dashed #604574;background:radial-gradient(circle at center,#352249,#120c19 67%);border-radius:16px}
+.ai-empty-result>span{font-size:85px;color:#ad83ee;text-shadow:0 0 40px #aa78ff}
+.ai-empty-result h3{font-size:22px;margin:6px}
+.ai-empty-result p{max-width:290px;color:var(--ai-muted);font-size:14px;line-height:1.7}
+.ai-result-frame{height:405px;display:grid;place-items:center;background:#0c0812;border-radius:14px;overflow:hidden}
+.ai-result-frame img{max-width:100%;max-height:100%;object-fit:contain;border-radius:12px}
+.ai-product-customizer{margin-top:22px}
+.ai-options{display:flex;flex-wrap:wrap;gap:9px}
+.ai-options button{background:#241930;color:#e2d8f3;border:1px solid #553f68;border-radius:12px;padding:12px 17px;flex:1;min-width:130px}
+.ai-options button[aria-pressed=true]{background:#b990fa;color:#1a0e2a;border-color:#b990fa;font-weight:900}
+.ai-preview-layout{display:grid;grid-template-columns:1.6fr 1fr;gap:23px;align-items:start;margin-top:20px}
+.ai-stage{height:430px;background:radial-gradient(ellipse at center,#372247,#0e0916);border:1px solid #382944;border-radius:16px;overflow:hidden;touch-action:none}
+.ai-stage canvas{width:100%;height:100%;display:block}
+.ai-credit{font-size:11px;color:#93849f}
+.ai-purchase-panel{padding:28px;border-radius:18px;background:#0c0813;border:1px solid #392b46}
+.ai-purchase-panel h3{font-size:28px;margin:12px 0 5px}
+.ai-large-price{font-size:16px;color:#b58cfa}
+.ai-large-price strong{font-size:44px;color:#e1c7ff;letter-spacing:-.06em}
+.ai-purchase-panel>p:not(.ai-large-price):not(.ai-help){font-size:14px;line-height:1.8;color:#afa4bf}
+.ai-purchase-actions>*{width:100%}
+.ai-progress-overlay{position:fixed;inset:0;z-index:5000;display:grid;place-items:center;background:#08060ee8;backdrop-filter:blur(12px);padding:20px}
+.ai-progress-overlay[hidden],[hidden]{display:none!important}
+.ai-progress-modal{text-align:center;max-width:420px;width:100%;padding:40px 30px;background:#21152e;border:1px solid #67428d;border-radius:26px;box-shadow:0 20px 80px #000c}
+.ai-progress-logo{font-size:50px;color:#c9a5ff}.ai-progress-modal h2{font-size:25px;margin:10px}.ai-progress-number{font-size:60px;font-weight:950;margin:18px;color:#d6b8ff}
+.ai-progress-track{width:100%;height:12px;border-radius:20px;overflow:hidden;background:#4a395c}
+.ai-progress-track>div{height:100%;width:0;background:linear-gradient(90deg,#8156db,#d9b7ff);transition:width .5s ease}
+.ai-progress-modal p{font-size:14px;color:#d7c5ec;margin:18px 0 8px}.ai-progress-modal small{color:#aaa0b9;font-size:12px}
+/* LOOTE chat: shared navbar and footer are provided by layout includes */
+.ai-chat-shell{direction:rtl}.loote-chat-banner{direction:ltr}
+.ai-chat-shell .container{display:grid;grid-template-columns:260px minmax(0,1fr);gap:20px;align-items:start}
+.ai-chat-shell .container aside{padding:18px;max-height:75vh;overflow-y:auto}
+.ai-chat-shell .container aside h2{font-size:18px;margin:5px 0 16px}
+.ai-chat-shell .loote-chat-main{min-height:540px}
+.ai-chat-shell .loote-chat-main h1{font-size:27px;margin:0}
+.ai-chat-shell .loote-chat-main>p{color:#b9aec8}
+.ai-chat-shell .history-link{display:block;color:#eee6fa;text-decoration:none;background:#23172e;padding:11px;margin:7px 0;border-radius:12px;overflow-wrap:anywhere}
+.ai-chat-shell .history-link.active{background:#5c3988}.ai-chat-shell .history-link small{display:block;color:#c5b8d6;font-size:11px;margin-top:5px}
+.ai-chat-shell .history-action{margin:8px 0 15px;border-bottom:1px solid #3a2b4c;padding-bottom:10px}
+.ai-chat-shell :is(input[type=text],textarea){background:#0d0914;border:1px solid #554167;color:#fff;border-radius:12px;padding:12px;width:100%;font:inherit;max-width:100%}
+.ai-chat-shell textarea{min-height:90px;resize:vertical}
+.ai-chat-shell .history-action label{display:block;font-size:12px;color:#bdb2cd;margin-bottom:5px}
+.ai-chat-shell button{padding:10px 15px;background:#b990f8;color:#170f25;font:inherit;font-weight:800;border:0;border-radius:10px;cursor:pointer;margin:6px 3px}
+.ai-chat-shell .history-action button{font-size:12px}.ai-chat-shell .history-action .delete-button{background:#f5b1bd}
+.ai-chat-shell .chat-message{margin:14px 0;padding:16px;border-radius:14px;border:1px solid #463251;overflow-wrap:anywhere}
+.ai-chat-shell .user-message{background:#332447;margin-left:30px}
+.ai-chat-shell .assistant-message{background:#21172d;margin-right:30px}
+.ai-chat-shell .message-text{white-space:pre-wrap;line-height:1.85;margin-top:12px}
+.ai-chat-shell .error{background:#532236;border:1px solid #b54d68;padding:15px;border-radius:12px;margin:12px 0}
+.ai-chat-shell .note{color:#cba9ff}
+@media(max-width:850px){.ai-studio-grid,.ai-preview-layout{grid-template-columns:1fr}.ai-result-frame{height:310px}.ai-stage{height:330px}.ai-studio-heading,.loote-chat-banner{flex-direction:column;align-items:start}.ai-chat-shell .container{grid-template-columns:1fr}.ai-chat-shell .container aside{max-height:300px}}
+@media(max-width:520px){.ai-studio,.ai-chat-shell{padding:26px 12px 60px}.ai-studio-card{padding:18px}.ai-options button{min-width:calc(50% - 9px)}.ai-product-customizer .ai-card-title h2{font-size:18px}}

@@ -7,9 +7,10 @@ $pageTitle = 'Log in';
 require __DIR__ . '/../layouts/user-header.php';
 ?>
 
-<section class="user-page">
+<section class="user-page loothub-auth-page"><div class="loothub-auth-shell">
+    <aside class="loothub-auth-hero"><span class="loothub-auth-logo">L✦</span><p class="loothub-auth-kicker">THE LOOT HUB EXPERIENCE</p><h2>Welcome to your<br><em>next obsession.</em></h2><p>Gaming, anime, and custom creations. Discover your world.</p><div class="loothub-auth-orbit">✦</div></aside>
     <div class="user-container">
-        <div class="user-form-card">
+        <div class="user-form-card loothub-auth-card">
 
             <p class="user-eyebrow">Welcome back</p>
 
@@ -72,9 +73,9 @@ require __DIR__ . '/../layouts/user-header.php';
                     </button>
 
                     <a
-                        class="user-button-secondary"
+                        class="user-button-secondary loothub-google-button"
                         href="<?= htmlspecialchars($appUrl . '/auth/google', ENT_QUOTES, 'UTF-8') ?>">
-                        Continue with Google
+                        <span class="loothub-google-g" aria-hidden="true">G</span> Continue with Google
                     </a>
                 </div>
 
@@ -88,11 +89,7 @@ require __DIR__ . '/../layouts/user-header.php';
                 </a>
             </div>
 
-            <div class="user-form-links">
-                <span>Need to verify your email?</span>
-                <a href="<?= htmlspecialchars($appUrl . '/verify-email/pending', ENT_QUOTES, 'UTF-8') ?>">Resend verification email</a>
-            </div>
-
+            <?php if (($_GET['notice'] ?? '') === 'signin'): ?><p class="loothub-auth-notice" role="status">Please log in first to continue.</p><?php endif; ?>
             <div class="user-form-links">
                 <span>New to LootLab?</span>
 

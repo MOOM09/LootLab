@@ -50,6 +50,7 @@ require_once __DIR__ . '/../app/Controllers/PasswordResetController.php';
 require_once __DIR__ . '/../app/Controllers/AuthController.php';
 require_once __DIR__ . '/../app/Controllers/EmailVerificationController.php';
 require_once __DIR__ . '/../app/Controllers/ProductController.php';
+require_once __DIR__ . '/../app/Controllers/PreferenceController.php';
 require_once __DIR__ . '/../app/Controllers/ProfileController.php';
 require_once __DIR__ . '/../app/Controllers/FavoriteController.php';
 require_once __DIR__ . '/../app/Controllers/CartController.php';

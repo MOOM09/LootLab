@@ -65,12 +65,32 @@
         });
     }
 
-    document.querySelectorAll('[data-user-account-menu]').forEach((menu) => {
+    // Close the account dropdown on an outside click or Escape.
+    // Kept independent of the mobile navigation so it works on desktop too.
+    const accountMenus = document.querySelectorAll('[data-user-account-menu]');
+
+    document.addEventListener('pointerdown', (event) => {
+        accountMenus.forEach((menu) => {
+            if (menu.open && !menu.contains(event.target)) {
+                menu.open = false;
+            }
+        });
+    });
+
+    accountMenus.forEach((menu) => {
         menu.addEventListener('keydown', (event) => {
             if (event.key === 'Escape' && menu.open) {
+                event.preventDefault();
                 menu.open = false;
                 menu.querySelector('summary')?.focus();
             }
+        });
+
+        menu.addEventListener('toggle', () => {
+            if (!menu.open) return;
+            accountMenus.forEach((other) => {
+                if (other !== menu) other.open = false;
+            });
         });
     });
 
@@ -81,10 +101,47 @@
         });
     });
 
+    // Account dropdown preferences: POST is CSRF-protected, persisted to PHP session + cookie.
+    document.querySelectorAll('[data-loot-pref]').forEach((button) => {
+        button.addEventListener('click', async () => {
+            const type = button.dataset.lootPref;
+            const value = button.dataset.lootValue;
+            if (button.getAttribute('aria-pressed') === 'true') return;
+            const previous = document.documentElement.dataset.lootTheme;
+            if (type === 'theme') document.documentElement.dataset.lootTheme = value;
+            button.disabled = true;
+            try {
+                const body = new URLSearchParams({
+                    type, value, csrf_token: document.body.dataset.userCsrf || ''
+                });
+                const response = await fetch(document.body.dataset.userPreferences, {
+                    method: 'POST', credentials: 'same-origin',
+                    headers: { Accept: 'application/json' }, body
+                });
+                const result = await parseResponse(response);
+                if (!response.ok || !result.success) throw new Error(result.message || 'Could not save your preference.');
+                if (type === 'lang') {
+                    location.reload();
+                    return;
+                }
+                document.body.dataset.lootTheme = value;
+                document.querySelectorAll(`[data-loot-pref="${type}"]`).forEach((item) => {
+                    item.setAttribute('aria-pressed', String(item.dataset.lootValue === value));
+                });
+                announce('Appearance saved.', 'success');
+            } catch (error) {
+                if (type === 'theme') document.documentElement.dataset.lootTheme = previous;
+                announce(error.message || 'Could not save your preference.', 'error');
+            } finally { button.disabled = false; }
+        });
+    });
+    const lootT = (message) => window.LootI18n?.t(message) || message;
+
     // All catalog filter and pagination state lives in catalog-filter-fix.js.
     document.querySelectorAll('[data-user-logout]').forEach((form) => {
         form.addEventListener('submit', async (event) => {
             event.preventDefault();
+            if (!window.confirm(lootT('Are you sure you want to log out?'))) return;
             const button = form.querySelector('button[type="submit"]');
             if (button) button.disabled = true;
             try {
@@ -142,7 +199,42 @@
             }
             window.setTimeout(() => { if (greeting) greeting.hidden = false; }, reducedMotion ? 0 : 2400);
         }
-        loote.querySelector('[data-loote-dismiss]')?.addEventListener('click', () => { if (greeting) greeting.hidden = true; });
+        let looteDismissed = false;
+        loote.querySelector('[data-loote-dismiss]')?.addEventListener('click', () => {
+            looteDismissed = true;
+            if (greeting) greeting.hidden = true;
+        });
+        const motionAllowed = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const cloud = loote.querySelector('.loote-face');
+        if (cloud && motionAllowed) {
+            const phrases = [
+                ['MY NAME IS LOOTE!', 'CAN I HELP YOU?'],
+                ['NEED A GIFT?', 'LET ME FIND SOMETHING COOL!'],
+                ['HEY, GAMER!', 'ASK ME ABOUT OUR PRODUCTS!'],
+            ];
+            let turn = 0;
+            // One bounded flight every ~18s; never obstructs clicks or the product cards.
+            window.setTimeout(() => {
+                loote.classList.remove('loote-arriving');
+                window.setInterval(() => {
+                    if (document.hidden || !cloud.isConnected) return;
+                    cloud.animate([
+                        { transform: 'translate(0,0) rotate(0deg)' },
+                        { transform: 'translate(-65px,-85px) rotate(-12deg)', offset: .32 },
+                        { transform: 'translate(-130px,-38px) rotate(10deg)', offset: .69 },
+                        { transform: 'translate(0,0) rotate(0deg)' },
+                    ], { duration: 3200, easing: 'ease-in-out' });
+                    if (greeting && !looteDismissed) {
+                        turn = (turn + 1) % phrases.length;
+                        const strong = greeting.querySelector('strong');
+                        const subtitle = greeting.querySelector('span');
+                        if (strong) strong.textContent = phrases[turn][0];
+                        if (subtitle) subtitle.textContent = phrases[turn][1];
+                        greeting.hidden = false;
+                    }
+                }, 18000);
+            }, 3000);
+        }
     }
 
     const productCards = document.querySelectorAll('[data-user-product-card]');
@@ -243,6 +335,7 @@
                         throw new Error('The favorites security token is missing. Reload the page and try again.');
                     }
                     const wasFavorite = favoriteIds.has(productId);
+                    if (wasFavorite && !window.confirm(lootT('Are you sure you want to remove this product from favorites?'))) return;
                     const response = await fetch(favoriteUrl, {
                         method: wasFavorite ? 'DELETE' : 'POST',
                         headers: {
@@ -364,6 +457,15 @@
     cartAddButtons.forEach((button) => {
         button.addEventListener('click', async () => {
             if (button.disabled) return;
+            if (body.dataset.userSignedIn !== '1') {
+                announce('Please log in or create an account before adding products to your cart.', 'error');
+                const notice = document.getElementById('user-login-required') || document.createElement('div');
+                notice.id = 'user-login-required';
+                notice.className = 'loothub-login-required';
+                notice.innerHTML = 'Sign in to add products to your cart. <a href="' + appUrl + '/login">Log in</a> or <a href="' + appUrl + '/register">Create an account</a>';
+                document.body.appendChild(notice);
+                return;
+            }
             const productId = Number(button.dataset.productId);
             if (!Number.isInteger(productId) || productId < 1) {
                 announce('This product could not be added because its ID is invalid.', 'error');
@@ -406,73 +508,148 @@
             cartStatus.hidden = message === '';
         };
 
-        const renderCart = (data) => {
-            const items = Array.isArray(data.items) ? data.items : [];
-            itemsContainer?.replaceChildren();
-            if (emptyState) emptyState.hidden = items.length !== 0;
-            if (summary) summary.hidden = items.length === 0;
+      
+const renderCart = (data) => {
+    const items = Array.isArray(data.items) ? data.items : [];
 
-            items.forEach((item) => {
-                const row = document.createElement('article');
-                row.className = 'user-cart-item';
-                row.dataset.cartItemId = String(item.id);
+    itemsContainer?.replaceChildren();
 
-                const details = document.createElement('div');
-                const title = document.createElement('h2');
-                const productLink = document.createElement('a');
-                productLink.href = `${appUrl}/products/show?id=${encodeURIComponent(item.product_id)}`;
-                productLink.textContent = String(item.name || 'Product');
-                title.appendChild(productLink);
-                details.appendChild(title);
+    if (emptyState) {
+        emptyState.hidden = items.length !== 0;
+    }
 
-                const unitPrice = document.createElement('p');
-                unitPrice.textContent = `Unit price: ${money(item.price)}`;
-                details.appendChild(unitPrice);
-                const lineTotal = document.createElement('p');
-                lineTotal.textContent = `Line total: ${money(item.line_total)}`;
-                details.appendChild(lineTotal);
-                row.appendChild(details);
+    if (summary) {
+        summary.hidden = items.length === 0;
+    }
 
-                const controls = document.createElement('div');
-                controls.className = 'user-cart-item-controls';
-                const updateForm = document.createElement('form');
-                updateForm.dataset.cartUpdateForm = '';
-                const quantityLabel = document.createElement('label');
-                quantityLabel.textContent = 'Quantity';
-                const quantityInput = document.createElement('input');
-                quantityInput.type = 'number';
-                quantityInput.name = 'quantity';
-                quantityInput.min = '1';
-                quantityInput.step = '1';
-                quantityInput.required = true;
-                quantityInput.value = String(item.quantity);
-                quantityLabel.appendChild(quantityInput);
-                updateForm.appendChild(quantityLabel);
+    items.forEach((item) => {
+        const row = document.createElement('article');
+        row.className = 'user-cart-item';
+        row.dataset.cartItemId = String(item.id);
 
-                const updateButton = document.createElement('button');
-                updateButton.className = 'user-button-secondary';
-                updateButton.type = 'submit';
-                updateButton.dataset.cartAction = 'update';
-                updateButton.textContent = 'Update';
-                updateForm.appendChild(updateButton);
-                controls.appendChild(updateForm);
+        // Product information
+        const productInfo = document.createElement('div');
+        productInfo.className = 'cart-product-info';
 
-                const removeButton = document.createElement('button');
-                removeButton.className = 'user-button-quiet';
-                removeButton.type = 'button';
-                removeButton.dataset.cartAction = 'remove';
-                removeButton.textContent = 'Remove';
-                controls.appendChild(removeButton);
-                row.appendChild(controls);
-                itemsContainer?.appendChild(row);
-            });
+        // Product image
+        const image = document.createElement('img');
+        image.className = 'cart-product-image';
+        image.alt = String(item.name || 'Product');
+        image.loading = 'lazy';
 
-            if (data.totals) {
-                if (subtotalTarget) subtotalTarget.textContent = money(data.totals.subtotal);
-                if (discountTarget) discountTarget.textContent = money(data.totals.discount);
-                if (totalTarget) totalTarget.textContent = money(data.totals.total);
-            }
-        };
+        
+const imagePath = String(item.image || '').trim();
+
+if (imagePath) {
+    // Use the same image path as the Products page.
+    image.src = imagePath;
+} else {
+    image.hidden = true;
+}
+
+image.onerror = () => {
+    image.hidden = true;
+};
+
+
+        productInfo.appendChild(image);
+
+        // Product details
+        const details = document.createElement('div');
+        details.className = 'cart-product-details';
+
+        const title = document.createElement('h2');
+        const productLink = document.createElement('a');
+
+        productLink.href =
+            `${appUrl}/products/show?id=${encodeURIComponent(item.product_id)}`;
+
+        productLink.textContent = String(item.name || 'Product');
+
+        title.appendChild(productLink);
+        details.appendChild(title);
+
+        // AI design link
+        if (item.custom_design_id) {
+            const designLink = document.createElement('a');
+
+            designLink.href =
+                `${appUrl}/aiImage.php?design_id=${encodeURIComponent(item.custom_design_id)}`;
+
+            designLink.textContent = `✦ Your AI design #${item.custom_design_id}`;
+            designLink.className = 'loothub-cart-design-link';
+
+            details.appendChild(designLink);
+        }
+
+        const unitPrice = document.createElement('p');
+        unitPrice.textContent = `Unit price: ${money(item.price)}`;
+        details.appendChild(unitPrice);
+
+        const lineTotal = document.createElement('p');
+        lineTotal.textContent = `Line total: ${money(item.line_total)}`;
+        details.appendChild(lineTotal);
+
+        productInfo.appendChild(details);
+        row.appendChild(productInfo);
+
+        // Cart controls
+        const controls = document.createElement('div');
+        controls.className = 'user-cart-item-controls';
+
+        const updateForm = document.createElement('form');
+        updateForm.dataset.cartUpdateForm = '';
+
+        const quantityLabel = document.createElement('label');
+        quantityLabel.textContent = 'Quantity';
+
+        const quantityInput = document.createElement('input');
+        quantityInput.type = 'number';
+        quantityInput.name = 'quantity';
+        quantityInput.min = '1';
+        quantityInput.step = '1';
+        quantityInput.required = true;
+        quantityInput.value = String(item.quantity);
+
+        quantityLabel.appendChild(quantityInput);
+        updateForm.appendChild(quantityLabel);
+
+        const updateButton = document.createElement('button');
+        updateButton.className = 'user-button-secondary';
+        updateButton.type = 'submit';
+        updateButton.dataset.cartAction = 'update';
+        updateButton.textContent = 'Update';
+
+        updateForm.appendChild(updateButton);
+        controls.appendChild(updateForm);
+
+        const removeButton = document.createElement('button');
+        removeButton.className = 'user-button-quiet';
+        removeButton.type = 'button';
+        removeButton.dataset.cartAction = 'remove';
+        removeButton.textContent = 'Remove';
+
+        controls.appendChild(removeButton);
+        row.appendChild(controls);
+
+        itemsContainer?.appendChild(row);
+    });
+
+    // Order totals
+    if (data.totals) {
+        if (subtotalTarget) {
+            subtotalTarget.textContent = money(data.totals.subtotal);
+        }
+
+        if (discountTarget) {
+            discountTarget.textContent = money(data.totals.discount);
+        }
+
+        if (totalTarget) {
+            totalTarget.textContent = money(data.totals.total);
+        }
+    }
+};
 
         const refreshCart = async (showLoading = true) => {
             if (showLoading) showCartStatus('Loading your cart…', 'loading');
@@ -532,6 +709,7 @@
         itemsContainer?.addEventListener('click', (event) => {
             const button = event.target.closest('[data-cart-action="remove"]');
             if (!button || button.disabled) return;
+            if (!window.confirm(lootT('Are you sure you want to remove this item from your cart?'))) return;
             const row = button.closest('[data-cart-item-id]');
             if (row) performCartAction(row, 'DELETE');
         });
@@ -561,7 +739,8 @@
             body = new URLSearchParams(formData);
         }
 
-        if (options.confirmMessage && !window.confirm(options.confirmMessage)) return;
+        const confirmation = options.confirmMessage || (form.id === 'logout-form' ? lootT('Are you sure you want to log out?') : (method === 'DELETE' ? lootT('Are you sure you want to delete this?') : ''));
+        if (confirmation && !window.confirm(lootT(confirmation))) return;
         if (button) {
             button.disabled = true;
             button.dataset.originalText = button.textContent;
@@ -729,6 +908,7 @@
             const removeForm = event.target.closest('[data-user-review-delete]');
             if (!removeForm) return;
             event.preventDefault();
+            if (!window.confirm(lootT('Are you sure you want to delete this review?'))) return;
             try {
                 const response = await fetch(`${appUrl}/reviews/delete`, {
                     method: 'DELETE',
