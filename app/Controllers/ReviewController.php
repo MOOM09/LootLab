@@ -17,10 +17,16 @@ class ReviewController extends Controller
             Response::error('Product not found.', 404);
         }
 
+        $userId = (int) ($_SESSION['user_id'] ?? 0);
+        $canReview = $userId > 0 && (
+            $this->review->hasPurchased($userId, $productId)
+            || $this->review->isInVerifiedStripeOrder($userId, $productId, (int) ($_SESSION['stripe_paid_order_id'] ?? 0))
+        );
         Response::success([
             'reviews' => $this->review->findByProduct($productId),
             'product_id' => $productId,
             'csrf_token' => $this->csrfToken(),
+            'can_review' => $canReview,
         ]);
     }
 
@@ -56,6 +62,13 @@ class ReviewController extends Controller
 
         if (!$this->review->productExists($productId)) {
             Response::error('Product not found.', 404);
+        }
+
+        if (
+            !$this->review->hasPurchased($userId, $productId)
+            && !$this->review->isInVerifiedStripeOrder($userId, $productId, (int) ($_SESSION['stripe_paid_order_id'] ?? 0))
+        ) {
+            Response::error('You can review this product after your order is fulfilled or payment is verified.', 403);
         }
 
         try {

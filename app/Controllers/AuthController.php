@@ -249,6 +249,7 @@ class AuthController extends Controller
 
         session_regenerate_id(true);
         $_SESSION['user_id'] = (int) $user['id'];
+        $_SESSION['role'] = (string) ($user['role'] ?? 'user');
         // Remember the account's session version at login to know if 
         // the session is before or after changing the password.
         $_SESSION['session_version'] = (int) $user['session_version'];
@@ -463,6 +464,7 @@ class AuthController extends Controller
         session_regenerate_id(true);
 
         $_SESSION['user_id'] = (int) $user['id'];
+        $_SESSION['role'] = (string) ($user['role'] ?? 'user');
         // Remember the account's session version at Google login.
         $_SESSION['session_version'] = (int) $user['session_version'];
 

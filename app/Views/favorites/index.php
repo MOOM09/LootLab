@@ -17,6 +17,7 @@ require __DIR__ . '/../layouts/user-header.php';
                 $productName = (string) ($item['name'] ?? '');
                 $image = trim((string) ($item['image'] ?? ''));
                 $price = (float) ($item['price'] ?? 0);
+                $inStock = (int) ($item['stock_quantity'] ?? 0) > 0;
                 $discountPrice = isset($item['discount_price']) && $item['discount_price'] !== null
                     ? (float) $item['discount_price']
                     : null;
@@ -52,11 +53,15 @@ require __DIR__ . '/../layouts/user-header.php';
                         </h2>
                         <div class="user-product-price" aria-label="Product price">
                             <?php if ($discountPrice !== null): ?>
-                                <span class="user-price-current"><?= number_format($discountPrice, 2) ?></span>
-                                <span class="user-price-old"><?= number_format($price, 2) ?></span>
+                                <span class="user-price-current"><?= number_format($discountPrice, 2) ?> JD</span>
+                                <span class="user-price-old"><?= number_format($price, 2) ?> JD JD</span>
                             <?php else: ?>
                                 <span class="user-price-current"><?= number_format($price, 2) ?></span>
                             <?php endif; ?>
+                        </div>
+                        <div class="user-product-actions">
+                            <a class="user-button-secondary" href="<?= htmlspecialchars($userAppUrl . '/products/show?id=' . $productId, ENT_QUOTES, 'UTF-8') ?>">Details</a>
+                            <button class="user-button" type="button" data-user-add-to-cart data-product-id="<?= $productId ?>" <?= $inStock ? '' : 'disabled' ?>><?= $inStock ? 'Add to cart' : 'Out of stock' ?></button>
                         </div>
                     </div>
                 </article>

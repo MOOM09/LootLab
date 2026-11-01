@@ -12,6 +12,8 @@
 
 $appUrl = rtrim($appUrl ?? '', '/');
 $order = $order ?? null;
+$items = isset($items) && is_array($items) ? $items : [];
+$canReview = $canReview ?? false;
 
 $pageTitle = 'Order Details';
 require __DIR__ . '/../layouts/user-header.php';
@@ -78,6 +80,19 @@ require __DIR__ . '/../layouts/user-header.php';
 
             </div>
 
+            <?php if ($items !== []): ?>
+            <div class="user-form-card"><h2>Ordered products</h2><div class="user-order-items">
+                <?php foreach ($items as $item): ?>
+                <div class="user-order-item-row">
+                    <span><?= htmlspecialchars((string)$item['name'], ENT_QUOTES, 'UTF-8') ?> × <?= (int)$item['quantity'] ?></span>
+                    <span><?= number_format((float)$item['unit_price'], 2) ?> JD</span>
+                    <?php if ($canReview): ?>
+                    <a class="user-button-secondary" href="<?= htmlspecialchars($userAppUrl . '/products/show?id=' . (int)$item['product_id'] . '#user-reviews-heading', ENT_QUOTES, 'UTF-8') ?>">Rate this item (optional)</a>
+                    <?php endif; ?>
+                </div>
+                <?php endforeach; ?>
+            </div></div>
+            <?php endif; ?>
             <div class="user-form-actions">
                 <a
                     class="user-button-secondary"
