@@ -1,0 +1,21 @@
+/* LootLab: Jordan delivery pin. Scoped to checkout only. */
+.checkout-map-section{display:grid;gap:12px;padding:18px;border:1px solid rgba(255,255,255,.14);border-radius:16px;background:rgba(255,255,255,.025);min-width:0}
+.checkout-map-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.checkout-map-header h2{font-size:1.1rem;margin:0 0 6px;color:#fff}
+.checkout-map-header p,.checkout-map-hint{font-size:.86rem;color:#a5a3af;margin:0;line-height:1.6}
+.checkout-map-country{font-size:.8rem;color:#f5c98d;white-space:nowrap}
+.checkout-map-tools{display:flex;flex-wrap:wrap;gap:8px}
+.checkout-map-tools button{font-size:.86rem;padding:10px 14px}
+.checkout-map-canvas{width:100%;height:360px;min-height:280px;border-radius:12px;overflow:hidden;background:#18212b;z-index:0}
+.checkout-map-results{display:grid;gap:5px;max-height:185px;overflow:auto}
+.checkout-map-results[hidden]{display:none}
+.checkout-map-result{display:block;width:100%;text-align:left;border:1px solid rgba(255,255,255,.13);border-radius:8px;padding:9px 11px;color:#f4f3f7;background:#25222d;cursor:pointer;font:inherit;font-size:.83rem}
+.checkout-map-result:hover,.checkout-map-result:focus-visible{border-color:#9c8cf1;background:#302b41}
+.checkout-map-status{font-size:.86rem;color:#c6b5ff;margin:0;min-height:1.2em}
+.checkout-map-status[data-error="true"]{color:#ff9b9b}
+.checkout-selected-location{padding:12px;background:rgba(100,80,140,.13);border-radius:10px;font-size:.86rem;color:#d9d6e2;overflow-wrap:anywhere;display:grid;gap:4px}
+.checkout-selected-location strong{color:#fff}
+.checkout-otp-notice{border:1px solid rgba(167,139,250,.32);border-radius:10px;padding:12px 14px;color:#d9c9ff;background:rgba(167,139,250,.08);font-size:.88rem;line-height:1.6}
+.checkout-otp-card{max-width:530px}.checkout-otp-card .user-input{text-align:center;letter-spacing:.4em;font-size:1.7rem;font-weight:700}
+.checkout-otp-subtitle{color:#b8b5c1;line-height:1.65}.checkout-otp-help{font-size:.85rem;color:#a9a5b3}
+@media(max-width:600px){.checkout-map-canvas{height:320px}.checkout-map-section{padding:12px}.checkout-map-tools button{flex:1}}

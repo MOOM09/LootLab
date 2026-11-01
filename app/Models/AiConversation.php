@@ -40,12 +40,14 @@ class AiConversation
     }
 
     public function saveExchange(
-        int $userId,
-        ?int $conversationId,
-        string $message,
-        string $reply
-    ): int {
-        $this->db->beginTransaction();
+    int $userId,
+    ?int $conversationId,
+    string $message,
+    string $reply,
+    ?int &$assistantMessageId = null
+): int {
+    $assistantMessageId = null;
+    $this->db->beginTransaction();
 
         try {
             if ($conversationId === null) {
@@ -65,18 +67,15 @@ class AiConversation
             }
 
             $stmt = $this->db->prepare(
-                'INSERT INTO ai_messages
-                    (conversation_id, role, content)
-                 VALUES
-                    (?, ?, ?),
-                    (?, ?, ?)'
-            );
+    'INSERT INTO ai_messages
+        (conversation_id, role, content)
+     VALUES (?, ?, ?)'
+);
 
-            $stmt->execute([
-                $conversationId, 'user', $message,
-                $conversationId, 'assistant', $reply
-            ]);
+$stmt->execute([$conversationId, 'user', $message]);
+$stmt->execute([$conversationId, 'assistant', $reply]);
 
+$savedAssistantId = (int) $this->db->lastInsertId();
             $stmt = $this->db->prepare(
                 'UPDATE ai_conversations
                  SET updated_at = CURRENT_TIMESTAMP
@@ -84,8 +83,8 @@ class AiConversation
             );
 
             $stmt->execute([$conversationId, $userId]);
-
             $this->db->commit();
+            $assistantMessageId = $savedAssistantId;
 
             return $conversationId;
         } catch (Throwable $error) {

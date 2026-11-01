@@ -5,36 +5,43 @@ class GoogleAuthService
 {
     //? Holds the Google library's client object.
     // Holds LootLab’s OAuth settings and provides methods for communicating with Google.
-    private \Google\Client $client;
-
-
+    private ?\Google\Client $client = null;
+    private array $config;
 
     public function __construct(array $config)
     {
+        $this->config = $config;
+    }
+
+    //? Build the client on first use, so email/password login still works when
+    //? google/apiclient is not installed or not configured.
+    private function client(): \Google\Client
+    {
+        if ($this->client !== null) {
+            return $this->client;
+        }
+
+        if (!class_exists('Google\\Client')) {
+            throw new RuntimeException('Google login is not available (google/apiclient is not installed).');
+        }
+
         $this->client = new \Google\Client();
 
         //? Identify our application to Google.
-        $this->client->setClientId($config['client_id']);
+        $this->client->setClientId($this->config['client_id']);
 
         //? Set the server credential used when exchanging an authorization code.
-        $this->client->setClientSecret($config['client_secret']);
+        $this->client->setClientSecret($this->config['client_secret']);
 
         //? Set the callback URL Google redirects the visitor to.
-        $this->client->setRedirectUri($config['redirect_uri']);
+        $this->client->setRedirectUri($this->config['redirect_uri']);
 
-        //? LootLab requests this information from Google, with the user’s permission.
-        // These addScope() lines prepare that request. It’s sent when we redirect the user to Google.
-
-        //? Request sign-in identity through OpenID Connect.
-        //        It tells Google:
-        // “LootLab wants to use this person’s Google account to sign them in.”
+        //? Request sign-in identity through OpenID Connect, the email, and the profile.
         $this->client->addScope('openid');
-
-        //? Request the user's email information.
         $this->client->addScope('email');
-
-        //? Request basic profile information, such as the user's name.
         $this->client->addScope('profile');
+
+        return $this->client;
     }
 
     // ? Build the Google login URL
@@ -42,10 +49,10 @@ class GoogleAuthService
     {
         //? Adds a random security value to the Google login request.
         //  Include the security value we will check when Google sends the user back.
-        $this->client->setState($state);
+        $this->client()->setState($state);
 
         //? Build and return the Google sign-in URL.
-        return $this->client->createAuthUrl();
+        return $this->client()->createAuthUrl();
     }
 
     // ? Exchange Google's authorization code for tokens
@@ -55,7 +62,7 @@ class GoogleAuthService
         // Will get code from the url after user approved
 
         //? Exchange Google's temporary authorization code for tokens.
-        $tokens = $this->client->fetchAccessTokenWithAuthCode($code);
+        $tokens = $this->client()->fetchAccessTokenWithAuthCode($code);
 
         //? Reject an unsuccessful exchange.
         if (isset($tokens['error']))
@@ -77,7 +84,7 @@ class GoogleAuthService
     public function verifyIdToken(string $idToken): array
     {
         // Verify Google's token using the configured client ID.
-        $identity = $this->client->verifyIdToken($idToken);
+        $identity = $this->client()->verifyIdToken($idToken);
 
         if ($identity === false) {
             throw new RuntimeException('Invalid Google ID token.');
