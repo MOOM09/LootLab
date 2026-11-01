@@ -81,120 +81,31 @@
         });
     });
 
-    const searchForm = document.querySelector('[data-user-search-form]');
-    const searchInput = document.querySelector('[data-user-catalog-search]');
-    const catalog = document.querySelector('[data-user-catalog]');
-    if (searchForm && searchInput && catalog) {
-        const cards = Array.from(catalog.querySelectorAll('[data-user-product-card]'));
-        const categoryButtons = Array.from(document.querySelectorAll('[data-user-category]'));
-        const subcategoryList = document.querySelector('[data-user-subcategory-list]');
-        const subcategoryButtons = Array.from(document.querySelectorAll('[data-user-subcategory]'));
-        const typeButtons = Array.from(document.querySelectorAll('[data-user-type]'));
-        const sortSelect = document.querySelector('[data-user-sort]');
-        const countLabel = document.querySelector('[data-user-result-count]');
-        const activeCategory = document.querySelector('[data-user-active-category]');
-        const emptyState = document.querySelector('[data-user-no-results]');
-        let selectedCategory = 'all';
-        let selectedSubcategory = 'all';
-        let selectedType = 'all';
-        let updateTimer;
-        const originalOrder = new Map(cards.map((card, index) => [card, index]));
-
-        const params = new URLSearchParams(window.location.search);
-        searchInput.value = params.get('q') || '';
-
-        const applyCatalogFilters = () => {
-            catalog.classList.add('user-is-updating');
-            window.clearTimeout(updateTimer);
-            window.setTimeout(() => {
-                const query = searchInput.value.trim().toLocaleLowerCase();
-                const visibleCards = [];
-                cards.forEach((card) => {
-                    const categoryMatches = selectedCategory === 'all'
-                        || card.dataset.categoryId === selectedCategory;
-                    const subcategoryMatches = selectedSubcategory === 'all'
-                        || card.dataset.subcategoryId === selectedSubcategory;
-                    const searchMatches = !query
-                        || (card.dataset.name || '').toLocaleLowerCase().includes(query)
-                        || (card.dataset.categoryName || '').toLocaleLowerCase().includes(query);
-                    const typeMatches = selectedType === 'all' || card.dataset.typeId === selectedType;
-                    const visible = categoryMatches && subcategoryMatches && typeMatches && searchMatches;
-                    card.hidden = !visible;
-                    if (visible) visibleCards.push(card);
-                });
-
-                const sortMode = sortSelect?.value || 'newest';
-                visibleCards.sort((a, b) => {
-                    if (sortMode === 'price-asc') return Number(a.dataset.price) - Number(b.dataset.price);
-                    if (sortMode === 'price-desc') return Number(b.dataset.price) - Number(a.dataset.price);
-                    if (sortMode === 'name') return (a.dataset.name || '').localeCompare(b.dataset.name || '');
-                    return originalOrder.get(a) - originalOrder.get(b);
-                });
-                visibleCards.forEach((card) => catalog.appendChild(card));
-
-                if (countLabel) countLabel.textContent = String(visibleCards.length);
-                if (emptyState) emptyState.hidden = visibleCards.length !== 0;
-                if (activeCategory) {
-                    const selected = categoryButtons.find((button) => button.dataset.categoryId === selectedCategory);
-                    const categoryLabel = selected?.dataset.categoryName || 'All products';
-                    const subcategory = subcategoryButtons.find((button) => button.dataset.subcategoryId === selectedSubcategory);
-                    const locationLabel = selectedSubcategory === 'all'
-                        ? categoryLabel
-                        : `${categoryLabel} / ${subcategory?.dataset.subcategoryName || ''}`;
-                    const type = typeButtons.find((button) => button.dataset.typeId === selectedType);
-                    activeCategory.textContent = selectedType === 'all'
-                        ? locationLabel
-                        : `${locationLabel} · ${type?.dataset.typeName || ''}`;
-                }
-                catalog.classList.remove('user-is-updating');
-            }, 170);
-        };
-
-        searchForm.addEventListener('submit', (event) => {
+    // All catalog filter and pagination state lives in catalog-filter-fix.js.
+    document.querySelectorAll('[data-user-logout]').forEach((form) => {
+        form.addEventListener('submit', async (event) => {
             event.preventDefault();
-            applyCatalogFilters();
+            const button = form.querySelector('button[type="submit"]');
+            if (button) button.disabled = true;
+            try {
+                const response = await fetch(form.action, { method: 'POST', headers: { Accept: 'application/json' }, credentials: 'same-origin', body: new URLSearchParams(new FormData(form)) });
+                const result = await parseResponse(response);
+                if (!response.ok || !result.success) throw new Error(result.message || 'Could not log out.');
+                location.href = result.data?.redirect || appUrl + '/login';
+            } catch (e) {
+                announce(e.message || 'Could not log out.', 'error');
+                if (button) button.disabled = false;
+            }
         });
-        searchInput.addEventListener('input', applyCatalogFilters);
-        sortSelect?.addEventListener('change', applyCatalogFilters);
-        const refreshSubcategories = () => {
-            if (subcategoryList) subcategoryList.hidden = selectedCategory === 'all';
-            subcategoryButtons.forEach((button) => {
-                button.hidden = button.dataset.subcategoryId !== 'all'
-                    && button.dataset.categoryId !== selectedCategory;
-                button.setAttribute('aria-pressed', String(button.dataset.subcategoryId === selectedSubcategory));
-            });
-        };
-        categoryButtons.forEach((button) => {
-            button.addEventListener('click', () => {
-                selectedCategory = button.dataset.categoryId || 'all';
-                selectedSubcategory = 'all';
-                categoryButtons.forEach((item) => item.setAttribute(
-                    'aria-pressed',
-                    String(item === button)
-                ));
-                refreshSubcategories();
-                applyCatalogFilters();
-            });
-        });
-        typeButtons.forEach((button) => {
-            button.addEventListener('click', () => {
-                selectedType = button.dataset.typeId || 'all';
-                typeButtons.forEach((item) => item.setAttribute(
-                    'aria-pressed', String(item.dataset.typeId === selectedType)
-                ));
-                applyCatalogFilters();
-            });
-        });
-
-        subcategoryButtons.forEach((button) => {
-            button.addEventListener('click', () => {
-                selectedSubcategory = button.dataset.subcategoryId || 'all';
-                refreshSubcategories();
-                applyCatalogFilters();
-            });
-        });
-        refreshSubcategories();
-        applyCatalogFilters();
+    });
+    const loote = document.querySelector('[data-loote-assistant]');
+    if (loote) {
+        const greeting = loote.querySelector('[data-loote-greeting]');
+        if (document.body.dataset.looteLanding === 'true') {
+            if (!matchMedia('(prefers-reduced-motion: reduce)').matches) loote.classList.add('loote-arriving');
+            setTimeout(() => { if (greeting) greeting.hidden = false; }, matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 2400);
+        }
+        loote.querySelector('[data-loote-dismiss]')?.addEventListener('click', () => { if (greeting) greeting.hidden = true; });
     }
 
     const productCards = document.querySelectorAll('[data-user-product-card]');
