@@ -102,8 +102,45 @@
     if (loote) {
         const greeting = loote.querySelector('[data-loote-greeting]');
         if (document.body.dataset.looteLanding === 'true') {
-            if (!matchMedia('(prefers-reduced-motion: reduce)').matches) loote.classList.add('loote-arriving');
-            setTimeout(() => { if (greeting) greeting.hidden = false; }, matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 2400);
+            const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (!reducedMotion) {
+                const cloud = loote.querySelector('.loote-face');
+                loote.classList.add('loote-arriving');
+
+                // Follow the actual animated cloud position. Each ember remains
+                // behind Loote and fades separately, rather than moving as a group.
+                let flightStart = null;
+                let lastSpark = -100;
+                const flightDuration = 2250;
+                const scatterSpark = (rect) => {
+                    for (let i = 0; i < 2; i++) {
+                        const ember = document.createElement('span');
+                        ember.className = 'loote-trail-particle';
+                        const x = rect.left + rect.width * 0.18 + (Math.random() - 0.5) * 24;
+                        const y = rect.top + rect.height * 0.33 + (Math.random() - 0.5) * 24;
+                        ember.style.left = x + 'px';
+                        ember.style.top = y + 'px';
+                        ember.style.setProperty('--trail-dx', (-24 - Math.random() * 35) + 'px');
+                        ember.style.setProperty('--trail-dy', (-18 - Math.random() * 30) + 'px');
+                        ember.style.animationDuration = (550 + Math.random() * 350) + 'ms';
+                        document.body.appendChild(ember);
+                        ember.addEventListener('animationend', () => ember.remove(), { once: true });
+                    }
+                };
+                const animateTrail = (timestamp) => {
+                    if (flightStart === null) flightStart = timestamp;
+                    const elapsed = timestamp - flightStart;
+                    if (elapsed < flightDuration) {
+                        if (elapsed - lastSpark >= 65 && cloud) {
+                            scatterSpark(cloud.getBoundingClientRect());
+                            lastSpark = elapsed;
+                        }
+                        window.requestAnimationFrame(animateTrail);
+                    }
+                };
+                if (cloud) window.requestAnimationFrame(animateTrail);
+            }
+            window.setTimeout(() => { if (greeting) greeting.hidden = false; }, reducedMotion ? 0 : 2400);
         }
         loote.querySelector('[data-loote-dismiss]')?.addEventListener('click', () => { if (greeting) greeting.hidden = true; });
     }
