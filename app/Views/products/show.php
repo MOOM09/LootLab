@@ -17,6 +17,7 @@ $productId = (int) ($product['id'] ?? 0);
 $productName = (string) ($product['name'] ?? '');
 $productDescription = (string) ($product['description'] ?? '');
 $productImage = trim((string) ($product['image'] ?? ''));
+$productModel = trim((string) ($product['model_path'] ?? ''));
 
 $price = (float) ($product['price'] ?? 0);
 
@@ -29,7 +30,7 @@ $stockQuantity = (int) ($product['stock_quantity'] ?? 0);
 $inStock = $stockQuantity > 0;
 
 $categoryName = (string) ($product['category_name'] ?? '');
-$subcategoryName = (string) ($product['subcategory_name'] ?? '');
+$subcategoryName = (string) ($product['subcategorys_name'] ?? '');
 
 $appUrl = rtrim($appUrl ?? '', '/');
 
@@ -54,8 +55,25 @@ require __DIR__ . '/../layouts/user-header.php';
 
         <div class="user-detail-layout">
 
-            <!-- Product Image -->
-            <div class="user-detail-media">
+            <!-- Product image or interactive 3D viewer -->
+            <div class="user-detail-media <?= $productModel !== '' ? 'lootlab-3d-media' : '' ?>">
+                <?php if ($productModel !== ''): ?>
+                    <div class="lootlab-3d-viewer" data-lootlab-3d-viewer
+                        data-model-src="<?= htmlspecialchars($productModel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
+                        aria-label="Interactive 3D preview of <?= htmlspecialchars($productName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">
+                        <?php if ($productImage !== ''): ?>
+                        <img class="lootlab-3d-preview" data-lootlab-3d-preview
+                             src="<?= htmlspecialchars($productImage, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
+                             alt="<?= htmlspecialchars($productName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
+                             style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:0;pointer-events:none;">
+                        <?php endif; ?>
+                        <p class="lootlab-3d-status" data-lootlab-3d-status role="status">Loading interactive 3D model…</p>
+                        <div class="lootlab-3d-controls">
+                            <button type="button" data-lootlab-3d-reset>Reset view</button>
+                        </div>
+                    </div>
+                    <p class="lootlab-3d-hint">Drag to rotate · Scroll to zoom</p>
+                <?php else: ?>
 
                 <img
                     data-user-product-image
@@ -70,7 +88,7 @@ require __DIR__ . '/../layouts/user-header.php';
                     aria-hidden="true">
                     ✦
                 </span>
-
+                <?php endif; ?>
             </div>
 
             <!-- Product Information -->
@@ -181,4 +199,7 @@ require __DIR__ . '/../layouts/user-header.php';
     </div>
 </section>
 
+<?php if ($productModel !== ''): ?>
+<script type="module" src="<?= htmlspecialchars($userAppUrl . '/js/product-3d.js?v=20261101-2', ENT_QUOTES, 'UTF-8') ?>"></script>
+<?php endif; ?>
 <?php require __DIR__ . '/../layouts/user-footer.php'; ?>

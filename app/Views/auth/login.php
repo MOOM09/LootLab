@@ -89,6 +89,11 @@ require __DIR__ . '/../layouts/user-header.php';
             </div>
 
             <div class="user-form-links">
+                <span>Need to verify your email?</span>
+                <a href="<?= htmlspecialchars($appUrl . '/verify-email/pending', ENT_QUOTES, 'UTF-8') ?>">Resend verification email</a>
+            </div>
+
+            <div class="user-form-links">
                 <span>New to LootLab?</span>
 
                 <a href="<?= htmlspecialchars($appUrl . '/register', ENT_QUOTES, 'UTF-8') ?>">

@@ -82,6 +82,12 @@ $router->post('/logout', [
     AuthMiddleware::class,
 ]);
 
+// Email verification: enter a one-time code (no public email links).
+$router->get('/verify-email', [EmailVerificationController::class, 'verify']);
+$router->get('/verify-email/pending', [EmailVerificationController::class, 'pending']);
+$router->post('/verify-email/resend', [EmailVerificationController::class, 'resend']);
+$router->post('/verify-email/confirm', [EmailVerificationController::class, 'confirm']);
+
 // Google OAuth
 $router->get('/auth/google', [
     AuthController::class,
@@ -131,12 +137,12 @@ $router->post('/cart/add', [
     'add',
 ]);
 
-$router->put('/cart/update', [
+$router->post('/cart/update', [
     CartController::class,
     'update',
 ]);
 
-$router->delete('/cart/remove', [
+$router->post('/cart/remove', [
     CartController::class,
     'remove',
 ]);
@@ -253,7 +259,12 @@ $router->get('/orders/show', [
     AuthMiddleware::class,
 ]);
 
-
+$router->post('/orders', [
+    OrderController::class,
+    'store',
+], [
+    AuthMiddleware::class,
+]);
 
 $router->post('/orders/update', [
     OrderController::class,
@@ -295,6 +306,11 @@ $router->post('/checkout/stripe', [
 ], [
     AuthMiddleware::class,
 ]);
+
+// SMS verification must complete before COD or Stripe checkout.
+$router->get('/checkout/verify', [CheckoutController::class, 'showOtp'], [AuthMiddleware::class]);
+$router->post('/checkout/verify', [CheckoutController::class, 'verifyOtp'], [AuthMiddleware::class]);
+$router->post('/checkout/verify/resend', [CheckoutController::class, 'resendOtp'], [AuthMiddleware::class]);
 
 $router->get('/checkout/success', [
     CheckoutController::class,

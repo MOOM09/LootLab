@@ -21,12 +21,18 @@ class CheckoutService
     public function createOrder(
         int $userId,
         string $shippingAddress,
-        string $phone
+        string $phone,
+        float $deliveryLat,
+        float $deliveryLng,
+        string $meetingPointLabel
     ): int {
         return $this->createOrderRecord(
             $userId,
             $shippingAddress,
             $phone,
+            $deliveryLat,
+            $deliveryLng,
+            $meetingPointLabel,
             true
         );
     }
@@ -35,12 +41,18 @@ class CheckoutService
     public function createStripeOrder(
         int $userId,
         string $shippingAddress,
-        string $phone
+        string $phone,
+        float $deliveryLat,
+        float $deliveryLng,
+        string $meetingPointLabel
     ): int {
         return $this->createOrderRecord(
             $userId,
             $shippingAddress,
             $phone,
+            $deliveryLat,
+            $deliveryLng,
+            $meetingPointLabel,
             false
         );
     }
@@ -49,6 +61,9 @@ class CheckoutService
         int $userId,
         string $shippingAddress,
         string $phone,
+        float $deliveryLat,
+        float $deliveryLng,
+        string $meetingPointLabel,
         bool $clearCart
     ): int {
 
@@ -121,9 +136,9 @@ class CheckoutService
             // Create order.
             $statement = $this->db->prepare(
                 'INSERT INTO orders
-                 (user_id, total_amount, status, shipping_address, phone)
+                 (user_id, total_amount, status, shipping_address, phone, delivery_lat, delivery_lng, meeting_point_label)
                  VALUES
-                 (:user_id, :total, :status, :address, :phone)'
+                 (:user_id, :total, :status, :address, :phone, :lat, :lng, :meeting_point_label)'
             );
 
             $statement->execute([
@@ -131,7 +146,10 @@ class CheckoutService
                 'total' => round($total, 2),
                 'status' => 'pending',
                 'address' => $shippingAddress,
-                'phone' => $phone
+                'phone' => $phone,
+                'lat' => $deliveryLat,
+                'lng' => $deliveryLng,
+                'meeting_point_label' => $meetingPointLabel
             ]);
 
             $orderId = (int) $this->db->lastInsertId();
@@ -144,34 +162,15 @@ class CheckoutService
                  (:order_id, :product_id, :quantity, :price, :design_id)'
             );
 
-           $stockStatement = $this->db->prepare(
-    'UPDATE products
-     SET stock_quantity = stock_quantity - :quantity
-     WHERE id = :product_id
-       AND stock_quantity >= :quantity'
-);
-
-foreach ($validatedItems as $item) {
-    $statement->execute([
-        'order_id' => $orderId,
-        'product_id' => $item['product_id'],
-        'quantity' => $item['quantity'],
-        'price' => $item['price'],
-        'design_id' => $item['custom_design_id']
-    ]);
-
-    // Deduct stock for Cash on Delivery orders.
-    if ($clearCart) {
-        $stockStatement->execute([
-            'quantity' => $item['quantity'],
-            'product_id' => $item['product_id']
-        ]);
-
-        if ($stockStatement->rowCount() !== 1) {
-            throw new Exception('Insufficient product stock.');
-        }
-    }
-}
+            foreach ($validatedItems as $item) {
+                $statement->execute([
+                    'order_id' => $orderId,
+                    'product_id' => $item['product_id'],
+                    'quantity' => $item['quantity'],
+                    'price' => $item['price'],
+                    'design_id' => $item['custom_design_id']
+                ]);
+            }
 
             $this->db->commit();
 

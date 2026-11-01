@@ -56,6 +56,14 @@ require __DIR__ . '/../layouts/user-header.php';
                         <?= nl2br(htmlspecialchars((string) ($order['shipping_address'] ?? ''), ENT_QUOTES, 'UTF-8')) ?>
                     </dd>
 
+                    <?php if (isset($order['delivery_lat'], $order['delivery_lng'])): ?>
+                        <dt>Delivery Meeting Point</dt>
+                        <dd>
+                            <?= htmlspecialchars((string) ($order['meeting_point_label'] ?? 'Pinned location'), ENT_QUOTES, 'UTF-8') ?>
+                            <a target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps/dir/?api=1&amp;destination=<?= rawurlencode((string) $order['delivery_lat'] . ',' . (string) $order['delivery_lng']) ?>">Open directions in Google Maps</a>
+                        </dd>
+                    <?php endif; ?>
+
                     <dt>Phone Number</dt>
                     <dd>
                         <?= htmlspecialchars((string) ($order['phone'] ?? ''), ENT_QUOTES, 'UTF-8') ?>

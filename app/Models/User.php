@@ -37,7 +37,7 @@ class User
     public function findByEmail(string $email): ?array
     {
         $stmt = $this->connection->prepare(
-            'SELECT id, name, email, password, role, is_active, session_version
+            'SELECT id, name, email, password, role, is_active, session_version, email_verified_at
             FROM users WHERE email = :email'
         );
 
@@ -178,8 +178,8 @@ class User
         string $googleId
     ): int {
         $stmt = $this->connection->prepare(
-            'INSERT INTO users (name, email, google_id)
-         VALUES (:name, :email, :google_id)'
+            'INSERT INTO users (name, email, google_id, email_verified_at)
+         VALUES (:name, :email, :google_id, UTC_TIMESTAMP())'
         );
 
         $stmt->execute([

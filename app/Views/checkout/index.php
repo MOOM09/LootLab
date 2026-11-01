@@ -10,7 +10,8 @@ $selectedMethod = $old['payment_method'] ?? 'cod';
 $pageTitle = 'Checkout';
 require __DIR__ . '/../layouts/user-header.php';
 ?>
-
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="<?= htmlspecialchars($appUrl . '/css/checkout-map.css?v=20261101-1', ENT_QUOTES, 'UTF-8') ?>">
 <section class="user-page">
     <div class="user-container">
 
@@ -56,6 +57,31 @@ require __DIR__ . '/../layouts/user-header.php';
                         required><?= htmlspecialchars((string) ($old['shipping_address'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
                 </div>
 
+                <div class="checkout-map-section" data-checkout-map>
+                    <div class="checkout-map-header">
+                        <div>
+                            <h2>Choose your delivery meeting point</h2>
+                            <p>Search your address in Jordan, then drag the pin to the exact spot where the courier should meet you.</p>
+                        </div>
+                        <span class="checkout-map-country">🇯🇴 Jordan only</span>
+                    </div>
+                    <div class="checkout-map-tools">
+                        <button class="user-button-secondary" type="button" id="checkout-find-address">Search address on map</button>
+                        <button class="user-button-secondary" type="button" id="checkout-my-location">Use my location</button>
+                    </div>
+                    <div class="checkout-map-results" id="checkout-address-results" hidden></div>
+                    <div class="checkout-map-canvas" id="checkout-jordan-map" role="application" aria-label="Map of Jordan, click to set delivery meeting point"></div>
+                    <p class="checkout-map-hint">Click the map or drag the marker to pin your meeting point. The pin must be inside Jordan.</p>
+                    <p class="checkout-map-status" id="checkout-map-status" role="status">No meeting point selected yet.</p>
+                    <div class="checkout-selected-location">
+                        <strong>📍 Delivery meeting point:</strong>
+                        <span id="checkout-meeting-point-preview">Not selected</span>
+                    </div>
+                    <input type="hidden" id="delivery_lat" name="delivery_lat" value="<?= htmlspecialchars((string) ($old['delivery_lat'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+                    <input type="hidden" id="delivery_lng" name="delivery_lng" value="<?= htmlspecialchars((string) ($old['delivery_lng'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+                    <input type="hidden" id="meeting_point_label" name="meeting_point_label" value="<?= htmlspecialchars((string) ($old['meeting_point_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+                </div>
+
                 <div class="user-field">
                     <label for="phone">
                         Phone Number
@@ -69,6 +95,8 @@ require __DIR__ . '/../layouts/user-header.php';
                         value="<?= htmlspecialchars((string) ($old['phone'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
                         required>
                 </div>
+
+                <p class="checkout-otp-notice">🔐 Before placing the order or paying with Stripe, we'll send a 6-digit SMS verification code to your phone.</p>
 
                 <fieldset class="user-field">
                     <legend>Payment Method</legend>
@@ -126,4 +154,6 @@ require __DIR__ . '/../layouts/user-header.php';
     </div>
 </section>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+<script src="<?= htmlspecialchars($appUrl . '/js/checkout-map.js?v=20261101-1', ENT_QUOTES, 'UTF-8') ?>" defer></script>
 <?php require __DIR__ . '/../layouts/user-footer.php'; ?>

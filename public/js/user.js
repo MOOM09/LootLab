@@ -87,11 +87,16 @@
     if (searchForm && searchInput && catalog) {
         const cards = Array.from(catalog.querySelectorAll('[data-user-product-card]'));
         const categoryButtons = Array.from(document.querySelectorAll('[data-user-category]'));
+        const subcategoryList = document.querySelector('[data-user-subcategory-list]');
+        const subcategoryButtons = Array.from(document.querySelectorAll('[data-user-subcategory]'));
+        const typeButtons = Array.from(document.querySelectorAll('[data-user-type]'));
         const sortSelect = document.querySelector('[data-user-sort]');
         const countLabel = document.querySelector('[data-user-result-count]');
         const activeCategory = document.querySelector('[data-user-active-category]');
         const emptyState = document.querySelector('[data-user-no-results]');
         let selectedCategory = 'all';
+        let selectedSubcategory = 'all';
+        let selectedType = 'all';
         let updateTimer;
         const originalOrder = new Map(cards.map((card, index) => [card, index]));
 
@@ -107,10 +112,13 @@
                 cards.forEach((card) => {
                     const categoryMatches = selectedCategory === 'all'
                         || card.dataset.categoryId === selectedCategory;
+                    const subcategoryMatches = selectedSubcategory === 'all'
+                        || card.dataset.subcategoryId === selectedSubcategory;
                     const searchMatches = !query
                         || (card.dataset.name || '').toLocaleLowerCase().includes(query)
                         || (card.dataset.categoryName || '').toLocaleLowerCase().includes(query);
-                    const visible = categoryMatches && searchMatches;
+                    const typeMatches = selectedType === 'all' || card.dataset.typeId === selectedType;
+                    const visible = categoryMatches && subcategoryMatches && typeMatches && searchMatches;
                     card.hidden = !visible;
                     if (visible) visibleCards.push(card);
                 });
@@ -128,7 +136,15 @@
                 if (emptyState) emptyState.hidden = visibleCards.length !== 0;
                 if (activeCategory) {
                     const selected = categoryButtons.find((button) => button.dataset.categoryId === selectedCategory);
-                    activeCategory.textContent = selected?.dataset.categoryName || 'All products';
+                    const categoryLabel = selected?.dataset.categoryName || 'All products';
+                    const subcategory = subcategoryButtons.find((button) => button.dataset.subcategoryId === selectedSubcategory);
+                    const locationLabel = selectedSubcategory === 'all'
+                        ? categoryLabel
+                        : `${categoryLabel} / ${subcategory?.dataset.subcategoryName || ''}`;
+                    const type = typeButtons.find((button) => button.dataset.typeId === selectedType);
+                    activeCategory.textContent = selectedType === 'all'
+                        ? locationLabel
+                        : `${locationLabel} · ${type?.dataset.typeName || ''}`;
                 }
                 catalog.classList.remove('user-is-updating');
             }, 170);
@@ -140,16 +156,44 @@
         });
         searchInput.addEventListener('input', applyCatalogFilters);
         sortSelect?.addEventListener('change', applyCatalogFilters);
+        const refreshSubcategories = () => {
+            if (subcategoryList) subcategoryList.hidden = selectedCategory === 'all';
+            subcategoryButtons.forEach((button) => {
+                button.hidden = button.dataset.subcategoryId !== 'all'
+                    && button.dataset.categoryId !== selectedCategory;
+                button.setAttribute('aria-pressed', String(button.dataset.subcategoryId === selectedSubcategory));
+            });
+        };
         categoryButtons.forEach((button) => {
             button.addEventListener('click', () => {
                 selectedCategory = button.dataset.categoryId || 'all';
+                selectedSubcategory = 'all';
                 categoryButtons.forEach((item) => item.setAttribute(
                     'aria-pressed',
                     String(item === button)
                 ));
+                refreshSubcategories();
                 applyCatalogFilters();
             });
         });
+        typeButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                selectedType = button.dataset.typeId || 'all';
+                typeButtons.forEach((item) => item.setAttribute(
+                    'aria-pressed', String(item.dataset.typeId === selectedType)
+                ));
+                applyCatalogFilters();
+            });
+        });
+
+        subcategoryButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                selectedSubcategory = button.dataset.subcategoryId || 'all';
+                refreshSubcategories();
+                applyCatalogFilters();
+            });
+        });
+        refreshSubcategories();
         applyCatalogFilters();
     }
 
@@ -495,9 +539,8 @@
         };
 
         const performCartAction = async (row, method) => {
-           const itemId = row.dataset.cartItemId;
-
-if (!itemId || pendingItems.has(itemId)) return;
+            const itemId = Number(row.dataset.cartItemId);
+            if (!Number.isInteger(itemId) || itemId < 1 || pendingItems.has(itemId)) return;
 
             const payload = { item_id: itemId };
             if (method === 'PUT') {

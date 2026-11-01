@@ -12,6 +12,7 @@ class AuthController extends Controller
     private string $appUrl;
     private Database $database;
     private GoogleAuthService $googleAuth;
+    private EmailVerificationService $emailVerification;
 
     public function __construct(array $config)
     {
@@ -22,6 +23,11 @@ class AuthController extends Controller
         $this->user = new User($this->database->getConnection());
 
         $this->googleAuth = new GoogleAuthService($config['google']);
+        $this->emailVerification = new EmailVerificationService(
+            $this->database->getConnection(),
+            new MailService($config['mail']),
+            $this->appUrl
+        );
     }
 
     public function showLogin(): void
@@ -99,35 +105,25 @@ class AuthController extends Controller
             throw $exception;
         }
 
-        $favorite = new Favorite($this->database->getConnection());
+        // Keep the visitor signed out until the email OTP is confirmed.
+        // Their guest cart/favorites remain in the guest session and will merge on login.
+        $_SESSION['pending_verification_email'] = $email;
+        $_SESSION['pending_verification_user_id'] = (int) $userId;
 
-        $favorite->mergeGuestIntoUser(
-            session_id(),
-            (int) $userId
-        );
-
-        // Load the new account's current session version.
-        $user = $this->user->findById($userId);
-
-        if ($user === null) {
-            Response::error('Unable to load your account.', 500);
+        try {
+            $this->emailVerification->sendForUser((int) $userId, $email, $name);
+        } catch (Throwable $exception) {
+            // Account remains pending, and the visitor can request a fresh code.
+            error_log('Verification email delivery failed: ' . get_class($exception));
         }
-
-        $this->mergeGuestCart((int) $userId);
-
-        session_regenerate_id(true);
-
-        $_SESSION['user_id'] = (int) $userId;
-        // Remember the account's session version at registration.
-        $_SESSION['session_version'] = (int) $user['session_version'];
 
         Response::success(
             [
                 'id' => $userId,
-                'redirect' => $this->appUrl . '/products',
+                'redirect' => $this->appUrl . '/verify-email/pending',
             ],
             201,
-            'Account created and logged in successfully.'
+            'Account created. Check your email for a 6-digit verification code.'
         );
     }
 
@@ -235,6 +231,11 @@ class AuthController extends Controller
         //? Account status check
         if ((int) $user['is_active'] !== 1) {
             Response::error('Your account is inactive.', 403);
+        }
+
+        if (empty($user['email_verified_at'])) {
+            $_SESSION['pending_verification_email'] = $user['email'];
+            Response::error('Please verify your email before logging in. Open /verify-email/pending to enter or resend the code.', 403);
         }
 
         $favorite = new Favorite($this->database->getConnection());

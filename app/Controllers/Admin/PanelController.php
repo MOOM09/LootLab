@@ -76,6 +76,8 @@ final class AdminPanelController
                     ),
                     "category-save" => $this->store->saveCategory($input),
                     "subcategory-save" => $this->store->saveSubcategory($input),
+                    "product-type-save" => $this->store->saveProductType($input),
+                    "product-type-delete" => $this->store->deleteProductType($input),
                     "category-delete" => $this->store->deleteCategory($input),
                     "products-move" => $this->store->moveProducts($input),
                     "review-delete" => $this->store->deleteReview(AdminPanelStore::id($input["id"] ?? null)),

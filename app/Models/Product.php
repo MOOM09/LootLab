@@ -33,6 +33,9 @@ class Product
                 p.price,
                 p.discount_price,
                 p.image,
+                p.model_path,
+                p.product_type_id,
+                pt.name AS product_type_name,
                 p.stock_quantity,
                 p.is_active,
                 p.created_at,
@@ -43,6 +46,7 @@ class Product
              FROM products p
              INNER JOIN subcategories s ON s.id = p.subcategorys_id
              INNER JOIN categories c ON c.id = s.category_id
+             LEFT JOIN product_types pt ON pt.id = p.product_type_id
              WHERE p.is_active = 1
              ORDER BY p.created_at DESC, p.id DESC'
         );
@@ -61,6 +65,9 @@ class Product
                 p.price,
                 p.discount_price,
                 p.image,
+                p.model_path,
+                p.product_type_id,
+                pt.name AS product_type_name,
                 p.stock_quantity,
                 p.is_active,
                 p.created_at,
@@ -71,6 +78,7 @@ class Product
              FROM products p
              INNER JOIN subcategories s ON s.id = p.subcategorys_id
              INNER JOIN categories c ON c.id = s.category_id
+             LEFT JOIN product_types pt ON pt.id = p.product_type_id
              WHERE p.id = :id AND p.is_active = 1
              LIMIT 1'
         );

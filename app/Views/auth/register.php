@@ -9,7 +9,7 @@ require __DIR__ . '/../layouts/user-header.php';
         <div class="user-form-card">
             <p class="user-eyebrow">Join the community</p>
             <h1 class="user-page-title">Create your account</h1>
-            <p class="user-page-subtitle">Save favorites and keep your LootLab account in one place.</p>
+            <p class="user-page-subtitle">Create your LootHub account. We will email you a verification link before your first login.</p>
 
             <form
                 class="user-form"

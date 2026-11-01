@@ -6,12 +6,26 @@ $appUrl = rtrim($appUrl ?? ($userAppUrl ?? ''), '/');
 $csrfToken = $csrfToken ?? '';
 $isLoggedIn = $isLoggedIn ?? false;
 $userCategories = [];
+$userSubcategories = [];
+$userProductTypes = [];
 foreach ($products as $product) {
+    if (isset($product['product_type_id'], $product['product_type_name']) && $product['product_type_id'] !== null) {
+        $userProductTypes[(string) $product['product_type_id']] = (string) $product['product_type_name'];
+    }
     if (isset($product['category_id'], $product['category_name'])) {
-        $userCategories[(string) $product['category_id']] = (string) $product['category_name'];
+        $categoryId = (string) $product['category_id'];
+        $userCategories[$categoryId] = (string) $product['category_name'];
+        if (isset($product['subcategorys_id'], $product['subcategorys_name'])) {
+            $userSubcategories[$categoryId][(string) $product['subcategorys_id']] = (string) $product['subcategorys_name'];
+        }
     }
 }
 asort($userCategories, SORT_NATURAL | SORT_FLAG_CASE);
+asort($userProductTypes, SORT_NATURAL | SORT_FLAG_CASE);
+foreach ($userSubcategories as &$categorySubcategories) {
+    asort($categorySubcategories, SORT_NATURAL | SORT_FLAG_CASE);
+}
+unset($categorySubcategories);
 require __DIR__ . '/../layouts/user-header.php';
 ?>
 <section class="user-page">
@@ -78,6 +92,39 @@ require __DIR__ . '/../layouts/user-header.php';
             <?php endforeach; ?>
         </div>
 
+        <!-- Subcategory buttons appear after a category is selected. -->
+        <div class="user-category-list" data-user-subcategory-list hidden role="group" aria-label="Filter products by subcategory">
+            <button class="user-category-item" type="button" data-user-subcategory data-subcategory-id="all" data-subcategory-name="All subcategories" aria-pressed="true">
+                All subcategories
+            </button>
+            <?php foreach ($userSubcategories as $subcategoryCategoryId => $subcategoryNames): ?>
+                <?php foreach ($subcategoryNames as $subcategoryId => $subcategoryName): ?>
+                    <button
+                        class="user-category-item"
+                        type="button"
+                        data-user-subcategory
+                        data-category-id="<?= htmlspecialchars((string) $subcategoryCategoryId, ENT_QUOTES, 'UTF-8') ?>"
+                        data-subcategory-id="<?= htmlspecialchars((string) $subcategoryId, ENT_QUOTES, 'UTF-8') ?>"
+                        data-subcategory-name="<?= htmlspecialchars($subcategoryName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
+                        aria-pressed="false"
+                        hidden>
+                        <?= htmlspecialchars($subcategoryName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
+                    </button>
+                <?php endforeach; ?>
+            <?php endforeach; ?>
+        </div>
+
+        <!-- Product types: e.g. 3D Models, Posters, Figures -->
+        <div class="user-category-list" role="group" aria-label="Filter products by product type" data-user-type-list>
+            <button class="user-category-item" type="button" data-user-type data-type-id="all" data-type-name="All types" aria-pressed="true">All types</button>
+            <?php foreach ($userProductTypes as $typeId => $typeName): ?>
+                <button class="user-category-item" type="button" data-user-type
+                    data-type-id="<?= htmlspecialchars($typeId, ENT_QUOTES, 'UTF-8') ?>"
+                    data-type-name="<?= htmlspecialchars($typeName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
+                    aria-pressed="false"><?= htmlspecialchars($typeName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></button>
+            <?php endforeach; ?>
+        </div>
+
         <div class="user-section-heading">
             <div>
                 <h2>Explore the collection</h2>
@@ -115,6 +162,7 @@ require __DIR__ . '/../layouts/user-header.php';
                     : null;
                 $image = trim((string) ($product['image'] ?? ''));
                 $inStock = (int) ($product['stock_quantity'] ?? 0) > 0;
+                $has3DModel = trim((string) ($product['model_path'] ?? '')) !== '';
                 ?>
                 <article
                     class="user-product-card"
@@ -122,9 +170,15 @@ require __DIR__ . '/../layouts/user-header.php';
                     data-product-id="<?= $productId ?>"
                     data-category-id="<?= htmlspecialchars($categoryId, ENT_QUOTES, 'UTF-8') ?>"
                     data-category-name="<?= htmlspecialchars($categoryName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
+                    data-subcategory-id="<?= htmlspecialchars((string) ($product['subcategorys_id'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                    data-subcategory-name="<?= htmlspecialchars((string) ($product['subcategorys_name'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
+                    data-type-id="<?= htmlspecialchars((string) ($product['product_type_id'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
                     data-name="<?= htmlspecialchars($productName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
                     data-price="<?= htmlspecialchars((string) ($discountPrice ?? $price), ENT_QUOTES, 'UTF-8') ?>">
                     <div class="user-product-media">
+                        <?php if ($has3DModel): ?>
+                            <span class="lootlab-3d-badge">◈ 3D VIEW</span>
+                        <?php endif; ?>
                         <?php if ($discountPrice !== null): ?>
                             <span class="user-discount-badge">Deal</span>
                         <?php endif; ?>
@@ -200,4 +254,5 @@ require __DIR__ . '/../layouts/user-header.php';
         </p>
     </div>
 </section>
+<script src="<?= htmlspecialchars($userAppUrl . '/js/catalog-filter-fix.js?v=20261101-2', ENT_QUOTES, 'UTF-8') ?>" defer></script>
 <?php require __DIR__ . '/../layouts/user-footer.php'; ?>

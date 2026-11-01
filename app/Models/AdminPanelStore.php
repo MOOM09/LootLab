@@ -410,7 +410,7 @@ final class AdminPanelStore
     public function order(int $id): array
     {
         $order = $this->row(
-            "SELECT o.id,o.user_id,o.promo_discount,o.total_amount,o.status,o.shipping_address,o.phone,o.created_at,u.name,u.email FROM orders o JOIN users u ON u.id=o.user_id WHERE o.id=?",
+            "SELECT o.id,o.user_id,o.promo_discount,o.total_amount,o.status,o.shipping_address,o.delivery_lat,o.delivery_lng,o.meeting_point_label,o.phone,o.created_at,u.name,u.email FROM orders o JOIN users u ON u.id=o.user_id WHERE o.id=?",
             [$id],
         );
         if ($order === null) {

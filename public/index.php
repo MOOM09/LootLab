@@ -31,6 +31,7 @@ require_once __DIR__ . '/../app/Models/PasswordResetRateLimit.php';
 
 // Services.
 require_once __DIR__ . '/../app/Services/MailService.php';
+require_once __DIR__ . '/../app/Services/EmailVerificationService.php';
 require_once __DIR__ . '/../app/Services/GoogleAuthService.php';
 require_once __DIR__ . '/../app/Services/AiService.php';
 require_once __DIR__ . '/../app/Services/AiProductCatalog.php';
@@ -46,6 +47,7 @@ require_once __DIR__ . '/../app/Controllers/Admin/UserController.php';
 require_once __DIR__ . '/../app/Controllers/Admin/CategoryController.php';
 require_once __DIR__ . '/../app/Controllers/PasswordResetController.php';
 require_once __DIR__ . '/../app/Controllers/AuthController.php';
+require_once __DIR__ . '/../app/Controllers/EmailVerificationController.php';
 require_once __DIR__ . '/../app/Controllers/ProductController.php';
 require_once __DIR__ . '/../app/Controllers/ProfileController.php';
 require_once __DIR__ . '/../app/Controllers/FavoriteController.php';

@@ -15,19 +15,23 @@ class OrderController extends Controller
     {
         Response::success($this->order->getAll());
     }
-public function show(): void
-{
-    $userId = $this->requireUser();
-    $id = $this->positiveId($_GET['id'] ?? null);
 
-    $order = $this->order->getById($id);
+    public function show(): void
+    {
+        $id = $this->positiveId($_GET['id'] ?? null);
+        $order = $this->order->getById($id);
 
-    if (!$order || (int) $order['user_id'] !== $userId) {
-        Response::error('Order not found.', 404);
+        if (!$order) {
+            Response::error('Order not found.', 404);
+        }
+
+        // Orders contain private phone/address/coordinates. Enforce ownership.
+        $userId = $this->requireUser();
+        if ((int) ($order['user_id'] ?? 0) !== $userId) {
+            Response::error('Order not found.', 404);
+        }
+        Response::success($order);
     }
-
-    Response::success($order);
-}
 
     public function store(): void
     {
