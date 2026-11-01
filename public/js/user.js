@@ -601,6 +601,10 @@
                     throw new Error(result.message || 'Reviews could not be loaded.');
                 }
                 reviewCsrfToken = result.data.csrf_token || '';
+                const canReview = result.data.can_review === true;
+                if (reviewForm) reviewForm.hidden = !canReview;
+                const eligibility = reviewSection.querySelector('[data-user-review-eligibility]');
+                if (eligibility) eligibility.hidden = canReview || !reviewForm;
                 const tokenInput = reviewForm?.querySelector('[name="csrf_token"]');
                 if (tokenInput) tokenInput.value = reviewCsrfToken;
                 const reviews = Array.isArray(result.data.reviews) ? result.data.reviews : [];
