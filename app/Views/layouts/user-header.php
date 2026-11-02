@@ -119,7 +119,7 @@ $_SESSION['lootlab_lang'] = $userLanguage;
     <!-- Main JavaScript -->
     <script
         src="<?= htmlspecialchars(
-            $userAppUrl . '/js/user.js?v=lootlab-v6',
+            $userAppUrl . '/js/user.js?v=lootlab-v7',
             ENT_QUOTES,
             'UTF-8'
         ) ?>"

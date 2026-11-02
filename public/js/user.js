@@ -693,8 +693,10 @@ image.onerror = () => {
         };
 
         const performCartAction = async (row, method) => {
-            const itemId = Number(row.dataset.cartItemId);
-            if (!Number.isInteger(itemId) || itemId < 1 || pendingItems.has(itemId)) return;
+            // Keep session cart keys (such as "64:0") intact; account IDs
+            // are accepted as numeric strings by the server too.
+            const itemId = row.dataset.cartItemId || '';
+            if (!/^\d+(?::\d+)?$/.test(itemId) || pendingItems.has(itemId)) return;
 
             const payload = { item_id: itemId };
             if (method === 'PUT') {
