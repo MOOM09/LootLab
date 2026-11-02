@@ -27,6 +27,8 @@ class Product
         $statement = $this->db->query(
             "SELECT
                 p.id,
+                (SELECT AVG(r.rating) FROM reviews r WHERE r.product_id=p.id) AS average_rating,
+                (SELECT COUNT(*) FROM reviews r WHERE r.product_id=p.id) AS review_count,
                 p.subcategorys_id,
                 p.name,
                 p.description,

@@ -259,7 +259,7 @@ require __DIR__ . '/../layouts/user-header.php';
         </section>
 
         <script type="module" src="<?= $escape($userBaseUrl . '/js/ai-products.js') ?>"></script>
-        <script src="<?= $escape($userBaseUrl . '/js/ai-studio-cart.js') ?>" defer></script>
+        <script src="<?= $escape($userBaseUrl . '/js/ai-studio-cart.js?v=2') ?>" defer></script>
     <?php endif; ?>
 </div>
 

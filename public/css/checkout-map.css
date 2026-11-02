@@ -19,3 +19,52 @@
 .checkout-otp-card{max-width:530px}.checkout-otp-card .user-input{text-align:center;letter-spacing:.4em;font-size:1.7rem;font-weight:700}
 .checkout-otp-subtitle{color:#b8b5c1;line-height:1.65}.checkout-otp-help{font-size:.85rem;color:#a9a5b3}
 @media(max-width:600px){.checkout-map-canvas{height:320px}.checkout-map-section{padding:12px}.checkout-map-tools button{flex:1}}
+
+/* Follow storefront theme tokens for map and verification controls. */
+html[data-loot-theme] .checkout-map-section {
+    background: var(--user-surface);
+    border-color: var(--user-border);
+}
+html[data-loot-theme] .checkout-map-header h2,
+html[data-loot-theme] .checkout-selected-location strong {
+    color: var(--user-text);
+}
+html[data-loot-theme] .checkout-map-header p,
+html[data-loot-theme] .checkout-map-hint,
+html[data-loot-theme] .checkout-otp-subtitle,
+html[data-loot-theme] .checkout-otp-help {
+    color: var(--user-muted);
+}
+html[data-loot-theme] .checkout-map-country,
+html[data-loot-theme] .checkout-map-status {
+    color: var(--user-primary);
+}
+html[data-loot-theme] .checkout-map-status[data-error="true"] {
+    color: var(--user-danger);
+}
+html[data-loot-theme] .checkout-map-result {
+    background: var(--user-surface-raised);
+    color: var(--user-text);
+    border-color: var(--user-border);
+    min-height: 44px;
+    box-sizing: border-box;
+    text-align: start;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.5;
+}
+html[data-loot-theme] .checkout-map-result:hover,
+html[data-loot-theme] .checkout-map-result:focus-visible {
+    background: var(--user-surface);
+    border-color: var(--user-primary);
+}
+html[data-loot-theme] .checkout-map-result:focus-visible {
+    outline: 2px solid var(--user-primary);
+    outline-offset: -3px;
+}
+html[data-loot-theme] .checkout-selected-location,
+html[data-loot-theme] .checkout-otp-notice {
+    background: var(--user-surface-raised);
+    color: var(--user-text);
+    border: 1px solid var(--user-border);
+}

@@ -120,6 +120,48 @@ html[data-loot-theme] .user-button:hover:not(:disabled) {
 
 
 /* 05. ACCOUNT MENU AND USER PREFERENCES */
+html[data-loot-theme] .lootlab-3d-controls button {
+    background: var(--user-surface);
+    color: var(--user-primary);
+    border: 1px solid var(--user-primary);
+    min-height: 44px;
+    padding: .6rem 1rem;
+    border-radius: 10px;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: var(--user-shadow);
+    transition: background 160ms ease, color 160ms ease;
+}
+
+html[data-loot-theme] .lootlab-3d-controls button:hover {
+    background: var(--user-primary);
+    color: var(--loot-btn-text);
+}
+
+html[data-loot-theme] .lootlab-3d-controls button:focus-visible {
+    outline: 2px solid var(--user-primary);
+    outline-offset: 3px;
+}
+
+html[data-loot-theme="inferno-light"] .user-favorite-button {
+    background: #FFFFFF;
+    color: var(--user-primary);
+    border-color: var(--user-border);
+}
+
+html[data-loot-theme="inferno-light"] .user-favorite-button:hover,
+html[data-loot-theme="inferno-light"] .user-favorite-button:focus-visible {
+    background: var(--user-surface-raised);
+    border-color: var(--user-primary);
+}
+
+html[data-loot-theme="inferno-light"] .user-favorite-button[aria-pressed="true"] {
+    background: var(--user-primary);
+    color: #FFFFFF;
+    border-color: var(--user-primary);
+}
+
 html[data-loot-theme] .user-account-dropdown {
     min-width: 242px;
     padding: 10px;

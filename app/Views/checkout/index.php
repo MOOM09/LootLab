@@ -20,7 +20,7 @@ $pageTitle = 'Checkout';
 require __DIR__ . '/../layouts/user-header.php';
 ?>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<link rel="stylesheet" href="<?= htmlspecialchars($appUrl . '/css/checkout-map.css?v=20261101-1', ENT_QUOTES, 'UTF-8') ?>">
+<link rel="stylesheet" href="<?= htmlspecialchars($appUrl . '/css/checkout-map.css?v=20261102-2', ENT_QUOTES, 'UTF-8') ?>">
 <section class="user-page">
     <div class="user-container">
 
@@ -60,7 +60,7 @@ require __DIR__ . '/../layouts/user-header.php';
         </p>
     <?php endif; ?>
 
-    <form method="POST"
+    <form class="user-promo-form" method="POST"
           action="<?= htmlspecialchars($appUrl . '/checkout/promo', ENT_QUOTES, 'UTF-8') ?>">
 
         <input type="hidden"
@@ -71,6 +71,7 @@ require __DIR__ . '/../layouts/user-header.php';
             class="user-input"
             type="text"
             name="promo_code"
+            aria-label="Promo code"
             placeholder="Enter promo code"
             maxlength="100"
             required>

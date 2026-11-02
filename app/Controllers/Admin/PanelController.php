@@ -70,6 +70,7 @@ final class AdminPanelController
                 }
                 $data = match ($api) {
                     "user-status" => $this->store->setUserActive($input),
+                    "order-status" => $this->store->setOrderStatus($input),
                     "product-save" => $this->store->saveProduct($input),
                     "product-archive" => $this->store->archiveProduct(
                         AdminPanelStore::id($input["id"] ?? null),

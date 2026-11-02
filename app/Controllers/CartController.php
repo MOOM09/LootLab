@@ -83,7 +83,11 @@ if (str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'text/html')) {
 
         $userId = $this->getUserId();
         if ($userId === null) {
-            Response::error('Please log in before adding products to the cart.', 401);
+            if ($designId !== null) {
+                Response::error('Sign in to order your custom design.', 401);
+            }
+            $this->addGuestItem($productId, $quantity, null);
+            return;
         }
         if ($designId !== null && $designId < 1) {
             Response::error('Invalid design ID.', 422);

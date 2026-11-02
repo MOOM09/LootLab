@@ -219,6 +219,15 @@ require __DIR__ . '/../layouts/user-header.php';
                                 <?= htmlspecialchars($productName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
                             </a>
                         </h3>
+                        <p class="user-product-rating">
+                            <?php if ((int) ($product['review_count'] ?? 0) > 0): ?>
+                                <span aria-hidden="true">★</span>
+                                <?= number_format((float) $product['average_rating'], 1) ?> / 5
+                                (<?= (int) $product['review_count'] ?> reviews)
+                            <?php else: ?>
+                                No reviews yet
+                            <?php endif; ?>
+                        </p>
                         <div class="user-product-price" aria-label="Product price">
                             <?php if ($discountPrice !== null): ?>
                                 <span class="user-price-current"><?= number_format($discountPrice, 2) ?> JD</span>
@@ -261,7 +270,7 @@ require __DIR__ . '/../layouts/user-header.php';
         <nav class="user-catalog-pagination" aria-label="Product pages" data-user-pagination></nav>
         <p class="user-status-note">
             <span aria-hidden="true">i</span>
-            <span>Ratings appear on product pages when reviews are available.</span>
+            <span>Ratings are based on customer reviews. Open a product to read its reviews.</span>
         </p>
             </div>
         </div>

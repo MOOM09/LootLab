@@ -5,7 +5,7 @@ Black & mauve. English interface. PHP/PDO + HTML/CSS/JavaScript.
 ## تركيب سريع
 
 1. خذ نسخة احتياطية من المشروع وقاعدة بياناتك قبل التجربة.
-2. فك ZIP خارج المشروع، ثم انسخ المجلدات **app وpublic وstorage** وملف **Check-Admin.ps1** إلى `C:\xampp\htdocs\LootLab`. ادمج المجلدات، ولا تحذف المجلدات الأصلية.
+2. فك ZIP خارج المشروع، ثم انسخ المجلدات **app وpublic وstorage** وملف **Check-Admin.ps1** إلى `C:\xampp\htdocs\projects\LootLab`. ادمج المجلدات، ولا تحذف المجلدات الأصلية.
 3. الملفات كلها خاصة بلوحة الأدمن الجديدة. لا تستبدل `.env` أو `routes/web.php` أو `public/index.php` أو ملفات AI/User الحالية.
 4. داخل PowerShell في مجلد LootLab شغّل:
 
@@ -15,7 +15,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\Check-Admin.ps1
 
 5. شغّل Apache وMySQL في XAMPP. سجّل الدخول بحساب موجود دوره `admin`، ثم افتح:
 
-**http://localhost/LootLab/public/admin.php**
+**http://localhost/projects/LootLab/public/admin.php**
 
 إذا حسابك دوره `user` رح يرجع `Admin access required.`؛ اللوحة لا تعطي أي حساب صلاحية أدمن تلقائيًا.
 

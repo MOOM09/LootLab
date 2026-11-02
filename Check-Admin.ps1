@@ -16,4 +16,4 @@ foreach ($extension in @('pdo_mysql','mbstring','fileinfo','json','session')) {
 }
 Write-Host 'Required PHP extensions are available.'
 Write-Host 'Admin files passed syntax and dependency checks. No database, Git or account changes were made.'
-Write-Host 'Sign in with an existing admin account, then open http://localhost/LootLab/public/admin.php'
+Write-Host 'Sign in with an existing admin account, then open http://localhost/projects/LootLab/public/admin.php'

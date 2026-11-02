@@ -34,7 +34,13 @@
             const result = await response.json();
             if (!response.ok || !result.success) throw new Error(result.message || 'Could not add item.');
             status.textContent = '✓ Added to your cart! Redirecting…';
-            window.location.assign(result.data?.redirect || appUrl + '/cart');
+            button.textContent = window.LootI18n?.t('✓ Added to cart') || '✓ Added to cart';
+            document.dispatchEvent(new CustomEvent('loot:cart-added', {
+                detail: { button, message: result.message }
+            }));
+            window.setTimeout(() => {
+                window.location.assign(result.data?.redirect || appUrl + '/cart');
+            }, 900);
         } catch (error) {status.textContent = error.message;button.disabled = false;}
     });
 })();
