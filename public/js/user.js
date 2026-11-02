@@ -405,6 +405,14 @@
     const cartUrl = `${appUrl}/cart`;
     const cartPage = document.querySelector('[data-user-cart]');
     const cartAddButtons = Array.from(document.querySelectorAll('[data-user-add-to-cart]'));
+    const cartCounts = Array.from(document.querySelectorAll('[data-user-cart-count]'));
+    const updateCartCount = (data) => {
+        const count = (data.items || []).reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+        cartCounts.forEach((badge) => {
+            badge.textContent = String(count);
+            badge.hidden = count === 0;
+        });
+    };
     let cartCsrfToken = '';
     let cartDataRequest;
 
@@ -423,6 +431,7 @@
                     throw new Error('The cart security token is missing. Reload the page and try again.');
                 }
                 cartCsrfToken = result.data.csrf_token;
+                updateCartCount(result.data);
                 return result.data;
             })().finally(() => {
                 cartDataRequest = null;
@@ -451,21 +460,29 @@
         if (!response.ok || !result.success) {
             throw new Error(result.message || 'The cart request could not be completed.');
         }
+        // Refresh the actual quantities, including additions capped by stock.
+        loadCartData().catch(() => {});
         return result;
     };
+
+    if (cartCounts.length && !cartPage) loadCartData().catch(() => {});
+
+    document.addEventListener('loot:cart-added', (event) => {
+        const button = event.detail?.button;
+        if (button) button.classList.add('user-cart-added');
+        announce(event.detail?.message || 'Product added to cart.', 'success');
+        loadCartData().catch(() => {});
+        document.querySelectorAll('.user-nav-cart').forEach((link) => {
+            link.classList.remove('user-cart-confirmed');
+            void link.offsetWidth;
+            link.classList.add('user-cart-confirmed');
+            window.setTimeout(() => link.classList.remove('user-cart-confirmed'), 500);
+        });
+    });
 
     cartAddButtons.forEach((button) => {
         button.addEventListener('click', async () => {
             if (button.disabled) return;
-            if (body.dataset.userSignedIn !== '1') {
-                announce('Please log in or create an account before adding products to your cart.', 'error');
-                const notice = document.getElementById('user-login-required') || document.createElement('div');
-                notice.id = 'user-login-required';
-                notice.className = 'loothub-login-required';
-                notice.innerHTML = 'Sign in to add products to your cart. <a href="' + appUrl + '/login">Log in</a> or <a href="' + appUrl + '/register">Create an account</a>';
-                document.body.appendChild(notice);
-                return;
-            }
             const productId = Number(button.dataset.productId);
             if (!Number.isInteger(productId) || productId < 1) {
                 announce('This product could not be added because its ID is invalid.', 'error');
@@ -475,17 +492,29 @@
             const originalText = button.textContent;
             button.disabled = true;
             button.textContent = 'Adding…';
+            button.setAttribute('aria-busy', 'true');
+            let added = false;
             try {
                 const result = await updateCart('POST', {
                     product_id: productId,
                     quantity: 1
                 });
-                announce(result.message || 'Product added to cart.', 'success');
+                document.dispatchEvent(new CustomEvent('loot:cart-added', {
+                    detail: { button, message: result.message }
+                }));
+                added = true;
+                button.textContent = lootT('✓ Added to cart');
             } catch (error) {
                 announce(error.message || 'The product could not be added to your cart.', 'error');
             } finally {
-                button.disabled = false;
-                button.textContent = originalText;
+                button.removeAttribute('aria-busy');
+                const reset = () => {
+                    button.disabled = false;
+                    button.textContent = originalText;
+                    button.classList.remove('user-cart-added');
+                };
+                if (added) window.setTimeout(reset, 1400);
+                else reset();
             }
         });
     });

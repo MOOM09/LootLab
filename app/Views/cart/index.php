@@ -24,8 +24,10 @@ require __DIR__ . '/../layouts/user-header.php';
                     <div class="user-cart-total"><dt>Total</dt><dd data-cart-total>0.00</dd></div>
                 </dl>
             </section>
+            <div class="user-cart-page-actions">
             <a class="user-button loothub-checkout-btn" href="<?= htmlspecialchars($userAppUrl . '/checkout', ENT_QUOTES, 'UTF-8') ?>">Proceed to checkout →</a>
             <a class="user-button-secondary" href="<?= htmlspecialchars($userAppUrl . '/products', ENT_QUOTES, 'UTF-8') ?>">Continue browsing</a>
+            </div>
         </div>
     </div>
 </section>

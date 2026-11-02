@@ -92,7 +92,7 @@ Copy-Item .env.example .env
 افتح \`.env\` وعدّل القيم حسب جهازك. **لا تنسخ مفاتيح شخص آخر داخل المستودع**؛ كل عضو يأخذ مفاتيحه أو يطلب وصولًا آمنًا إلى مفاتيح الاختبار من المسؤول.
 
 ~~~dotenv
-APP_URL=http://localhost/LootLab/public
+APP_URL=http://localhost/projects/LootLab/public
 
 DB_HOST=localhost
 DB_NAME=lootlab
@@ -110,7 +110,7 @@ STRIPE_JOD_TO_USD_RATE=1.41
 # Google OAuth Login
 GOOGLE_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID
 GOOGLE_CLIENT_SECRET=YOUR_GOOGLE_CLIENT_SECRET
-GOOGLE_REDIRECT_URI=http://localhost/LootLab/public/auth/google/callback
+GOOGLE_REDIRECT_URI=http://localhost/projects/LootLab/public/auth/google/callback
 
 # Gmail SMTP + Email OTP
 MAIL_HOST=smtp.gmail.com
@@ -140,13 +140,13 @@ PHOTOMAKER_GENERATE_URL=http://127.0.0.1:7861/generate
 
 شغّل Apache وMySQL في XAMPP، ثم افتح:
 
-- **المتجر:** http://localhost/LootLab/public/
-- **المنتجات:** http://localhost/LootLab/public/products
-- **التسجيل:** http://localhost/LootLab/public/register
-- **تسجيل الدخول:** http://localhost/LootLab/public/login
-- **السلة:** http://localhost/LootLab/public/cart
-- **الدفع:** http://localhost/LootLab/public/checkout
-- **تأكيد الإيميل بالرمز:** http://localhost/LootLab/public/verify-email/pending
+- **المتجر:** http://localhost/projects/LootLab/public/
+- **المنتجات:** http://localhost/projects/LootLab/public/products
+- **التسجيل:** http://localhost/projects/LootLab/public/register
+- **تسجيل الدخول:** http://localhost/projects/LootLab/public/login
+- **السلة:** http://localhost/projects/LootLab/public/cart
+- **الدفع:** http://localhost/projects/LootLab/public/checkout
+- **تأكيد الإيميل بالرمز:** http://localhost/projects/LootLab/public/verify-email/pending
 
 > \`localhost\` يفتح على **نفس الجهاز فقط**. لا يمكن فتح رابط \`localhost\` الموجود على اللابتوب من هاتف آخر. لكن المستخدم يستطيع قراءة **رمز الإيميل من هاتفه** وكتابته في الموقع على اللابتوب.
 
@@ -238,7 +238,7 @@ CVC: أي 3 أرقام
 4. أضف Authorized redirect URI **مطابقًا حرفيًا** لـ:
 
 ~~~text
-http://localhost/LootLab/public/auth/google/callback
+http://localhost/projects/LootLab/public/auth/google/callback
 ~~~
 
 5. انسخ Client ID وClient Secret إلى \`.env\`.
@@ -331,7 +331,7 @@ LootLab/
 ### تنزيل آخر تحديثات TARIFI
 
 ~~~powershell
-cd C:\xampp\htdocs\LootLab
+cd C:\xampp\htdocs\projects\LootLab
 git switch TARIFI
 git pull origin TARIFI
 composer install
@@ -340,7 +340,7 @@ composer install
 ### رفع تعديلاتك إلى TARIFI (لمن عنده صلاحية Push)
 
 ~~~powershell
-cd C:\xampp\htdocs\LootLab
+cd C:\xampp\htdocs\projects\LootLab
 git status
 git add app public routes database composer.json composer.lock README.md .env.example
 git status

@@ -63,6 +63,14 @@ class Controller
 
     protected function redirect(string $url): void
     {
+        $appUrl = rtrim((string) ($_ENV['APP_URL'] ?? ''), '/');
+        $basePath = rtrim((string) (parse_url($appUrl, PHP_URL_PATH) ?? ''), '/');
+        if (
+            $appUrl !== '' && str_starts_with($url, '/') && !str_starts_with($url, '//')
+            && ($basePath === '' || ($url !== $basePath && !str_starts_with($url, $basePath . '/') && !str_starts_with($url, $basePath . '?')))
+        ) {
+            $url = $appUrl . $url;
+        }
         header('Location: ' . $url);
         exit;
     }

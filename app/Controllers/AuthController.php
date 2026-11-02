@@ -323,7 +323,7 @@ class AuthController extends Controller
         // while the browser remains on the POST /login request,
         //  without running the product controller.
         Response::success(
-            ['redirect' => $this->appUrl . '/products'],
+            ['redirect' => $this->appUrl . ($user['role'] === 'admin' ? '/admin.php' : '/products')],
             200,
             'Login successful.'
         );
@@ -535,7 +535,7 @@ class AuthController extends Controller
         // Remember the account's session version at Google login.
         $_SESSION['session_version'] = (int) $user['session_version'];
 
-        $this->redirect($this->appUrl . '/products');
+        $this->redirect($this->appUrl . ($user['role'] === 'admin' ? '/admin.php' : '/products'));
     }
 
     //? Move the session guest cart into the user's database cart.

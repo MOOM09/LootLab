@@ -110,7 +110,7 @@ $_SESSION['lootlab_lang'] = $userLanguage;
     <link
         rel="stylesheet"
         href="<?= htmlspecialchars(
-            $userAppUrl . '/css/user.css?v=lootlab-v4',
+            $userAppUrl . '/css/user.css?v=lootlab-v10',
             ENT_QUOTES,
             'UTF-8'
         ) ?>"
@@ -119,7 +119,7 @@ $_SESSION['lootlab_lang'] = $userLanguage;
     <!-- Main JavaScript -->
     <script
         src="<?= htmlspecialchars(
-            $userAppUrl . '/js/user.js?v=lootlab-v4',
+            $userAppUrl . '/js/user.js?v=lootlab-v6',
             ENT_QUOTES,
             'UTF-8'
         ) ?>"
@@ -138,7 +138,7 @@ $_SESSION['lootlab_lang'] = $userLanguage;
         >
     <?php endif; ?>
 
-    <link rel="stylesheet" href="<?= htmlspecialchars($userAppUrl . '/css/themes.css?v=lootlab-v4', ENT_QUOTES, 'UTF-8') ?>">
+    <link rel="stylesheet" href="<?= htmlspecialchars($userAppUrl . '/css/themes.css?v=lootlab-v6', ENT_QUOTES, 'UTF-8') ?>">
     <script src="<?= htmlspecialchars($userAppUrl . '/js/i18n.js?v=lootlab-v4', ENT_QUOTES, 'UTF-8') ?>" defer></script>
 
 <link
@@ -247,7 +247,27 @@ $_SESSION['lootlab_lang'] = $userLanguage;
                         <i class="fa-solid fa-house" aria-hidden="true"></i>
                         <span data-i18n="Home">Home</span>
                     </a>
+                    <a class="user-nav-link<?= $userActiveNav === 'favorites' ? ' user-nav-active' : '' ?>"
+                       href="<?= htmlspecialchars($userAppUrl . '/favorites', ENT_QUOTES, 'UTF-8') ?>">
+                        <i class="fa-solid fa-heart" aria-hidden="true"></i>
+                        <span data-i18n="Favorites">Favorites</span>
+                        <span class="user-nav-count" data-user-favorite-count hidden>0</span>
+                    </a>
+                    <a class="user-nav-link user-nav-cart<?= $userActiveNav === 'cart' ? ' user-nav-active' : '' ?>"
+                       href="<?= htmlspecialchars($userAppUrl . '/cart', ENT_QUOTES, 'UTF-8') ?>">
+                        <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
+                        <span data-i18n="Cart">Cart</span><span class="user-nav-count" data-user-cart-count hidden aria-label="Cart quantity">0</span>
+                    </a>
                 </nav>
+
+                <div class="user-guest-auth" aria-label="Account">
+                    <a class="user-button-secondary" href="<?= htmlspecialchars($userAppUrl . '/login', ENT_QUOTES, 'UTF-8') ?>">
+                        <span data-i18n="Login">Login</span>
+                    </a>
+                    <a class="user-button" href="<?= htmlspecialchars($userAppUrl . '/register', ENT_QUOTES, 'UTF-8') ?>">
+                        <span data-i18n="Register">Register</span>
+                    </a>
+                </div>
 
             <?php else: ?>
 
@@ -337,7 +357,7 @@ $_SESSION['lootlab_lang'] = $userLanguage;
                             ) ?>"
                         >
                             <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
-                            <span data-i18n="Cart">Cart</span>
+                            <span data-i18n="Cart">Cart</span><span class="user-nav-count" data-user-cart-count hidden aria-label="Cart quantity">0</span>
                         </a>
 
                         <!-- My Orders -->

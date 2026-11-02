@@ -62,7 +62,8 @@ require __DIR__ . '/../layouts/user-header.php';
                                 $unitsSold = (int) ($product['units_sold'] ?? 0);
                                 $productHref = $userAppUrl . '/products/show?id=' . $id;
                                 ?>
-                                <a class="user-topten-card"
+                                <article class="user-topten-card">
+                                <a class="user-topten-details"
                                     href="<?= htmlspecialchars($productHref, ENT_QUOTES, 'UTF-8') ?>"
                                     aria-label="<?= htmlspecialchars($name . ' — view product details', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
                                     <?= $duplicate ? 'tabindex="-1"' : '' ?>>
@@ -79,9 +80,20 @@ require __DIR__ . '/../layouts/user-header.php';
                                     <span class="user-topten-copy">
                                         <strong dir="auto"><?= htmlspecialchars($name, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></strong>
                                         <span class="user-topten-price"><?= number_format($price, 2) ?> JD</span>
-                                        <span class="user-topten-cta">CLICK TO DETAILS <span aria-hidden="true">↗</span></span>
+                                        <span class="user-topten-cta">View details <span aria-hidden="true">↗</span></span>
                                     </span>
                                 </a>
+                                <div class="user-topten-actions">
+                                    <button class="user-favorite-button" type="button" data-user-favorite-button
+                                        data-product-id="<?= $id ?>" aria-pressed="false" aria-label="Add to favorites"
+                                        <?= $duplicate ? 'tabindex="-1"' : '' ?>>♡</button>
+                                    <button class="user-button" type="button" data-user-add-to-cart data-product-id="<?= $id ?>"
+                                        <?= $duplicate ? 'tabindex="-1"' : '' ?>
+                                        <?= (int) ($product['stock_quantity'] ?? 0) > 0 ? '' : 'disabled' ?>>
+                                        <?= (int) ($product['stock_quantity'] ?? 0) > 0 ? 'Add to cart' : 'Out of stock' ?>
+                                    </button>
+                                </div>
+                                </article>
                             <?php endforeach; ?>
                         </div>
                     <?php endforeach; ?>

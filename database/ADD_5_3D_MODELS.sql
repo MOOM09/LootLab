@@ -1,7 +1,7 @@
 -- LootLab: five user-supplied 3D collectibles. Existing 114 products remain untouched.
 -- Set @base to the public URL from your APP_URL if your installation differs.
 USE lootlab;
-SET @base = '/LootLab/public';
+SET @base = '/projects/LootLab/public';
 
 -- Add the column only if it does not exist (works on MySQL and MariaDB).
 SELECT COUNT(*) INTO @has_model_path

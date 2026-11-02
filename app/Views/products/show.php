@@ -156,7 +156,7 @@ require __DIR__ . '/../layouts/user-header.php';
                 </div>
 
                 <!-- Actions -->
-                <div class="user-product-actions">
+                <div class="user-product-actions user-detail-actions">
 
                     <button
                         class="user-favorite-button"
