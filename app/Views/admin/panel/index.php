@@ -107,7 +107,7 @@ if (!in_array($adminLang, ['en', 'ar'], true)) $adminLang = 'en';
         <div class="admin-top-actions">
             <button class="admin-global-search" data-action="search" aria-label="Search workspace"><svg><use href="#i-search"/></svg><span>Search the store…</span><kbd>Ctrl K</kbd></button>
             <span class="admin-top-separator"></span>
-            <button class="admin-icon-button admin-notifications" data-nav="products" data-stock="attention" title="Review low-stock products" aria-label="Low-stock notifications"><svg><use href="#i-bell"/></svg><i></i></button>
+            <button type="button" class="admin-button secondary small" data-nav="products" data-stock="attention" title="View products with 5 or fewer units, including out-of-stock products">Low stock</button>
             <details class="admin-account-menu" data-admin-account-menu>
                 <summary
     aria-label="Account and profile"
