@@ -28,7 +28,7 @@ if (!in_array($adminLang, ['en', 'ar'], true)) $adminLang = 'en';
         $bootstrap,
         JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR,
     ) ?></script>
-    <script src="<?= htmlspecialchars($adminUrl . "/js/admin.js?v=lootlab-admin-v5", ENT_QUOTES, "UTF-8") ?>" defer></script>
+    <script src="<?= htmlspecialchars($adminUrl . "/js/admin.js?v=lootlab-admin-validation-2", ENT_QUOTES, "UTF-8") ?>" defer></script>
 </head>
 <body class="admin-body">
 <a class="admin-skip" href="#admin-main">Skip to content</a>
@@ -77,7 +77,6 @@ if (!in_array($adminLang, ['en', 'ar'], true)) $adminLang = 'en';
         <a href="?page=categories" data-nav="categories"><svg><use href="#i-category"/></svg><span>Categories</span></a>
         <a href="?page=orders" data-nav="orders"><svg><use href="#i-bag"/></svg><span>Orders</span><span id="admin-pending-count" class="admin-nav-counter" hidden></span></a>
         <p class="admin-nav-label">STORE TOOLS</p>
-        <a href="?page=inventory" data-nav="inventory"><svg><use href="#i-chart"/></svg><span>Inventory</span></a>
         <a href="?page=promos" data-nav="promos"><svg><use href="#i-tag"/></svg><span>Promo codes</span></a>
         <a href="?page=reviews" data-nav="reviews"><svg><use href="#i-star"/></svg><span>Reviews</span></a>
     </nav>
@@ -108,7 +107,7 @@ if (!in_array($adminLang, ['en', 'ar'], true)) $adminLang = 'en';
         <div class="admin-top-actions">
             <button class="admin-global-search" data-action="search" aria-label="Search workspace"><svg><use href="#i-search"/></svg><span>Search the store…</span><kbd>Ctrl K</kbd></button>
             <span class="admin-top-separator"></span>
-            <button class="admin-icon-button admin-notifications" data-nav="inventory" title="Review low-stock products" aria-label="Low-stock notifications"><svg><use href="#i-bell"/></svg><i></i></button>
+            <button class="admin-icon-button admin-notifications" data-nav="products" data-stock="attention" title="Review low-stock products" aria-label="Low-stock notifications"><svg><use href="#i-bell"/></svg><i></i></button>
             <details class="admin-account-menu" data-admin-account-menu>
                 <summary
     aria-label="Account and profile"

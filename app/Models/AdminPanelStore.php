@@ -38,14 +38,14 @@ final class AdminPanelStore
         }
         return trim($v);
     }
-    public static function id(mixed $value): int
+    public static function id(mixed $value, string $message = 'A valid ID is required.'): int
     {
         $id =
             is_string($value) || is_int($value)
                 ? filter_var($value, FILTER_VALIDATE_INT, ["options" => ["min_range" => 1]])
                 : false;
         if ($id === false) {
-            throw new InvalidArgumentException("A valid ID is required.");
+            throw new InvalidArgumentException($message);
         }
         return $id;
     }
@@ -258,8 +258,8 @@ final class AdminPanelStore
         if ($stock === false) {
             throw new InvalidArgumentException("Enter a valid stock quantity.");
         }
-        $categoryId = self::id($input["category_id"] ?? null);
-        $subcategoryId = self::id($input["subcategory_id"] ?? null);
+        $categoryId = self::id($input["category_id"] ?? null, 'Choose a product category.');
+        $subcategoryId = self::id($input["subcategory_id"] ?? null, 'Choose a product subcategory.');
         if (
             $this->row("SELECT id FROM subcategories WHERE id=? AND category_id=?", [
                 $subcategoryId,
@@ -385,6 +385,18 @@ final class AdminPanelStore
         $this->run("UPDATE products SET {$col}=? WHERE id IN ({$marks})", array_merge([$sub], $ids));
         return ["moved" => count($ids)];
     }
+    public function setOrderStatus(array $input): array
+    {
+        $id = self::id($input['id'] ?? null);
+        $status = self::text($input, 'status', 20);
+        if (!in_array($status, ['pending', 'processing', 'shipped', 'completed', 'cancelled'], true)) {
+            throw new InvalidArgumentException('Choose a valid order status.');
+        }
+        $this->order($id);
+        $this->run('UPDATE orders SET status=?,updated_at=CURRENT_TIMESTAMP WHERE id=?', [$status, $id]);
+        return ['id' => $id, 'status' => $status];
+    }
+
     public function orders(array $query): array
     {
         $parameters = [];
@@ -513,7 +525,7 @@ final class AdminPanelStore
     public function overview(array $query): array
     {
         $range = self::text($query, "range", 10);
-        $days = match ($range) { "7d" => 7, "30d" => 30, "33d" => 33, default => 0 };
+        $days = match ($range) { "7d" => 7, "30d" => 30, "90d" => 90, default => 0 };
         $start = $days
             ? new DateTimeImmutable("-" . ($days - 1) . " days midnight")
             : new DateTimeImmutable("first day of -11 months midnight");
@@ -544,6 +556,22 @@ final class AdminPanelStore
                 "customers" => (int) ($byCustomer[$key]["n"] ?? 0),
             ];
         }
+        // Preserve all 90 days, including the final partial week.
+        if ($days === 90) {
+            $weekly = [];
+            foreach (array_chunk($series, 7) as $week) {
+                $point = $week[0];
+                $last = $week[count($week) - 1];
+                $point['date_end'] = $last['date'];
+                $point['label_end'] = $last['label'];
+                $point['period_label'] = $point['label'] . ' – ' . $last['label'];
+                foreach (['completed', 'ordered', 'orders', 'customers'] as $field) {
+                    $point[$field] = array_sum(array_column($week, $field));
+                }
+                $weekly[] = $point;
+            }
+            $series = $weekly;
+        }
         $stats = $this->row("SELECT (SELECT COUNT(*) FROM users WHERE role='user') AS customers,
           (SELECT COUNT(*) FROM products WHERE is_active=1) AS products,
           (SELECT COUNT(*) FROM orders) AS orders,
@@ -554,7 +582,7 @@ final class AdminPanelStore
         return [
             "stats" => $stats,
             "series" => $series,
-            "range" => $days === 7 ? "7d" : ($days === 30 ? "30d" : ($days === 33 ? "33d" : "12m")),
+            "range" => $days === 7 ? "7d" : ($days === 30 ? "30d" : ($days === 90 ? "90d" : "12m")),
             "recent_orders" => $this->orders([])["items"],
             "top_products" => array_slice($top["items"], 0, 4),
             "status" => $this->rows("SELECT status,COUNT(*) AS n FROM orders GROUP BY status"),

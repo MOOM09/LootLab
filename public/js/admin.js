@@ -65,7 +65,7 @@
         reviews: 'Reviews',
         settings: 'Account settings',
     };
-    let state = { page: 'overview', query: { page: 1 }, range: '33d' },
+    let state = { page: 'overview', query: { page: 1 }, range: '90d' },
         meta = { categories: [], subcategories: [] },
         rows = [],
         selected = new Set(),
@@ -146,6 +146,7 @@
         $('[data-action="menu"]').setAttribute('aria-expanded', String(open));
     }
     function navigate(page, query = {}, replace = false) {
+        if (page === 'inventory') page = 'products';
         if (!names[page]) page = 'overview';
         closeDialog(drawer);
         closeDialog(modal);
@@ -156,7 +157,7 @@
         state = {
             ...state,
             page,
-            query: { page: 1, ...(page === 'inventory' ? { stock: 'attention' } : {}), ...query },
+            query: { page: 1, ...query },
         };
         syncUrl(replace);
         loadPage();
@@ -260,7 +261,7 @@
             })
             .join(
                 '',
-            )}<path class="admin-line secondary" d="${b.d}"/><path class="admin-area" fill="url(#admin-chart-fill)" d="${a.d} L627,${baseline} L44,${baseline} Z"/><path class="admin-line" d="${a.d}"/>${series.map((point, i) => `<circle cx="${a.points[i][0]}" cy="${a.points[i][1]}" r="3" tabindex="0" data-chart-label="${esc(point.label)}" data-chart-value="${money(point.completed)}" aria-label="${esc(point.label)}: ${money(point.completed)} JOD"/>${series.length <= 12 || i % 5 === 0 ? `<text x="${a.points[i][0]}" y="252" text-anchor="middle">${esc(point.label)}</text>` : ''}`).join('')}</svg><div class="admin-chart-tooltip" hidden></div></div>`;
+            )}<path class="admin-line secondary" d="${b.d}"/><path class="admin-area" fill="url(#admin-chart-fill)" d="${a.d} L627,${baseline} L44,${baseline} Z"/><path class="admin-line" d="${a.d}"/>${series.map((point, i) => `<circle cx="${a.points[i][0]}" cy="${a.points[i][1]}" r="3" tabindex="0" data-chart-label="${esc(point.period_label || point.label)}" data-chart-value="${money(point.completed)}" aria-label="${esc(point.period_label || point.label)}: ${money(point.completed)} JOD"/>${series.length <= 13 || i % 5 === 0 ? `<text x="${a.points[i][0]}" y="252" text-anchor="middle">${esc(point.label)}</text>` : ''}`).join('')}</svg><div class="admin-chart-tooltip" hidden></div></div>`;
     }
     function overview(data) {
         const s = data.stats,
@@ -275,7 +276,7 @@
         const controls = `<div class="admin-range" role="group" aria-label="Chart period">${[
             ['7d', '7D'],
             ['30d', '30D'],
-            ['33d', '33D'],
+            ['90d', '90D'],
             ['12m', '12M'],
         ]
             .map(
@@ -291,8 +292,8 @@
                 button(icon('plus') + 'Add product', 'new-product'),
             ) +
                 `<div class="admin-metrics">${stats.map(([ic, label, value, unit, note, key]) => `<article class="admin-metric"><div class="admin-metric-label">${icon(ic)}${label}<span class="admin-metric-menu">···</span></div><div class="admin-metric-value"><span data-count="${Number(value)}" data-decimal="${unit ? 2 : 0}">${unit ? money(value) : num(value)}</span>${unit ? `<small>${unit}</small>` : ''}</div><div class="admin-metric-note"><i></i>${esc(note)}</div>${spark(series.map((p) => p[key]))}</article>`).join('')}</div>
-<div class="admin-dashboard-grid"><section class="admin-panel"><div class="admin-panel-header"><div><h2>Sales performance</h2><p>Order value over time</p></div>${controls}</div><div class="admin-chart-body"><div class="admin-chart-summary"><div class="admin-chart-total">${money(sum('completed'))}<small>JOD</small></div><div class="admin-legend"><span><i></i>Completed</span><span><i></i>All non-cancelled</span></div></div>${chart(series)}<div class="admin-chart-foot"><span>Completed orders · not a payment ledger</span><span>${esc(series[0]?.date || '')} — ${esc(series.at(-1)?.date || '')}</span></div></div></section>
-<div class="admin-mini-stack"><section class="admin-panel"><div class="admin-panel-header"><h2>Order activity</h2><a href="?page=orders" class="admin-link" data-nav="orders">View orders ${icon('arrow')}</a></div><div class="admin-mini-content"><div class="admin-mini-value">${num(sum('orders'))}<small>orders this period</small></div><div class="admin-bars" role="img" aria-label="Order counts by period">${series.map((p, i) => `<span class="admin-bar" title="${esc(p.label)}: ${Number(p.orders)} orders" style="--height:${Math.max(Number(p.orders) ? 5 : 1, (Number(p.orders) / Math.max(1, ...series.map((x) => Number(x.orders)))) * 100)}%;--index:${i}"></span>`).join('')}</div><div class="admin-axis"><span>${esc(series[0]?.label)}</span><span>${esc(series.at(-1)?.label)}</span></div></div></section>
+<div class="admin-dashboard-grid"><section class="admin-panel"><div class="admin-panel-header"><div><h2>Sales performance</h2><p>${state.range === '90d' ? 'Weekly order value · last 90 days' : 'Order value over time'}</p></div>${controls}</div><div class="admin-chart-body"><div class="admin-chart-summary"><div class="admin-chart-total">${money(sum('completed'))}<small>JOD</small></div><div class="admin-legend"><span><i></i>Completed</span><span><i></i>All non-cancelled</span></div></div>${chart(series)}<div class="admin-chart-foot"><span>Completed orders · not a payment ledger</span><span>${esc(series[0]?.date || '')} — ${esc(series.at(-1)?.date_end || series.at(-1)?.date || '')}</span></div></div></section>
+<div class="admin-mini-stack"><section class="admin-panel"><div class="admin-panel-header"><h2>Order activity</h2><a href="?page=orders" class="admin-link" data-nav="orders">View orders ${icon('arrow')}</a></div><div class="admin-mini-content"><div class="admin-mini-value">${num(sum('orders'))}<small>${state.range === '90d' ? 'orders · weekly totals' : 'orders this period'}</small></div><div class="admin-bars" role="img" aria-label="Order counts by period">${series.map((p, i) => `<span class="admin-bar" title="${esc(p.period_label || p.label)}: ${Number(p.orders)} orders" style="--height:${Math.max(Number(p.orders) ? 5 : 1, (Number(p.orders) / Math.max(1, ...series.map((x) => Number(x.orders)))) * 100)}%;--index:${i}"></span>`).join('')}</div><div class="admin-axis"><span>${esc(series[0]?.label)}</span><span>${esc(series.at(-1)?.label_end || series.at(-1)?.label)}</span></div></div></section>
 <section class="admin-panel"><div class="admin-panel-header"><h2>New customers</h2><a href="?page=users" class="admin-link" data-nav="users">View users ${icon('arrow')}</a></div><div class="admin-mini-content"><div class="admin-mini-value">${num(sum('customers'))}<small>joined this period</small></div><svg class="admin-mini-line" viewBox="0 0 300 65" role="img" aria-label="New customer registrations"><polyline points="${linePath(
                     series.map((p) => Number(p.customers)),
                     300,
@@ -305,10 +306,10 @@
                     .points.map((p) => p.join(','))
                     .join(
                         ' ',
-                    )}"/></svg><div class="admin-mini-caption"><span>A growing community.</span><span>${state.range === '12m' ? 'Last 12 months' : state.range === '7d' ? 'Last 7 days' : state.range === '33d' ? 'Last 33 days' : 'Last 30 days'}</span></div></div></section></div></div>
+                    )}"/></svg><div class="admin-mini-caption"><span>A growing community.</span><span>${state.range === '12m' ? 'Last 12 months' : state.range === '7d' ? 'Last 7 days' : state.range === '90d' ? 'Last 90 days' : 'Last 30 days'}</span></div></div></section></div></div>
 <div class="admin-two-panels"><section class="admin-panel"><div class="admin-panel-header"><div><h2>Recent orders</h2><p>The latest from your store</p></div><a class="admin-link" href="?page=orders" data-nav="orders">View all ${icon('arrow')}</a></div>${data.recent_orders.length ? rowOrders(data.recent_orders.slice(0, 5), true) : empty('Your first order starts here', 'New orders will appear as customers check out.')}<div class="admin-panel-bottom"><span>Newest orders first</span><span>Updated just now</span></div></section>
 <section class="admin-panel"><div class="admin-panel-header"><div><h2>Best-selling products</h2><p>Processing, shipped & completed orders</p></div>${icon('star')}</div><div class="admin-top-products">${data.top_products.length ? data.top_products.map((p) => `<a class="admin-top-product" href="?page=products" data-action="product" data-id="${Number(p.id)}">${thumb(p)}<div><strong>${esc(p.name)}</strong><small>${esc(p.category_name)}</small></div><span class="admin-sales">${num(p.units_sold)}<small>units</small></span></a>`).join('') : empty('Make room for your next hit', 'Add products to start your collection.')}</div><div class="admin-panel-bottom"><span>Built for your next favorite</span><a class="admin-link" href="?page=products&sort=sold-desc" data-action="top-products">Explore products ${icon('arrow')}</a></div></section></div>
-${Number(s.low_stock) ? `<div class="admin-alert-banner">${icon('alert')}<span><strong>${num(s.low_stock)} products</strong> are running low or out of stock.</span><a class="admin-link" href="?page=inventory" data-nav="inventory">Review inventory ${icon('arrow')}</a></div>` : ''}`,
+${Number(s.low_stock) ? `<div class="admin-alert-banner">${icon('alert')}<span><strong>${num(s.low_stock)} products</strong> are running low or out of stock.</span><a class="admin-link" href="?page=products&amp;stock=attention" data-nav="products" data-stock="attention">Review stock ${icon('arrow')}</a></div>` : ''}`,
         );
         const pending = $('#admin-pending-count');
         pending.textContent = num(s.pending);
@@ -355,10 +356,10 @@ ${Number(s.low_stock) ? `<div class="admin-alert-banner">${icon('alert')}<span><
             ['0', 'Archived'],
             ['all', 'All products'],
         ])}${
-            state.page === 'inventory'
+            state.page === 'products'
                 ? filter('stock', [
-                      ['attention', 'Needs attention (≤5)'],
                       ['', 'All stock levels'],
+                      ['attention', 'Needs attention (≤5)'],
                       ['low', 'Low stock (1–5)'],
                       ['out', 'Out of stock'],
                   ])
@@ -681,7 +682,7 @@ ${Number(s.low_stock) ? `<div class="admin-alert-banner">${icon('alert')}<span><
             const o = await api('order', { id });
             showDrawer(
                 dialogHeader('Order management', `Order #LH-${String(o.id).padStart(4, '0')}`) +
-                    `<div class="admin-dialog-body"><div class="admin-detail-heading">${avatar(o.name, o.user_id)}<div><h3>${esc(o.name)}</h3><p>${esc(o.email)}</p></div></div><dl class="admin-detail-facts"><div><dt>Status</dt><dd>${badge(o.status)}</dd></div><div><dt>Placed on</dt><dd>${date(o.created_at)}</dd></div><div><dt>Delivery phone</dt><dd>${esc(o.phone)}</dd></div><div><dt>Delivery address</dt><dd>${esc(o.shipping_address)}</dd></div>${o.delivery_lat != null && o.delivery_lng != null ? `<div><dt>Delivery meeting point</dt><dd>${esc(o.meeting_point_label || 'Pinned location')} · <a href="https://www.google.com/maps/dir/?api=1&amp;destination=${encodeURIComponent(`${o.delivery_lat},${o.delivery_lng}`)}" target="_blank" rel="noopener noreferrer">Open directions in Google Maps</a></dd></div>` : ''}</dl><h3 class="admin-detail-section">Purchased items</h3><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Product</th><th>Quantity</th><th>Unit price · JOD</th><th>Line total · JOD</th></tr></thead><tbody>${o.items.map((p) => `<tr><td><div class="admin-row-name">${thumb(p)}<span class="admin-primary-text">${esc(p.name)}</span></div></td><td>${num(p.quantity)}</td><td>${money(p.unit_price)}</td><td>${money(Number(p.quantity) * Number(p.unit_price))}</td></tr>`).join('')}</tbody></table></div><dl class="admin-detail-facts" style="margin-top:25px"><div><dt>Promo discount</dt><dd>${money(o.promo_discount)} JOD</dd></div><div><dt>Order total</dt><dd><strong>${money(o.total_amount)} JOD</strong></dd></div></dl><p class="admin-privacy-note">Amounts are the stored order values. No payment, refund or stock action is performed by this view.</p></div><footer class="admin-dialog-footer">${button('View customer', 'user', `data-id="${Number(o.user_id)}"`, 'secondary')}${button('Close', 'close-drawer')}</footer>`,
+                    `<div class="admin-dialog-body"><div class="admin-detail-heading">${avatar(o.name, o.user_id)}<div><h3>${esc(o.name)}</h3><p>${esc(o.email)}</p></div></div><dl class="admin-detail-facts"><div><dt>Status</dt><dd>${badge(o.status)}</dd></div><div><dt>Placed on</dt><dd>${date(o.created_at)}</dd></div><div><dt>Delivery phone</dt><dd>${esc(o.phone)}</dd></div><div><dt>Delivery address</dt><dd>${esc(o.shipping_address)}</dd></div>${o.delivery_lat != null && o.delivery_lng != null ? `<div><dt>Delivery meeting point</dt><dd>${esc(o.meeting_point_label || 'Pinned location')} · <a href="https://www.google.com/maps/dir/?api=1&amp;destination=${encodeURIComponent(`${o.delivery_lat},${o.delivery_lng}`)}" target="_blank" rel="noopener noreferrer">Open directions in Google Maps</a></dd></div>` : ''}</dl><form data-form="order-status" class="admin-form"><input type="hidden" name="id" value="${Number(o.id)}"><label class="admin-field"><span>Order status</span><select class="admin-input" name="status">${['pending','processing','shipped','completed','cancelled'].map(s => `<option value="${s}" ${s === o.status ? 'selected' : ''}>${esc(s)}</option>`).join('')}</select></label><div class="admin-form-error" role="alert" hidden></div><button type="submit" class="admin-button">Save status</button><p class="admin-preview-note">Updates order status only; does not charge, refund or adjust stock.</p></form><h3 class="admin-detail-section">Purchased items</h3><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Product</th><th>Quantity</th><th>Unit price · JOD</th><th>Line total · JOD</th></tr></thead><tbody>${o.items.map((p) => `<tr><td><div class="admin-row-name">${thumb(p)}<span class="admin-primary-text">${esc(p.name)}</span></div></td><td>${num(p.quantity)}</td><td>${money(p.unit_price)}</td><td>${money(Number(p.quantity) * Number(p.unit_price))}</td></tr>`).join('')}</tbody></table></div><dl class="admin-detail-facts" style="margin-top:25px"><div><dt>Promo discount</dt><dd>${money(o.promo_discount)} JOD</dd></div><div><dt>Order total</dt><dd><strong>${money(o.total_amount)} JOD</strong></dd></div></dl><p class="admin-privacy-note">Amounts are the stored order values. No payment, refund or stock action is performed by this view.</p></div><footer class="admin-dialog-footer">${button('View customer', 'user', `data-id="${Number(o.user_id)}"`, 'secondary')}${button('Close', 'close-drawer')}</footer>`,
             );
         } catch (e) {
             toast(e.message, true);
@@ -815,7 +816,7 @@ ${Number(s.low_stock) ? `<div class="admin-alert-banner">${icon('alert')}<span><
         const nav = event.target.closest('[data-nav]');
         if (nav) {
             event.preventDefault();
-            navigate(nav.dataset.nav);
+            navigate(nav.dataset.nav, nav.dataset.stock ? { stock: nav.dataset.stock } : nav.classList.contains('admin-notifications') ? { stock: 'attention' } : {});
             return;
         }
         if (!event.target.closest('.admin-combo'))
@@ -1157,6 +1158,16 @@ ${Number(s.low_stock) ? `<div class="admin-alert-banner">${icon('alert')}<span><
             const kind = form.dataset.form;
             let result;
             if (kind === 'product') {
+                for (const [name, message] of [
+                    ['category_id', 'Choose a product category.'],
+                    ['subcategory_id', 'Choose a product subcategory.'],
+                ]) {
+                    if (!/^[1-9]\d*$/.test(String(values[name] || ''))) {
+                        const trigger = form.querySelector(`[data-combo="${name}"] .admin-combo-trigger`);
+                        trigger?.focus();
+                        throw new Error(message);
+                    }
+                }
                 const file = form.elements.namedItem('image_file')?.files?.[0];
                 if (file) {
                     const data = new FormData();
@@ -1168,6 +1179,11 @@ ${Number(s.low_stock) ? `<div class="admin-alert-banner">${icon('alert')}<span><
                 closeDialog(drawer);
                 await reloadMeta();
                 toast(values.id ? 'Product updated.' : 'Product created.');
+                await loadPage(false);
+            } else if (kind === 'order-status') {
+                await api('order-status', values, 'POST');
+                toast('Order status updated.');
+                await viewOrder(values.id);
                 await loadPage(false);
             } else if (kind === 'category' || kind === 'subcategory') {
                 result = await api(kind + '-save', values, 'POST');
@@ -1381,7 +1397,7 @@ ${Number(s.low_stock) ? `<div class="admin-alert-banner">${icon('alert')}<span><
     window.addEventListener('popstate', () => {
         const q = new URLSearchParams(location.search);
         const page = q.get('page') || 'overview';
-        state.page = names[page] ? page : 'overview';
+        state.page = page === 'inventory' ? 'products' : names[page] ? page : 'overview';
         state.query = Object.fromEntries(q);
         delete state.query.page;
         state.query.page = Number(q.get('p')) || 1;
@@ -1401,7 +1417,7 @@ ${Number(s.low_stock) ? `<div class="admin-alert-banner">${icon('alert')}<span><
             delete query.page;
             query.page = Number(q.get('p')) || 1;
             delete query.p;
-            state.page = names[page] ? page : 'overview';
+            state.page = page === 'inventory' ? 'products' : names[page] ? page : 'overview';
             state.query = query;
             await loadPage();
         } catch (error) {
